@@ -1,0 +1,31 @@
+[project]
+name = "signalpost"
+version = "1.0.0"
+description = "Evidence-backed, refreshable Norwegian company profiles from an organisation number"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx>=0.28,<0.29",
+  "lxml>=5.3,<7",
+  "jinja2>=3.1,<4",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40"]
+
+[project.scripts]
+signalpost = "signalpost.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3,<9"]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/signalpost"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signalpost Profiles</title>
+<meta name="description" content="Evidence-backed Norwegian company profiles. Every fact links to its source, retrieval time and content hash.">
+<style>
+:root{
+  --bg:#f6f7f9;--surface:#ffffff;--surface-2:#f0f2f5;--text:#16202b;--muted:#5b6876;--border:#dfe3e8;
+  --accent:#1f5fa8;--accent-soft:#e6eef8;--accent-text:#ffffff;
+  --ok:#1d7a46;--ok-soft:#e3f3e9;--na:#6b7682;--na-soft:#eef0f2;--amb:#9a6200;--amb-soft:#fbf0d9;
+  --blk:#b4431b;--blk-soft:#fbe7df;--fail:#b3261e;--fail-soft:#fbe4e2;--napp:#57606a;--napp-soft:#eceef0;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141a;--surface:#161c24;--surface-2:#1d252f;--text:#e6ebf0;--muted:#9aa6b2;--border:#2a333e;
+  --accent:#6aa6ec;--accent-soft:#1c2c40;--accent-text:#0f141a;
+  --ok:#5cc98a;--ok-soft:#173326;--na:#9aa6b2;--na-soft:#222a33;--amb:#e9b04f;--amb-soft:#3a2d12;
+  --blk:#f08a62;--blk-soft:#3a2118;--fail:#f2867e;--fail-soft:#3b1d1b;--napp:#a6b0ba;--napp-soft:#242c35;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f141a;--surface:#161c24;--surface-2:#1d252f;--text:#e6ebf0;--muted:#9aa6b2;--border:#2a333e;
+  --accent:#6aa6ec;--accent-soft:#1c2c40;--accent-text:#0f141a;
+  --ok:#5cc98a;--ok-soft:#173326;--na:#9aa6b2;--na-soft:#222a33;--amb:#e9b04f;--amb-soft:#3a2d12;
+  --blk:#f08a62;--blk-soft:#3a2118;--fail:#f2867e;--fail-soft:#3b1d1b;--napp:#a6b0ba;--napp-soft:#242c35;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.top-in{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;color:var(--text)}
+.brand svg{width:26px;height:26px}
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
+nav.tabs a{padding:7px 11px;border-radius:8px;color:var(--muted);font-weight:500;min-height:36px;display:inline-flex;align-items:center}
+nav.tabs a.on,nav.tabs a:hover{background:var(--accent-soft);color:var(--accent);text-decoration:none}
+.grow{flex:1}
+.search{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:0 10px;min-width:220px;flex:0 1 320px}
+.search input{border:0;background:transparent;color:var(--text);font:inherit;padding:8px 0;width:100%;outline:none}
+.iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:10px;min-width:40px;min-height:40px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+main{max-width:1200px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.muted{color:var(--muted)}.small{font-size:13px}.mono{font-family:var(--mono);font-size:12.5px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}.kpi .l{color:var(--muted);font-size:13px}
+.hero{padding:22px 0 10px}.hero p{max-width:760px;color:var(--muted);margin:6px 0 16px}
+.bigsearch{display:flex;gap:8px;max-width:640px}
+.bigsearch input{flex:1;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.btn{background:var(--accent);color:var(--accent-text);border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;min-height:40px}
+.btn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.st-available{background:var(--ok-soft);color:var(--ok)}.st-not_available{background:var(--na-soft);color:var(--na)}
+.st-ambiguous{background:var(--amb-soft);color:var(--amb)}.st-blocked{background:var(--blk-soft);color:var(--blk)}
+.st-failed{background:var(--fail-soft);color:var(--fail)}.st-not_applicable{background:var(--napp-soft);color:var(--napp)}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.bar>span{display:block;height:100%}
+.b-available{background:var(--ok)}.b-not_available{background:color-mix(in srgb,var(--na) 45%,transparent)}.b-ambiguous{background:var(--amb)}
+.b-blocked{background:var(--blk)}.b-failed{background:var(--fail)}.b-not_applicable{background:color-mix(in srgb,var(--napp) 30%,transparent)}
+.covrow{display:grid;grid-template-columns:170px 1fr 52px;gap:10px;align-items:center;padding:5px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--surface-2)}
+.dots{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
+.dot{width:9px;height:9px;border-radius:3px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);min-height:40px}
+.co-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.fact{background:var(--surface-2);border-radius:10px;padding:10px 12px}.fact .v{font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}.fact .l{font-size:12.5px;color:var(--muted)}
+.brief p{margin:0 0 8px}
+.cite{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:3px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;vertical-align:2px}
+.cite:hover{background:var(--accent-soft)}
+.section{margin-top:18px}
+.statusstrip{display:flex;gap:6px;flex-wrap:wrap}
+dl.kv{display:grid;grid-template-columns:minmax(150px,240px) 1fr;margin:0}
+dl.kv dt,dl.kv dd{padding:8px 0;border-bottom:1px solid var(--border);margin:0}
+dl.kv dt{color:var(--muted);font-size:13.5px;padding-right:10px}
+dl.kv dd{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.src{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--muted);cursor:pointer;min-height:28px}
+.src:hover{color:var(--accent);border-color:var(--accent)}
+.list{display:grid;gap:8px}
+.item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.item .t{font-weight:600}
+.unknown{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--border)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fin-wrap{overflow-x:auto}
+.fin td button{all:unset;cursor:pointer;font-variant-numeric:tabular-nums}.fin td button:hover{color:var(--accent);text-decoration:underline}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 12px;cursor:pointer;min-height:34px}.seg button.on{background:var(--accent);color:var(--accent-text)}
+.timeline{border-left:2px solid var(--border);margin-left:6px;padding-left:14px}
+.tl{position:relative;padding:6px 0 10px}.tl:before{content:"";position:absolute;left:-20px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+#drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,100%);background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .2s ease;z-index:50;display:flex;flex-direction:column}
+#drawer.open{transform:none}
+#drawer header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+#drawer .body{overflow:auto;padding:16px}
+.ev{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
+.span{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;margin:8px 0}
+.evrow{display:grid;grid-template-columns:110px 1fr;gap:6px;font-size:13px;padding:3px 0}
+.evrow span:first-child{color:var(--muted)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:40;display:none}.scrim.open{display:block}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.cmp th{position:sticky;top:0;background:var(--surface)}
+.pill{display:inline-block;padding:1px 7px;border-radius:6px;background:var(--surface-2);font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;z-index:60}
+.toast.on{opacity:1}
+@media (max-width:760px){
+  .two{grid-template-columns:1fr}
+  dl.kv{grid-template-columns:1fr}dl.kv dt{border-bottom:0;padding-bottom:0}
+  .covrow{grid-template-columns:110px 1fr 44px}
+  table.resp thead{display:none}
+  table.resp tr{display:block;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--surface);padding:6px 4px}
+  table.resp td{display:flex;justify-content:space-between;gap:12px;border:0;padding:5px 10px;text-align:right}
+  table.resp td:before{content:attr(data-l);color:var(--muted);font-size:12.5px;text-align:left}
+  table.resp td.first{display:block;text-align:left}table.resp td.first:before{content:none}
+  #drawer{top:auto;bottom:0;height:85%;width:100%;border-left:0;border-top:1px solid var(--border);border-radius:16px 16px 0 0;transform:translateY(105%)}
+  #drawer.open{transform:none}
+  .search{flex:1 1 100%;order:3}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="#/" aria-label="Signalpost home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="var(--accent)"/><path d="M10 21c3-6 9-6 12-12" stroke="var(--accent-text)" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="10" cy="21" r="2.6" fill="var(--accent-text)"/><circle cx="22" cy="9" r="2.6" fill="var(--accent-text)"/></svg>
+    Signalpost</a>
+  <nav class="tabs" aria-label="Sections">
+    <a href="#/" data-r="">Overview</a><a href="#/companies" data-r="companies">Companies</a><a href="#/changes" data-r="changes">Changes</a>
+    <a href="#/compare" data-r="compare">Compare <span id="cmpn"></span></a><a href="#/method" data-r="method">Method</a>
+  </nav>
+  <div class="grow"></div>
+  <label class="search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="Org. number or company name" aria-label="Search companies"></label>
+  <button class="iconbtn" id="theme" aria-label="Toggle colour theme" title="Toggle theme">◐</button>
+</div></header>
+<main id="app" tabindex="-1"></main>
+<div class="scrim" id="scrim"></div>
+<aside id="drawer" aria-hidden="true" aria-label="Evidence"><header><strong id="dtitle">Evidence</strong><button class="iconbtn" id="dclose" aria-label="Close evidence">✕</button></header><div class="body" id="dbody"></div></aside>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const BOOT = /*__BOOT__*/null;
+(function(){
+"use strict";
+const INDEX = (BOOT && BOOT.index) || [], REPORT = (BOOT && BOOT.report) || {};
+const BYORG = Object.fromEntries(INDEX.map(r => [r.o, r]));
+const FAM = [["identity","Legal identity"],["status","Registry status"],["industry","Industry"],["financials","Annual accounts"],["leadership","Leadership & roles"],["locations","Registered workplaces"],["group","Group structure"],["website","Official website"],["social_profiles","Company-owned profiles"],["contact","Contact"],["description","Self-description"],["jobs","Job postings"],["activity","Dated activity"]];
+const FAML = Object.fromEntries(FAM);
+const STATES = ["available","not_available","ambiguous","blocked","failed","not_applicable"];
+const STL = {available:"Available",not_available:"Not available",ambiguous:"Ambiguous",blocked:"Blocked",failed:"Failed",not_applicable:"Not applicable"};
+const STI = {available:"✓",not_available:"–",ambiguous:"?",blocked:"⛔",failed:"✕",not_applicable:"∅"};
+const SRC = {official_registry:"Official registry",official_registry_bulk:"Registry snapshot",company_owned:"Company-owned site",public_api:"Public API",open_data:"Open data"};
+const cache = {}, waiters = {};
+const nf = new Intl.NumberFormat("nb-NO");
+// ---------------------------------------------------------------- helpers
+function el(tag, props, ...kids){
+  const n = document.createElement(tag);
+  if (props) for (const [k,v] of Object.entries(props)){
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (k === "href") n.setAttribute("href", safeHref(v)); else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  return n;
+}
+function safeHref(u){ u = String(u||""); return /^(https?:|#|mailto:|data\/)/i.test(u) ? u : "#"; }
+function ext(u, label){ return el("a",{href:u,target:"_blank",rel:"noopener noreferrer nofollow"}, label || u); }
+function chip(state, label){ return el("span",{class:"chip st-"+state,title:STL[state]||state}, el("span",{"aria-hidden":"true"},STI[state]||"•"), label || STL[state] || state); }
+function num(v){ return (typeof v === "number") ? nf.format(v) : String(v); }
+function money(v, unit){
+  if (typeof v !== "number") return v == null ? "—" : String(v);
+  const a = Math.abs(v); let s;
+  if (a >= 1e9) s = (v/1e9).toLocaleString("nb-NO",{maximumFractionDigits:1})+" mrd"; else if (a >= 1e6) s = (v/1e6).toLocaleString("nb-NO",{maximumFractionDigits:1})+" mill"; else s = nf.format(v);
+  return s + " " + (unit || "NOK");
+}
+function fmtOrg(o){ return o ? o.replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3") : ""; }
+function toast(t){ const n = document.getElementById("toast"); n.textContent = t; n.classList.add("on"); setTimeout(()=>n.classList.remove("on"), 1600); }
+function copy(t){ try { navigator.clipboard.writeText(t).then(()=>toast("Copied")); } catch(e) { toast("Copy not available"); } }
+function store(k, v){ try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "null"); localStorage.setItem(k, JSON.stringify(v)); } catch(e) { return null; } }
+function valueText(v){
+  if (v == null) return "—";
+  if (typeof v === "object"){
+    if (v.title) return v.title + (v.location ? " · " + v.location : "") + (v.date ? " · " + v.date : "") + (v.published ? " · published " + v.published : "");
+    if (v.name) return v.name + (v.organisation_number ? " (" + fmtOrg(v.organisation_number) + ")" : "") + (v.relation ? " · " + v.relation : "") + (v.share ? " " + v.share : "");
+    return JSON.stringify(v);
+  }
+  return typeof v === "number" ? num(v) : String(v);
+}
+// ---------------------------------------------------------------- data loading
+window.SP_LOAD = function(org, data){ cache[org] = data; (waiters[org]||[]).forEach(f => f(data)); delete waiters[org]; };
+function load(org){
+  if (cache[org]) return Promise.resolve(cache[org]);
+  return new Promise((resolve, reject) => {
+    (waiters[org] = waiters[org] || []).push(resolve);
+    if (waiters[org].length > 1) return;
+    const s = document.createElement("script"); s.src = "data/" + org + ".js"; s.async = true;
+    s.onerror = () => { delete waiters[org]; reject(new Error("missing profile")); };
+    document.head.append(s);
+  });
+}
+// ---------------------------------------------------------------- compare set
+let CMP = (store("sp-compare") || []).filter(o => BYORG[o]);
+function setCmp(list){ CMP = list.slice(0,4); store("sp-compare", CMP); document.getElementById("cmpn").textContent = CMP.length ? "("+CMP.length+")" : ""; }
+function toggleCmp(o){ setCmp(CMP.includes(o) ? CMP.filter(x => x !== o) : CMP.concat(o)); if (CMP.length === 4) toast("Comparing up to 4 companies"); }
+setCmp(CMP);
+// ---------------------------------------------------------------- evidence drawer
+const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
+function closeDrawer(){ drawer.classList.remove("open"); scrim.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
+document.getElementById("dclose").onclick = closeDrawer; scrim.onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+function openEvidence(env, claimIds, title){
+  const claims = env.claims.filter(c => claimIds.includes(c.id));
+  const evs = Object.fromEntries(env.evidence.concat(env.prior_evidence || []).map(e => [e.id, e]));
+  const body = document.getElementById("dbody"); body.replaceChildren();
+  document.getElementById("dtitle").textContent = title || "Evidence";
+  claims.forEach(c => {
+    body.append(el("div",{class:"small muted"}, (FAML[c.family]||c.family) + " · " + (c.label || c.field)));
+    body.append(el("div",{style:"font-weight:700;margin:2px 0 8px"}, valueText(c.value) + (c.unit && typeof c.value === "number" ? " " + c.unit : "")));
+    const meta = [];
+    if (c.period && c.period.to) meta.push("Reporting period " + (c.period.from || "?") + " → " + c.period.to);
+    if (c.effective_date) meta.push("Effective " + c.effective_date);
+    if (c.stale_since) meta.push("Carried forward (source unreadable since " + c.stale_since + ")");
+    if (c.derived) meta.push("Derived value");
+    if (meta.length) body.append(el("div",{class:"small muted",style:"margin-bottom:8px"}, meta.join(" · ")));
+    c.evidence_ids.forEach(id => {
+      const e = evs[id]; if (!e) return;
+      body.append(el("div",{class:"ev"},
+        el("div",{style:"display:flex;justify-content:space-between;gap:8px;align-items:center"}, el("span",{class:"pill"}, SRC[e.source_class] || e.source_class), e.license ? el("span",{class:"small muted"}, e.license) : null),
+        el("div",{class:"span"}, e.claim_span || "(no span)"),
+        el("div",{class:"evrow"}, el("span",null,"Source"), ext(e.source_url, e.source_url.length > 70 ? e.source_url.slice(0,70)+"…" : e.source_url)),
+        el("div",{class:"evrow"}, el("span",null,"Retrieved"), el("span",null, e.retrieved_at)),
+        e.reporting_period && e.reporting_period.to ? el("div",{class:"evrow"}, el("span",null,"Period"), el("span",null, (e.reporting_period.from||"")+" → "+e.reporting_period.to)) : null,
+        el("div",{class:"evrow"}, el("span",null,"Method"), el("span",{class:"mono"}, e.extraction_method)),
+        e.identity_reason ? el("div",{class:"evrow"}, el("span",null,"Identity"), el("span",null, e.identity_reason)) : null,
+        el("div",{class:"evrow"}, el("span",null,"SHA-256"), el("span",null, el("span",{class:"mono"}, e.content_sha256.slice(0,16)+"…"), " ", el("button",{class:"src",onclick:()=>copy(e.content_sha256)},"Copy"))),
+      ));
+    });
+  });
+  if (!claims.length) body.append(el("p",{class:"muted"},"No claims referenced."));
+  drawer.classList.add("open"); scrim.classList.add("open"); drawer.setAttribute("aria-hidden","false");
+  document.getElementById("dclose").focus();
+}
+function srcBtn(env, claim){
+  const e = env.evidence.find(x => x.id === claim.evidence_ids[0]) || {};
+  return el("button",{class:"src",title:"Show evidence",onclick:()=>openEvidence(env,[claim.id], claim.label)}, (SRC[e.source_class]||"Source") + " · " + String(e.retrieved_at||"").slice(0,10));
+}
+// ---------------------------------------------------------------- router
+const app = document.getElementById("app");
+function route(){
+  const h = location.hash.replace(/^#\/?/,"");
+  const [r, arg] = [h.split("/")[0], decodeURIComponent(h.split("/").slice(1).join("/"))];
+  document.querySelectorAll("nav.tabs a").forEach(a => a.classList.toggle("on", a.dataset.r === (r === "c" ? "companies" : r)));
+  closeDrawer(); app.replaceChildren();
+  if (r === "c" && arg) return viewCompany(arg);
+  if (r === "companies") return viewCompanies(arg);
+  if (r === "compare") return viewCompare(arg);
+  if (r === "changes") return viewChanges();
+  if (r === "method") return viewMethod();
+  return viewOverview();
+}
+window.addEventListener("hashchange", () => { route(); window.scrollTo(0,0); });
+const q = document.getElementById("q");
+q.addEventListener("keydown", e => { if (e.key === "Enter"){ const v = q.value.trim(); const d = v.replace(/\D/g,""); if (d.length === 9 && BYORG[d]) location.hash = "#/c/"+d; else location.hash = "#/companies/" + encodeURIComponent(v); }});
+document.getElementById("theme").onclick = () => {
+  const root = document.documentElement; const cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  root.dataset.theme = cur === "dark" ? "light" : "dark"; store("sp-theme", root.dataset.theme);
+};
+(function(){ const t = store("sp-theme"); if (t) document.documentElement.dataset.theme = t; })();
+// ---------------------------------------------------------------- overview
+function coverageCard(){
+  const n = INDEX.length || 1;
+  const card = el("div",{class:"card"}, el("h2",null,"Coverage by field family"), el("p",{class:"small muted",style:"margin-top:-6px"},"Share of companies per terminal state. Ambiguous = a candidate was found but failed the exact-identity gate, so nothing was published."));
+  FAM.forEach(([f,l]) => {
+    const counts = {}; INDEX.forEach(r => { const s = r.s[f] || "failed"; counts[s] = (counts[s]||0)+1; });
+    const bar = el("div",{class:"bar",role:"img","aria-label":l+": "+STATES.map(s=>(counts[s]||0)+" "+STL[s]).join(", ")}, STATES.filter(s=>counts[s]).map(s => el("span",{class:"b-"+s,style:"width:"+(counts[s]/n*100)+"%",title:STL[s]+": "+counts[s]})));
+    card.append(el("div",{class:"covrow"}, el("a",{href:"#/companies/"+encodeURIComponent("has:"+f)}, l), bar, el("span",{class:"small",style:"text-align:right;font-variant-numeric:tabular-nums"}, Math.round((counts.available||0)/n*100)+"%")));
+  });
+  card.append(el("div",{class:"legend"}, STATES.map(s => chip(s))));
+  return card;
+}
+function viewOverview(){
+  const ops = REPORT.operations || {}; const n = INDEX.length;
+  const claims = INDEX.reduce((a,r)=>a+r.k,0), sites = INDEX.filter(r=>r.w).length, jobs = INDEX.reduce((a,r)=>a+r.j,0);
+  const gate = REPORT.identity_gate || {};
+  app.append(el("section",{class:"hero"},
+    el("h1",null,"Norwegian company profiles you can verify"),
+    el("p",null, n + " companies researched from nothing but their organisation number. Every published fact carries its source link, retrieval time, reporting period and content hash. Where identity could not be proven, the profile says so instead of guessing."),
+    el("form",{class:"bigsearch",onsubmit:e=>{e.preventDefault(); const v=e.target.elements.s.value.trim(); const d=v.replace(/\D/g,""); location.hash = (d.length===9&&BYORG[d]) ? "#/c/"+d : "#/companies/"+encodeURIComponent(v);}},
+      el("input",{name:"s",placeholder:"Try an org. number or name…","aria-label":"Search"}), el("button",{class:"btn",type:"submit"},"Search"))));
+  app.append(el("div",{class:"grid kpis"},
+    kpi(nf.format(n),"companies profiled"), kpi(nf.format(claims),"evidence-backed facts"), kpi(nf.format(sites),"verified official websites"),
+    kpi(nf.format(jobs),"verified job postings"), kpi(nf.format(gate.ambiguous||0)+" / "+nf.format((gate.rejected||0)+(gate.related_site||0)),"sites held back: ambiguous / rejected"),
+    kpi(ops.requests != null ? nf.format(ops.requests) : "—","outbound requests"), kpi(ops.elapsed_seconds != null ? Math.round(ops.elapsed_seconds/60*10)/10+" min" : "—","run time"),
+    kpi("$"+(REPORT.third_party_cost_usd||0).toFixed(2),"third-party cost")));
+  app.append(el("div",{class:"section two"}, coverageCard(), runCard()));
+  const recent = INDEX.filter(r=>r.w || r.j).slice(0,8);
+  app.append(el("div",{class:"section card"}, el("h2",null,"Explore"), companyTable(recent.length ? recent : INDEX.slice(0,8), true), el("p",null, el("a",{href:"#/companies"},"All "+n+" companies →"))));
+}
+function kpi(v,l){ return el("div",{class:"card kpi"}, el("div",{class:"v"}, v), el("div",{class:"l"}, l)); }
+function runCard(){
+  const r = REPORT, ops = r.operations || {}, v = (r.validation||{}).checks || {};
+  return el("div",{class:"card"}, el("h2",null,"Run"),
+    el("dl",{class:"kv"},
+      kv("Run ID", r.run_id), kv("Agent version", r.agent_version), kv("Mode", r.mode === "refresh" ? "Refresh (diffed against previous run)" : "Baseline"),
+      kv("Envelopes", (r.emitted_envelopes||0)+" / "+(r.input_count||0)+" inputs"), kv("Contract checks", Object.values(v).every(Boolean) ? "All passed" : "Some failed"),
+      kv("p50 / p95 per company", (ops.p50_company_ms!=null? (ops.p50_company_ms/1000).toFixed(1)+"s":"—")+" / "+(ops.p95_company_ms!=null?(ops.p95_company_ms/1000).toFixed(1)+"s":"—")),
+      kv("Changes detected", r.changes_detected || 0), kv("Job feed", r.jobs_feed ? (r.jobs_feed.ads_indexed+" ads indexed over "+r.jobs_feed.window_days+" days") : "—")));
+}
+function kv(k, v){ return [el("dt",null,k), el("dd",null, el("span",null, v == null ? "—" : String(v)))]; }
+// ---------------------------------------------------------------- companies
+function companyTable(rows, compact){
+  const t = el("table",{class:"resp"});
+  t.append(el("thead",null, el("tr",null, el("th",null,"Company"), el("th",null,"Municipality"), el("th",{class:"num"},"Employees"), el("th",{class:"num"},"Revenue"), el("th",null,"Website"), el("th",{class:"num"},"Jobs"), compact ? null : el("th",null,"Families"), compact ? null : el("th",null,"Compare"))));
+  const tb = el("tbody");
+  rows.forEach(r => tb.append(el("tr",null,
+    el("td",{class:"first"}, el("a",{href:"#/c/"+r.o,style:"font-weight:600"}, r.b && r.b.toLowerCase() !== r.n.toLowerCase() ? r.n + " · " + r.b : r.n), el("div",{class:"small muted"}, fmtOrg(r.o) + (r.f ? " · "+r.f : "") + (r.i ? " · "+r.i.split(" ").slice(1).join(" ").slice(0,42) : ""))),
+    el("td",{"data-l":"Municipality"}, r.m || "—"),
+    el("td",{class:"num","data-l":"Employees"}, r.e != null ? num(r.e) : "—"),
+    el("td",{class:"num","data-l":"Revenue"}, r.r != null ? money(r.r, r.ru) + (r.ry ? " ("+r.ry+")" : "") : "—"),
+    el("td",{"data-l":"Website"}, r.w ? ext(r.w, r.w.replace(/^https?:\/\//,"").replace(/\/$/,"")) : chip(r.s.website||"failed")),
+    el("td",{class:"num","data-l":"Jobs"}, r.j ? String(r.j) : "—"),
+    compact ? null : el("td",{"data-l":"Families"}, el("div",{class:"dots"}, FAM.map(([f,l]) => el("span",{class:"dot b-"+(r.s[f]||"failed"),title:l+": "+STL[r.s[f]||"failed"]})))),
+    compact ? null : el("td",{"data-l":"Compare"}, el("button",{class:"src",onclick:e=>{toggleCmp(r.o); e.target.textContent = CMP.includes(r.o) ? "✓ Added" : "Add";}}, CMP.includes(r.o) ? "✓ Added" : "Add")))));
+  t.append(tb); return t;
+}
+function viewCompanies(arg){
+  let text = arg && !arg.startsWith("has:") ? arg : "", has = arg && arg.startsWith("has:") ? arg.slice(4) : "", form = "", sort = "name";
+  const wrap = el("div");
+  const forms = [...new Set(INDEX.map(r=>r.f).filter(Boolean))].sort();
+  const inp = el("input",{type:"search",placeholder:"Filter by name, org. number, municipality, industry",value:text,"aria-label":"Filter",style:"flex:1 1 260px"});
+  const selHas = el("select",{"aria-label":"Family filter"}, el("option",{value:""},"Any data"), FAM.map(([f,l]) => el("option",{value:f, selected: f===has || null},"Has "+l.toLowerCase())));
+  const selForm = el("select",{"aria-label":"Legal form"}, el("option",{value:""},"All legal forms"), forms.map(f => el("option",{value:f},f)));
+  const selSort = el("select",{"aria-label":"Sort"}, [["name","Sort: name"],["rev","Sort: revenue"],["emp","Sort: employees"],["facts","Sort: most facts"],["recent","Sort: latest activity"]].map(([v,l])=>el("option",{value:v},l)));
+  const count = el("div",{class:"small muted",style:"margin-bottom:8px"});
+  function render(){
+    const t = text.toLowerCase(), d = text.replace(/\D/g,"");
+    let rows = INDEX.filter(r => (!t || (r.n+" "+(r.b||"")+" "+(r.m||"")+" "+(r.i||"")).toLowerCase().includes(t) || (d.length>=3 && r.o.includes(d))) && (!has || r.s[has]==="available") && (!form || r.f===form));
+    const key = {name:r=>r.n, rev:r=>-(r.r||-1e18), emp:r=>-(r.e||-1), facts:r=>-r.k, recent:r=>r.a ? -Date.parse(r.a) : 0}[sort];
+    rows.sort((a,b)=>{ const x=key(a), y=key(b); return x<y?-1:x>y?1:0; });
+    count.textContent = rows.length + " of " + INDEX.length + " companies";
+    wrap.replaceChildren(rows.length ? companyTable(rows.slice(0,500)) : el("div",{class:"empty"},"No companies match these filters."));
+  }
+  inp.oninput = () => { text = inp.value; render(); }; selHas.onchange = () => { has = selHas.value; render(); };
+  selForm.onchange = () => { form = selForm.value; render(); }; selSort.onchange = () => { sort = selSort.value; render(); };
+  app.append(el("h1",null,"Companies"), el("div",{class:"filters"}, inp, selHas, selForm, selSort), count, wrap); render();
+}
+// ---------------------------------------------------------------- company profile
+function claimsOf(env, fam){ return env.claims.filter(c => c.family === fam); }
+function first(env, field){ return env.claims.find(c => c.field === field); }
+function latestFin(env){
+  const fin = env.claims.filter(c => c.family === "financials" && c.period);
+  for (const t of ["SELSKAP","KONSERN"]){
+    const typed = fin.filter(c => (c.note||"").includes("account_type="+t));
+    if (typed.length){ const last = typed.map(c=>c.period.to).sort().pop(); return Object.fromEntries(typed.filter(c=>c.period.to===last).map(c=>[c.field,c])); }
+  }
+  return {};
+}
+function stateBox(env, fam){
+  const st = (env.availability||{})[fam] || {state:"failed",reason:"not processed"};
+  return el("div",{class:"unknown"}, chip(st.state), el("div",null, el("div",{class:"small"}, st.reason || "")));
+}
+function famCard(env, fam, title, bodyFn){
+  const st = (env.availability||{})[fam] || {state:"failed"};
+  const cs = claimsOf(env, fam);
+  const card = el("div",{class:"card"}, el("div",{style:"display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px"}, el("h3",{style:"margin:0"}, title), chip(st.state)));
+  if (cs.length) card.append(bodyFn(cs)); else card.append(el("p",{class:"small muted",style:"margin:0"}, st.reason || "No data"));
+  return card;
+}
+function kvClaims(env, cs){
+  return el("dl",{class:"kv"}, cs.map(c => [el("dt",null, c.label), el("dd",null, el("span",null, c.field === "official_website" || /^https?:/.test(String(c.value)) ? ext(String(c.value)) : (typeof c.value === "number" && c.unit ? money(c.value, c.unit) : valueText(c.value)), c.effective_date ? el("span",{class:"small muted"}," · "+c.effective_date) : null), srcBtn(env, c))]));
+}
+function finTable(env){
+  const fin = claimsOf(env,"financials").filter(c => c.period && c.unit !== undefined || (c.period && typeof c.value === "number"));
+  const types = [...new Set(fin.map(c => (c.note||"").split("=")[1]).filter(Boolean))];
+  if (!fin.length) return el("p",{class:"small muted"}, ((env.availability||{}).financials||{}).reason || "No annual accounts");
+  let type = types.includes("SELSKAP") ? "SELSKAP" : types[0];
+  const holder = el("div");
+  const order = ["revenue","sales_revenue","operating_expenses","operating_result","net_financial_items","profit_before_tax","net_result","total_assets","fixed_assets","current_assets","cash","equity","total_debt","short_term_debt","long_term_debt"];
+  function render(){
+    const rows = fin.filter(c => (c.note||"").includes("account_type="+type));
+    const years = [...new Set(rows.map(c=>c.period.to))].sort().reverse();
+    const t = el("table",{class:"fin"}, el("thead",null, el("tr",null, el("th",null,"NOK unless noted"), years.map(y => el("th",{class:"num"}, y.slice(0,4))))));
+    const tb = el("tbody");
+    order.forEach(f => {
+      const byY = Object.fromEntries(rows.filter(c=>c.field===f).map(c=>[c.period.to,c]));
+      if (!Object.keys(byY).length) return;
+      const label = (Object.values(byY)[0].label||f).replace(/ \((company|group.*)\)$/,"");
+      tb.append(el("tr",null, el("td",null,label), years.map(y => el("td",{class:"num"}, byY[y] ? el("button",{title:"Show evidence",onclick:()=>openEvidence(env,[byY[y].id],label+" "+y.slice(0,4))}, money(byY[y].value, byY[y].unit)) : "—"))));
+    });
+    t.append(tb);
+    holder.replaceChildren(el("div",{class:"fin-wrap"}, t));
+  }
+  const seg = types.length > 1 ? el("div",{class:"seg",role:"group","aria-label":"Account type"}, types.map(tp => el("button",{class: tp===type?"on":"", onclick:e=>{type=tp; seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b===e.target)); render();}}, tp==="SELSKAP"?"Company":"Group"))) : null;
+  render();
+  const other = claimsOf(env,"financials").filter(c => !(typeof c.value === "number" && c.period));
+  return el("div",null, seg ? el("div",{style:"margin-bottom:8px"}, seg) : null, holder, other.length ? el("div",{style:"margin-top:10px"}, kvClaims(env, other.slice(0,4))) : null,
+    el("p",{class:"small muted",style:"margin:8px 0 0"},"Values are copied verbatim from Regnskapsregisteret; missing values stay missing. Tap a value for its evidence."));
+}
+async function viewCompany(org){
+  const idx = BYORG[org];
+  if (!idx){ app.append(el("div",{class:"empty"},"No profile for "+org+" in this run.")); return; }
+  app.append(el("div",{class:"empty"},"Loading profile…"));
+  let env; try { env = await load(org); } catch(e){ app.replaceChildren(el("div",{class:"empty"},"Profile data could not be loaded.")); return; }
+  app.replaceChildren();
+  const fin = latestFin(env), emp = first(env,"employees"), site = first(env,"official_website"), status = first(env,"registry_status");
+  const head = el("div",{class:"card"},
+    el("div",{class:"co-head"},
+      el("div",null, el("div",{class:"small muted"}, (first(env,"legal_form")||{}).value || ""),
+        el("h1",null, env.name || org), first(env,"public_brand") ? el("div",{class:"muted"},"Public brand: "+first(env,"public_brand").value) : null,
+        el("div",{class:"badges"}, el("button",{class:"src",onclick:()=>copy(org),title:"Copy organisation number"}, "Org. "+fmtOrg(org)+" ⧉"),
+          status ? chip(status.value === "active" ? "available" : "blocked", status.value === "active" ? "Active" : "Inactive / winding up") : null,
+          first(env,"municipality") ? el("span",{class:"pill"}, first(env,"municipality").value) : null,
+          site ? ext(site.value, "↗ "+site.value.replace(/^https?:\/\//,"").replace(/\/$/,"")) : null)),
+      el("div",{style:"display:flex;gap:8px;flex-wrap:wrap"},
+        el("button",{class:"btn ghost",onclick:e=>{toggleCmp(org); e.target.textContent = CMP.includes(org) ? "✓ In compare" : "+ Compare";}}, CMP.includes(org) ? "✓ In compare" : "+ Compare"),
+        el("a",{class:"btn ghost",href:"data/"+org+".js",download:org+".js"},"Raw data"))),
+    el("div",{class:"facts"},
+      fact(fin.revenue ? money(fin.revenue.value, fin.revenue.unit) : "—", "Revenue"+(fin.revenue ? " "+fin.revenue.period.to.slice(0,4) : ""), fin.revenue, env),
+      fact(fin.net_result ? money(fin.net_result.value, fin.net_result.unit) : "—", "Net result"+(fin.net_result ? " "+fin.net_result.period.to.slice(0,4) : ""), fin.net_result, env),
+      fact(emp ? num(emp.value) : "—", "Registered employees", emp, env),
+      fact(String(claimsOf(env,"locations").length || "—"), "Registered workplaces", claimsOf(env,"locations")[0], env),
+      fact(String(claimsOf(env,"jobs").length || "—"), "Active job postings", claimsOf(env,"jobs")[0], env)));
+  app.append(head);
+  // brief
+  const brief = env.brief || {};
+  const bc = el("div",{class:"card section brief"}, el("h2",null,"Summary"));
+  (brief.sentences||[]).forEach(s => {
+    const p = el("p",null, s.text);
+    (s.claim_ids||[]).slice(0,6).forEach((id,i) => p.append(el("button",{class:"cite",title:"Show source",onclick:()=>openEvidence(env,[id],"Source for this sentence")}, String(i+1))));
+    if (s.derived) p.append(el("span",{class:"pill",style:"margin-left:6px"},"derived"));
+    bc.append(p);
+  });
+  if (!(brief.sentences||[]).length) bc.append(el("p",{class:"muted"},"Not enough verified facts for a summary."));
+  bc.append(el("div",{class:"small muted"},"Each numbered button opens the evidence behind that sentence."));
+  app.append(bc);
+  // availability strip
+  app.append(el("div",{class:"card section"}, el("h2",null,"What we found"), el("div",{class:"statusstrip"}, FAM.map(([f,l]) => { const st=(env.availability[f]||{}).state||"failed"; return el("span",{class:"chip st-"+st,title:(env.availability[f]||{}).reason||""}, STI[st]+" "+l); }))));
+  // sections
+  app.append(el("div",{class:"section"}, el("h2",null,"1 · Legal identity and public brand")));
+  app.append(el("div",{class:"two"}, famCard(env,"identity","Legal identity", cs => kvClaims(env, cs.filter(c=>c.field!=="former_name").concat(cs.filter(c=>c.field==="former_name").slice(0,5)))),
+    el("div",{class:"grid"}, famCard(env,"status","Registry status", cs => kvClaims(env, cs)), famCard(env,"industry","Industry (NACE)", cs => kvClaims(env, cs)), famCard(env,"group","Group structure", cs => kvClaims(env, cs.slice(0,12))))));
+  app.append(el("div",{class:"section"}, el("h2",null,"2 · Annual accounts")), el("div",{class:"card"}, finTable(env)));
+  app.append(el("div",{class:"section"}, el("h2",null,"3 · Leadership and registered workplaces")));
+  app.append(el("div",{class:"two"}, famCard(env,"leadership","Leadership & roles", cs => kvClaims(env, cs)),
+    famCard(env,"locations","Registered workplaces", cs => el("div",{class:"list"}, cs.slice(0,30).map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.value.name || "Workplace"), el("div",{class:"small muted"}, [c.value.address, c.value.employees!=null ? c.value.employees+" employees" : null, c.value.industry].filter(Boolean).join(" · "))), srcBtn(env,c)))))));
+  app.append(el("div",{class:"section"}, el("h2",null,"4 · Verified website and company-owned profiles")));
+  app.append(el("div",{class:"two"}, famCard(env,"website","Official website", cs => kvClaims(env, cs)),
+    el("div",{class:"grid"}, famCard(env,"social_profiles","Company-owned profiles", cs => kvClaims(env, cs)), famCard(env,"contact","Contact", cs => kvClaims(env, cs)))));
+  app.append(el("div",{class:"section"}, famCard(env,"description","Company's own description (promotional, company-owned)", cs => el("div",null, cs.map(c => el("div",{class:"item"}, el("div",null, c.value), srcBtn(env,c)))))));
+  app.append(el("div",{class:"section"}, el("h2",null,"5 · Hiring and dated public activity")));
+  app.append(el("div",{class:"two"},
+    famCard(env,"jobs","Active job postings (NAV)", cs => el("div",{class:"list"}, cs.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.value.url ? ext(c.value.url, c.value.title) : c.value.title), el("div",{class:"small muted"}, [c.value.location, c.value.published ? "published "+c.value.published : null, c.value.expires ? "expires "+c.value.expires : null].filter(Boolean).join(" · "))), srcBtn(env,c))))),
+    famCard(env,"activity","Dated activity", cs => el("div",{class:"timeline"}, cs.slice().sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).slice(0,15).map(c => el("div",{class:"tl"}, el("div",{class:"small muted"}, c.effective_date || ""), el("div",{style:"display:flex;justify-content:space-between;gap:8px"}, el("span",null, typeof c.value === "object" ? (c.value.url ? ext(c.value.url, c.value.title) : c.value.title) : c.value), srcBtn(env,c))))))));
+  // changes + unknowns + audit
+  app.append(el("div",{class:"section"}, el("h2",null,"6 · Changes since previous run")));
+  const ch = env.changes || [];
+  app.append(el("div",{class:"card"}, ch.length ? el("div",{class:"list"}, ch.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.type.replace(/_/g," ")+" · "+(c.label||c.field)), el("div",{class:"small muted"}, (c.previous!=null ? valueText(c.previous)+" → " : "")+(c.current!=null ? valueText(c.current) : "removed"))), c.evidence_ids && c.evidence_ids.length ? el("button",{class:"src",onclick:()=>openEvidence(env, env.claims.filter(x=>x.evidence_ids.some(e=>c.evidence_ids.includes(e))).map(x=>x.id),"Change evidence")},"Evidence") : null)))
+    : el("p",{class:"small muted",style:"margin:0"}, env.refresh && env.refresh.mode === "refresh" ? "No material changes since the previous run ("+(env.refresh.previous_completed_at||"")+")." : "Baseline run — re-run with --previous to see what changed.")));
+  const unk = (brief.unknowns||[]);
+  app.append(el("div",{class:"section two"},
+    el("div",{class:"card"}, el("h2",null,"What we could not establish"), unk.length ? unk.map(u => el("div",{class:"unknown"}, chip(u.state), el("div",null, el("div",{style:"font-weight:600"}, u.label), el("div",{class:"small muted"}, u.reason||"")))) : el("p",{class:"muted"},"Every field family has published facts.")),
+    el("div",{class:"card"}, el("h2",null,"Identity audit"), el("p",{class:"small muted",style:"margin-top:-6px"},"Candidates we checked but did not publish, with the reason. These are never shown as facts."),
+      (env.unpublished_candidates||[]).length ? el("div",{class:"list"}, env.unpublished_candidates.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, String(c.candidate||"")), el("div",{class:"small muted"}, (c.source? c.source+" · " : "")+(c.reason||""))), chip(c.decision==="related_site"?"not_applicable":c.decision==="rejected"?"blocked":"ambiguous", c.decision.replace("_"," ")))))
+        : el("p",{class:"small muted"},"No rejected candidates."))));
+  const ops = env.operations || {};
+  app.append(el("p",{class:"small muted section"}, "Run "+((env.run||{}).run_id||"")+" · completed "+((env.run||{}).completed_at||"")+" · "+(ops.requests||0)+" requests · "+((ops.runtime_ms||0)/1000).toFixed(1)+" s · $"+(ops.third_party_cost_usd||0).toFixed(2)));
+}
+function fact(v, l, claim, env){ return el("div",{class:"fact"}, el("div",{class:"v"}, v), el("div",{class:"l"}, l, claim ? el("button",{class:"cite",title:"Show evidence",onclick:()=>openEvidence(env,[claim.id],l)},"i") : null)); }
+// ---------------------------------------------------------------- compare
+async function viewCompare(arg){
+  if (arg) setCmp(arg.split(",").filter(o => BYORG[o]));
+  app.append(el("h1",null,"Compare companies"));
+  if (!CMP.length){ app.append(el("div",{class:"card empty"},"Add up to four companies with “Add” in the company list or “+ Compare” on a profile.")); return; }
+  const envs = await Promise.all(CMP.map(o => load(o).catch(()=>null)));
+  const rows = [
+    ["Legal form", e => (first(e,"legal_form")||{}).value], ["Municipality", e => (first(e,"municipality")||{}).value], ["Founded", e => (first(e,"founded_date")||{}).value],
+    ["Industry", e => (first(e,"industry_code")||{}).value], ["Employees", e => first(e,"employees") ? num(first(e,"employees").value) : null],
+    ["Revenue", e => { const f=latestFin(e).revenue; return f ? money(f.value,f.unit)+" ("+f.period.to.slice(0,4)+")" : null; }],
+    ["Operating result", e => { const f=latestFin(e).operating_result; return f ? money(f.value,f.unit) : null; }],
+    ["Net result", e => { const f=latestFin(e).net_result; return f ? money(f.value,f.unit) : null; }],
+    ["Equity", e => { const f=latestFin(e).equity; return f ? money(f.value,f.unit) : null; }],
+    ["Total assets", e => { const f=latestFin(e).total_assets; return f ? money(f.value,f.unit) : null; }],
+    ["CEO", e => (first(e,"ceo")||{}).value], ["Board chair", e => (first(e,"board_chair")||{}).value],
+    ["Workplaces", e => String(claimsOf(e,"locations").length)], ["Website", e => (first(e,"official_website")||{}).value],
+    ["Active jobs", e => String(claimsOf(e,"jobs").length)], ["Facts published", e => String(e.claims.length)],
+  ];
+  const t = el("table",{class:"cmp"}, el("thead",null, el("tr",null, el("th",null,""), envs.map((e,i) => el("th",null, e ? el("a",{href:"#/c/"+CMP[i]}, e.name) : CMP[i], " ", el("button",{class:"src",onclick:()=>{toggleCmp(CMP[i]); route();},"aria-label":"Remove"},"✕"))))));
+  const tb = el("tbody");
+  rows.forEach(([l,f]) => tb.append(el("tr",null, el("td",{class:"muted"},l), envs.map(e => el("td",null, e ? (f(e) || "—") : "—")))));
+  FAM.forEach(([fam,l]) => tb.append(el("tr",null, el("td",{class:"muted"}, l), envs.map(e => el("td",null, e ? chip((e.availability[fam]||{}).state||"failed") : "—")))));
+  t.append(tb);
+  app.append(el("div",{class:"card fin-wrap"}, t), el("p",{class:"small muted"},"Share this comparison: ", el("a",{href:"#/compare/"+CMP.join(",")}, location.href.split("#")[0]+"#/compare/"+CMP.join(","))));
+}
+// ---------------------------------------------------------------- changes
+function viewChanges(){
+  app.append(el("h1",null,"Changes since the previous run"));
+  const rows = INDEX.flatMap(r => (r.ch||[]).map(c => ({...c, o:r.o, n:r.n})));
+  if (!rows.length){ app.append(el("div",{class:"card"}, el("p",null, REPORT.mode === "refresh" ? "The refresh found no material changes. Re-running on the same sources is idempotent: zero false changes." : "This is a baseline run. Run again with --previous <this run> to detect new filings, role changes, new or closed jobs, address changes and more. Prior evidence is preserved and sources that cannot be read are carried forward, never reported as removed."))); return; }
+  const types = {}; rows.forEach(r => types[r.t] = (types[r.t]||0)+1);
+  app.append(el("div",{class:"legend",style:"margin-bottom:12px"}, Object.entries(types).map(([t,n]) => el("span",{class:"pill"}, t.replace(/_/g," ")+" · "+n))));
+  app.append(el("div",{class:"list"}, rows.map(r => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, el("a",{href:"#/c/"+r.o}, r.n), " — ", r.t.replace(/_/g," ")), el("div",{class:"small muted"}, (r.l||"")+": "+(r.p!=null ? valueText(r.p)+" → " : "")+(r.v!=null ? valueText(r.v) : "removed"))), el("span",{class:"small muted"}, (r.d||"").slice(0,10))))));
+}
+// ---------------------------------------------------------------- method
+function viewMethod(){
+  const plan = REPORT.budget_plan || {};
+  app.append(el("h1",null,"How Signalpost works"),
+    el("div",{class:"two"},
+      el("div",{class:"card"}, el("h2",null,"Pipeline"), el("ol",null,
+        el("li",null,"Anchor on the organisation number: live Enhetsregisteret record (100 companies per request)."),
+        el("li",null,"Official facts by exact key: annual accounts (Regnskapsregisteret), roles, registered workplaces, group structure, and the registry's own dated change log."),
+        el("li",null,"Website discovery from registry-declared site, registry e-mail domain and name-based .no domains — then the identity gate."),
+        el("li",null,"From a verified site only: company-owned social profiles, role mailboxes, self-description and dated news."),
+        el("li",null,"Hiring: NAV's public vacancy feed; a posting is published only when the ad's employer org. number equals the company or one of its workplaces."),
+        el("li",null,"Refresh: diff against the previous run on stable claim keys; unreadable sources are carried forward, never reported as removed."),
+        el("li",null,"Summary: deterministic sentences, each citing the claims it rests on."))),
+      el("div",{class:"card"}, el("h2",null,"Identity gate"), el("p",{class:"small"},"A website is published as the company's own only if:"), el("ul",{class:"small"},
+        el("li",null,"the exact organisation number is printed on the site (and not merely among several companies' numbers), or"),
+        el("li",null,"the legal name is in the site's identity fields and the registry phone or street address is on the site, or"),
+        el("li",null,"the registry itself declares the site and its identity fields carry the legal name.")),
+        el("p",{class:"small"},"Parked pages, cross-domain redirects without proof, address-like names and sites showing another company's number are held back as ambiguous or labelled as a related group site."))),
+    el("div",{class:"card section"}, el("h2",null,"Availability states"), el("dl",{class:"kv"}, STATES.map(s => [el("dt",null, chip(s)), el("dd",null, el("span",null, {available:"Found and published with evidence.",not_available:"Checked; the source has nothing for this company.",ambiguous:"A candidate exists but identity could not be proven — not published.",blocked:"The source refused access (robots.txt or HTTP 401/403/429).",failed:"The run could not complete this check (error or budget).",not_applicable:"The question does not apply to this entity."}[s]))]))),
+    el("div",{class:"card section"}, el("h2",null,"Sources and licences"), el("dl",{class:"kv"},
+      kv("Brønnøysundregistrene (Enhetsregisteret, Regnskapsregisteret, roles, sub-units, group, change log)","NLOD 2.0 — data.brreg.no open APIs"),
+      kv("NAV pam-stilling-feed","Free public API (arbeidsplassen.nav.no API terms); only active ads, no contact persons"),
+      kv("Company websites","Company-owned; robots.txt honoured; identifying User-Agent; bounded pages per site"))),
+    el("div",{class:"card section"}, el("h2",null,"Budget plan for this run"), el("dl",{class:"kv"}, Object.entries(plan).map(([k,v]) => kv(k, v)))));
+}
+route();
+})();
+</script>
+</body>
+</html>

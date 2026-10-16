@@ -1,0 +1,242 @@
+{
+  "run_id": "smoke-100-refresh",
+  "agent_version": "1.0.0",
+  "started_at": "2026-10-16T05:31:07Z",
+  "completed_at": "2026-10-16T05:32:43Z",
+  "input_count": 100,
+  "emitted_envelopes": 100,
+  "validation": {
+    "passed": true,
+    "checks": {
+      "one_envelope_per_input": true,
+      "unique_organisation_numbers": true,
+      "all_family_states_valid": true,
+      "every_claim_has_evidence": true,
+      "no_null_values_published": true,
+      "all_families_present": true
+    },
+    "invalid_states": []
+  },
+  "mode": "baseline",
+  "changes_detected": 0,
+  "family_states": {
+    "identity": {
+      "available": 100
+    },
+    "status": {
+      "available": 100
+    },
+    "industry": {
+      "available": 100
+    },
+    "financials": {
+      "available": 100
+    },
+    "leadership": {
+      "available": 100
+    },
+    "locations": {
+      "available": 78,
+      "not_available": 22
+    },
+    "group": {
+      "available": 100
+    },
+    "website": {
+      "ambiguous": 26,
+      "not_available": 54,
+      "available": 17,
+      "blocked": 3
+    },
+    "social_profiles": {
+      "not_available": 92,
+      "available": 8
+    },
+    "contact": {
+      "failed": 69,
+      "available": 31
+    },
+    "description": {
+      "not_available": 91,
+      "available": 9
+    },
+    "jobs": {
+      "not_available": 99,
+      "failed": 1
+    },
+    "activity": {
+      "available": 100
+    }
+  },
+  "family_coverage": {
+    "identity": 1.0,
+    "status": 1.0,
+    "industry": 1.0,
+    "financials": 1.0,
+    "leadership": 1.0,
+    "locations": 0.78,
+    "group": 1.0,
+    "website": 0.17,
+    "social_profiles": 0.08,
+    "contact": 0.31,
+    "description": 0.09,
+    "jobs": 0.0,
+    "activity": 1.0
+  },
+  "claims_total": 7036,
+  "identity_gate": {
+    "rejected": 12,
+    "accepted": 17,
+    "ambiguous": 16,
+    "blocked": 4,
+    "unreachable": 9
+  },
+  "jobs_feed": {
+    "pages": 72,
+    "ads_indexed": 25008,
+    "window_days": 35,
+    "error": null
+  },
+  "operations": {
+    "requests": 633,
+    "max_requests": 2000,
+    "elapsed_seconds": 99.2,
+    "max_seconds": 2700.0,
+    "third_party_cost_usd": 0.0,
+    "max_cost_usd": 10.0,
+    "requests_by_host": {
+      "data.brreg.no": 307,
+      "pam-stilling-feed.nav.no": 77,
+      "www.hellandror.no": 6,
+      "www.sintef.no": 6,
+      "www.durocmachinetool.no": 6,
+      "fagtrykkide.no": 6,
+      "xpartner.as": 6,
+      "www.stavsetbygg.no": 6,
+      "www.kongsbergmaritime.com": 6,
+      "www.jltrading.no": 6,
+      "www.venstre.no": 6,
+      "www.aircontact.com": 5,
+      "medium.no": 5,
+      "www.duroc.com": 5,
+      "devin.no": 5,
+      "www.skeiendom.no": 5,
+      "www.artec-aqua.no": 5,
+      "dekkpartneren.no": 5,
+      "laugsand.no": 4,
+      "parteewear.no": 4,
+      "norse-group.no": 4,
+      "daehliehyttene.no": 4,
+      "kokko.no": 4,
+      "parkhotel.no": 4,
+      "www.sea-tex.no": 4,
+      "www.scanvital.no": 4,
+      "gunnarsson.no": 4,
+      "www.km.kongsberg.com": 4,
+      "113forstehjelp.no": 4,
+      "artide.no": 4,
+      "kjempefint.no": 4,
+      "heavenly.no": 4,
+      "ekornspett.no": 4,
+      "113hjelp.no": 4,
+      "finnas.no": 4,
+      "bredesen-as.no": 4,
+      "www.viascan.no": 4,
+      "www.elektrikergruppen.no": 3,
+      "www.condelica.no": 3,
+      "ksbeauty.no": 3,
+      "www.kongsberg.com": 3,
+      "ventilasjonsgrossisten.no": 3,
+      "arvin.no": 2,
+      "enske.no": 2,
+      "aircontact.com": 2,
+      "proel.no": 2,
+      "rgcrane.no": 2,
+      "smartdialog.no": 2,
+      "hellandror.no": 2,
+      "aktivveiledning.no": 2,
+      "panorama.as": 2,
+      "skeiendom.no": 2,
+      "scanvital.no": 2,
+      "pretech.no": 2,
+      "tonsbergvulk.no": 2,
+      "sintef.no": 2,
+      "www.artec-aqua.com": 2,
+      "snekkeredseth.no": 2,
+      "wulffbergas.no": 2,
+      "www.snekkeredseth.no": 2,
+      "durocmachinetool.no": 2,
+      "www.wulffbergas.no": 2,
+      "www.xpartner.as": 2,
+      "cleannor.no": 2,
+      "byggmester-tellefsen.no": 2,
+      "navn.no": 2,
+      "seatex.no": 2,
+      "stavset.no": 2,
+      "fjellnett.no": 2,
+      "jltrading.no": 2,
+      "morchhusby.no": 2,
+      "fjoset.no": 2,
+      "www.fjellnett.no": 2,
+      "viascan.no": 2,
+      "lundeweb.no": 1,
+      "jerentreprenor.no": 1,
+      "www.cleannor.no": 1,
+      "independentlivingnorge.no": 1,
+      "independent-living-norge.no": 1
+    },
+    "requests_by_phase": {
+      "jobs": 73,
+      "registry": 1,
+      "activity": 2,
+      "accounts": 100,
+      "roles": 100,
+      "locations": 100,
+      "web": 245,
+      "group": 4,
+      "web_news": 4,
+      "jobs_verify": 4
+    },
+    "phase_caps": {
+      "registry": 4,
+      "activity": 6,
+      "jobs": 94,
+      "accounts": 107,
+      "roles": 107,
+      "locations": 107,
+      "group": 37,
+      "jobs_verify": 60,
+      "web": 1188,
+      "web_news": 209
+    },
+    "refused_by_budget": {},
+    "p50_company_ms": 4353,
+    "p95_company_ms": 26016
+  },
+  "phase_seconds": {
+    "bulk_snapshot": 0.0,
+    "registry": 3.2,
+    "activity": 2.2,
+    "companies": 87.2,
+    "jobs": 3.6,
+    "finalise": 2.8
+  },
+  "budget_plan": {
+    "registry": 4,
+    "activity": 6,
+    "jobs": 94,
+    "accounts": 107,
+    "roles": 107,
+    "locations": 107,
+    "group": 37,
+    "jobs_verify": 60,
+    "web": 1398,
+    "web_news": 0
+  },
+  "bulk_snapshot": {
+    "note": "no bulk snapshot supplied; live registry API only"
+  },
+  "notes": [],
+  "third_party_cost_usd": 0.0,
+  "models": []
+}
