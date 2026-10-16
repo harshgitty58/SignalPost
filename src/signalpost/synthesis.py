@@ -164,9 +164,53 @@ def build_brief(envelope: dict[str, Any]) -> dict[str, Any]:
         ids = [cid for ch in changes for cid in ch.get("evidence_ids", [])][:8]
         sentences.append({"text": text, "claim_ids": [c["id"] for c in claims if any(e in c["evidence_ids"] for e in ids)][:8], "change_ids": [c["id"] for c in changes][:20]})
 
+    signals = build_signals(claims)
     unknowns = []
     for fam, meta in FAMILIES.items():
         st = (envelope.get("availability") or {}).get(fam) or {}
         if st.get("state") and st["state"] != "available":
             unknowns.append({"family": fam, "label": meta["label"], "state": st["state"], "reason": st.get("reason")})
-    return {"sentences": sentences, "unknowns": unknowns, "method": "deterministic_template_v1 (every sentence cites claim IDs)"}
+    return {"sentences": sentences, "signals": signals, "unknowns": unknowns,
+            "method": "deterministic_template_v1 (every sentence and signal cites claim IDs; derived values are labelled)"}
+
+
+def build_signals(claims: list[dict]) -> list[dict]:
+    """Decision-useful flags derived only from published claims. Each lists the claims it is computed from."""
+    out: list[dict] = []
+    latest = latest_accounts(claims)
+
+    def num(c):
+        try:
+            return float(c["value"])
+        except (TypeError, ValueError, KeyError):
+            return None
+
+    eq, assets, rev, op, res = (latest.get(k) for k in ("equity", "total_assets", "revenue", "operating_result", "net_result"))
+    if eq and num(eq) is not None and num(eq) < 0:
+        out.append({"kind": "risk", "label": "Negative equity", "text": f"Equity is negative ({money(eq['value'], eq.get('unit'))}).", "claim_ids": [eq["id"]]})
+    if eq and assets and num(eq) is not None and num(assets):
+        ratio = num(eq) / num(assets) * 100
+        out.append({"kind": "risk" if ratio < 10 else "info", "label": "Equity ratio", "text": f"Equity ratio {ratio:.0f}% (derived: equity / total assets).",
+                    "claim_ids": [eq["id"], assets["id"]], "derived": True})
+    if op and rev and num(op) is not None and num(rev):
+        margin = num(op) / num(rev) * 100
+        out.append({"kind": "info", "label": "Operating margin", "text": f"Operating margin {margin:.0f}% (derived: operating result / revenue).",
+                    "claim_ids": [op["id"], rev["id"]], "derived": True})
+    if res:
+        scope = "KONSERN" if "KONSERN" in (res.get("note") or "") else "SELSKAP"
+        prev = previous_accounts(claims, res["period"]["to"], scope).get("net_result")
+        if prev and num(res) is not None and num(prev) is not None and num(res) < 0 and num(prev) < 0:
+            out.append({"kind": "risk", "label": "Consecutive losses", "text": "Net loss in the two latest filed years.", "claim_ids": [res["id"], prev["id"]]})
+    status = [c for c in claims if c["family"] == "status" and c["field"] in ("konkurs", "underAvvikling", "underTvangsavviklingEllerTvangsopplosning")]
+    for c in status:
+        out.append({"kind": "risk", "label": c["label"], "text": f"Registry flag: {c['label'].lower()}.", "claim_ids": [c["id"]]})
+    jobs = [c for c in claims if c["family"] == "jobs"]
+    if jobs:
+        out.append({"kind": "growth", "label": "Hiring", "text": f"{len(jobs)} active job posting(s) verified on NAV.", "claim_ids": [c["id"] for c in jobs][:6]})
+    recent = sorted((c for c in claims if c["family"] == "activity" and c.get("effective_date")), key=lambda c: c["effective_date"], reverse=True)
+    moves = [c for c in recent if "address" in str(c["value"]).lower()][:1]
+    board = [c for c in recent if "Roles" in str(c["value"])][:1]
+    for c, label in ((moves[0] if moves else None, "Recent address change"), (board[0] if board else None, "Recent board/management update")):
+        if c:
+            out.append({"kind": "info", "label": label, "text": f"{label} recorded {c['effective_date']}.", "claim_ids": [c["id"]]})
+    return out

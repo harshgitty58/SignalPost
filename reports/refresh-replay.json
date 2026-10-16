@@ -1,0 +1,147 @@
+{
+  "organisation_number": "916035500",
+  "name": "ARVIN AS",
+  "checks": {
+    "idempotent_rerun_zero_changes": {
+      "passed": true,
+      "changes": 0
+    },
+    "typed_changes_detected": {
+      "passed": true,
+      "expected": [
+        "address_change",
+        "closed_location",
+        "ended_role",
+        "new_filing",
+        "new_job",
+        "new_role"
+      ],
+      "got": [
+        "address_change",
+        "closed_location",
+        "ended_role",
+        "new_filing",
+        "new_job",
+        "new_role"
+      ],
+      "changes": [
+        {
+          "id": "chg-c-d7a1a3452d74962c-added",
+          "type": "new_filing",
+          "material": true,
+          "family": "financials",
+          "field": "revenue",
+          "key": "revenue:SELSKAP:2026-12-31",
+          "label": "revenue",
+          "previous": null,
+          "current": 12345000,
+          "evidence_ids": [
+            "ev-de762a1bd97ba14d"
+          ],
+          "previous_evidence_ids": [],
+          "detected_at": "t2"
+        },
+        {
+          "id": "chg-c-f14793bc9f3397fb-changed",
+          "type": "address_change",
+          "material": true,
+          "family": "identity",
+          "field": "business_address",
+          "key": "business_address",
+          "label": "Business address",
+          "previous": "Carl Bergersens vei 51, 1481 HAGAN",
+          "current": "Testveien 1, 0150 OSLO",
+          "evidence_ids": [
+            "ev-589ff8bae7445a25"
+          ],
+          "previous_evidence_ids": [
+            "ev-589ff8bae7445a25"
+          ],
+          "detected_at": "t2"
+        },
+        {
+          "id": "chg-c-e8d210fb7d4689ed-added",
+          "type": "new_job",
+          "material": true,
+          "family": "jobs",
+          "field": "job_posting",
+          "key": "job:replay-1",
+          "label": "job posting",
+          "previous": null,
+          "current": {
+            "title": "Prosjektleder",
+            "published": "2026-10-17"
+          },
+          "evidence_ids": [
+            "ev-19fc110b2261835e"
+          ],
+          "previous_evidence_ids": [],
+          "detected_at": "t2"
+        },
+        {
+          "id": "chg-c-725c1de5327f1abb-removed",
+          "type": "ended_role",
+          "material": true,
+          "family": "leadership",
+          "field": "ceo",
+          "key": "role:DAGL:Karam Singh Marwah",
+          "label": "Daglig leder",
+          "previous": "Karam Singh Marwah",
+          "current": null,
+          "evidence_ids": [],
+          "previous_evidence_ids": [
+            "ev-8ba363b326afada1"
+          ],
+          "detected_at": "t2"
+        },
+        {
+          "id": "chg-c-4ca40687c3f76dba-added",
+          "type": "new_role",
+          "material": true,
+          "family": "leadership",
+          "field": "ceo",
+          "key": "role:DAGL:Kari Nordmann",
+          "label": "Daglig leder",
+          "previous": null,
+          "current": "Kari Nordmann",
+          "evidence_ids": [
+            "ev-f287917aa079090f"
+          ],
+          "previous_evidence_ids": [],
+          "detected_at": "t2"
+        },
+        {
+          "id": "chg-c-802b74dd925963da-removed",
+          "type": "closed_location",
+          "material": true,
+          "family": "locations",
+          "field": "workplace",
+          "key": "workplace:916043252",
+          "label": "Registered workplace",
+          "previous": {
+            "name": "ARVIN AS",
+            "organisation_number": "916043252",
+            "address": "Carl Bergersens vei 51, 1481 HAGAN",
+            "municipality": "Nittedal",
+            "industry": "49.410 Godstransport på vei",
+            "opened": "2015-09-24"
+          },
+          "current": null,
+          "evidence_ids": [],
+          "previous_evidence_ids": [
+            "ev-8ee91ea795c4d812"
+          ],
+          "detected_at": "t2"
+        }
+      ]
+    },
+    "unreadable_source_carried_forward": {
+      "passed": true,
+      "carried_claims": 2,
+      "not_compared": [
+        "leadership"
+      ]
+    }
+  },
+  "passed": true
+}

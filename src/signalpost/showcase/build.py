@@ -16,7 +16,7 @@ HERE = Path(__file__).parent
 
 
 def _index_row(env: dict[str, Any]) -> dict[str, Any]:
-    claims = env.get("claims", [])
+    claims = [c for c in env.get("claims", []) if c.get("availability", "available") == "available"]
     first = lambda field: next((c["value"] for c in claims if c["field"] == field), None)  # noqa: E731
     latest = latest_accounts(claims)
     rev = latest.get("revenue")

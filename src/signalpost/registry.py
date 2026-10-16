@@ -401,6 +401,12 @@ def subunit_claims(pb: ProfileBuilder, snap: Snapshot) -> None:
     for unit in units[:200]:
         if unit.get("nedleggelsesdato") or unit.get("slettedato"):
             continue
+        cands = pb.extra.setdefault("site_candidates", [])
+        if unit.get("hjemmeside"):
+            cands.append((unit["hjemmeside"], "subunit_declared"))
+        if unit.get("epostadresse") and "@" in unit["epostadresse"]:
+            pb.extra.setdefault("emails", []).append(unit["epostadresse"].lower())
+            cands.append((unit["epostadresse"].split("@", 1)[1], "subunit_email_domain"))
         org = unit.get("organisasjonsnummer")
         addr = fmt_address(unit.get("beliggenhetsadresse") or unit.get("postadresse"))
         value = {

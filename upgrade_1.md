@@ -48,7 +48,7 @@
 - Add the starter-style `run.terminal_status` per envelope (done) and `operations` per envelope (done). Also copy the run report's `validation.passed` and `emitted_envelopes` names (done). Double-check field names against `OUTPUT_CONTRACT.md` once more.
 
 ### A4. Execution hardening
-- Confirm the **bulk-mode** 1,000-company run (roles/workplaces from `roller/totalbestand` and the sub-units CSV). If it fails or is slow, fall back to per-company calls with priority ordering.
+- **Bulk mode result:** Brreg dropped the bulk downloads mid-transfer (after ~12 MB of 62 MB, 3/3 attempts), so it is now opt-in (`--bulk-files`). For 1,000-company batches, add **HTTP Range resume** to the bulk download, or use explicit per-company priorities (accounts → roles → workplaces → website) so the most valuable families fill first.
 - **Hard watchdog thread** that writes all envelopes at T−90s even if the main thread is blocked (covers hung sockets and DNS stalls).
 - `.python-version` = 3.12 and `uv sync --frozen` in CI on Linux (the clean-machine check).
 - `--resume`: reuse the partial checkpoint file after a crash.

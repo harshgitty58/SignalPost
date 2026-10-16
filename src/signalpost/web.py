@@ -363,6 +363,11 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
             if SUBPAGE_HINTS.search(urllib.parse.urlsplit(url).path) or SUBPAGE_HINTS.search(fold(text)):
                 seen.add(url.rstrip("/"))
                 targets.append(url)
+        if len(targets) < 2:
+            base = f"{urllib.parse.urlsplit(home.url).scheme}://{urllib.parse.urlsplit(home.url).netloc}"
+            for path in ("/kontakt", "/kontakt-oss", "/om-oss"):
+                if base + path not in seen and len(targets) < 3:
+                    targets.append(base + path)
         targets.sort(key=lambda u: (0 if re.search(r"kontakt|contact", u, re.I) else 1 if re.search(r"om-oss|about", u, re.I) else 2))
         for url in targets[:max_subpages]:
             try:
@@ -414,6 +419,16 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
     identity_text = " ".join(p.identity_fields() for p in visit.pages)
     name_in_identity = _tokens_present(tokens, identity_text)
     contact = _phone_present(entity.get("telefon"), all_text) or _phone_present(entity.get("mobil"), all_text) or _address_present(entity, all_text)
+    emails = [e for e in [(entity.get("epostadresse") or "").lower(), *entity.get("_unit_emails", [])] if "@" in e]
+    match = [e for e in emails if registrable_domain(e.split("@", 1)[1]) == registrable_domain(home.url)]
+    email = match[0] if match else ""
+    email_domain_match = bool(match) and email.split("@", 1)[1] not in FREE_MAIL
+    if name_in_identity and email_domain_match:
+        visit.decision = "accepted"
+        visit.proof_page = visit.pages[0]
+        visit.proof_span = f"registry e-mail domain {email.split('@', 1)[1]} = site domain; site identity: " + identity_text[:160]
+        visit.reason += "the company's registered e-mail domain is this site's domain and the legal name is in its identity fields"
+        return visit
     if name_in_identity and contact and registrable_domain(home.url).endswith(".no"):
         visit.decision = "accepted"
         visit.proof_page = visit.pages[0]
@@ -421,7 +436,7 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
         visit.reason += "legal name in the site's identity fields and registry phone/address on the site"
         return visit
     identity_text = visit.pages[0].identity_fields(strict=True)
-    if source == "registry_declared" and _tokens_present(name_tokens(legal_name), identity_text):
+    if source in ("registry_declared", "subunit_declared", "wikidata_p856") and _tokens_present(name_tokens(legal_name), identity_text):
         visit.decision = "accepted"
         visit.proof_page = home
         visit.proof_span = "registry declares this website; site identity fields: " + identity_text[:200]
@@ -432,7 +447,7 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
     return visit
 
 
-def domain_candidates(entity: dict, bulk_row: dict | None) -> list[tuple[str, str]]:
+def domain_candidates(entity: dict, bulk_row: dict | None, extra: list[tuple[str, str]] | None = None) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     seen: set[str] = set()
 
@@ -453,14 +468,27 @@ def domain_candidates(entity: dict, bulk_row: dict | None) -> list[tuple[str, st
         dom = email.split("@", 1)[1].strip().lower()
         if dom not in FREE_MAIL and not any(dom.endswith(f) for f in ("online.no",)):
             push(dom, "registry_email_domain")
-    tokens = name_tokens(entity.get("navn"))
+    for url, source in extra or []:
+        if source == "wikidata_p856":
+            push(url, source)
+    for url, source in extra or []:
+        if source == "subunit_email_domain" and url.lower() in FREE_MAIL:
+            continue
+        if source != "wikidata_p856":
+            push(url, source)
+    tokens = [t for t in name_tokens(entity.get("navn")) if t not in ("og", "and", "i", "pa")]
     distinct = distinctive_tokens(entity.get("navn"))
-    if distinct and 1 <= len(tokens) <= 3:
+    if distinct and 1 <= len(tokens) <= 4 and not set(tokens) & HOLDING_WORDS:
         joined = "".join(tokens)
-        if len(joined) >= 5:
-            for cand in (joined + ".no", "-".join(tokens) + ".no" if len(tokens) > 1 else None):
-                if cand and host_is_public(cand):
-                    push(cand, "name_slug_guess")
+        core = "".join(t for t in tokens if t not in GENERIC_TOKENS)
+        variants = [joined + ".no", "-".join(tokens) + ".no" if len(tokens) > 1 else None, joined + "as.no",
+                    core + ".no" if core != joined and len(core) >= 6 else None]
+        guesses = 0
+        for cand in variants:
+            if cand and len(cand.split(".")[0]) >= 5 and guesses < 2 and host_is_public(cand):
+                before = len(out)
+                push(cand, "name_slug_guess")
+                guesses += len(out) - before
     return out
 
 
@@ -638,9 +666,9 @@ def _news(pb: ProfileBuilder, fetcher: Fetcher, visit: SiteVisit, origin: str, m
 
 
 def research_website(pb: ProfileBuilder, fetcher: Fetcher, entity: dict, bulk_row: dict | None, related_orgs: set[str], *,
-                     max_candidates: int = 3, want_news: bool = True) -> None:
+                     max_candidates: int = 4, want_news: bool = True) -> None:
     legal_name = entity.get("navn") or (bulk_row or {}).get("navn") or ""
-    cands = domain_candidates(entity, bulk_row)
+    cands = domain_candidates(entity, bulk_row, pb.extra.get("site_candidates"))
     if not cands:
         pb.set_state("website", "not_available", "registry lists no website or company e-mail domain, and no name-based domain resolves")
         for fam in ("social_profiles", "description"):
@@ -651,7 +679,8 @@ def research_website(pb: ProfileBuilder, fetcher: Fetcher, entity: dict, bulk_ro
     for candidate, source in cands[:max_candidates]:
         try:
             people = {t for c in pb.family_claims("leadership") for t in name_tokens(str(c.value))}
-            visit = visit_site(fetcher, candidate, source, pb.org, entity, legal_name, related_orgs, person_tokens=people)
+            visit = visit_site(fetcher, candidate, source, pb.org, {**entity, "_unit_emails": pb.extra.get("emails", [])}, legal_name,
+                               related_orgs, person_tokens=people)
         except BudgetExhausted:
             decisions.append("budget")
             break

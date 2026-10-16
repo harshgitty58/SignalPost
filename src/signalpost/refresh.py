@@ -24,6 +24,10 @@ CHANGE_TYPES = {
     ("social_profiles", "added"): "new_profile", ("social_profiles", "removed"): "removed_profile", ("social_profiles", "changed"): "changed_profile",
 }
 UNREADABLE = {"failed", "blocked"}
+FIELD_TYPES = {"business_address": "address_change", "postal_address": "address_change", "legal_name": "name_change",
+               "employees": "employee_count_change", "share_capital": "capital_change", "legal_form": "legal_form_change",
+               "industry_code": "industry_change", "official_website": "website_change", "ceo": "ceo_change"}
+MINOR = {"employee_count_change", "aged_out_activity", "changed_location"}
 
 
 def load_previous(path: str | Path | None) -> dict[str, dict[str, Any]]:
@@ -44,7 +48,7 @@ def load_previous(path: str | Path | None) -> dict[str, dict[str, Any]]:
 
 
 def _index(envelope: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
-    return {(c["family"], c.get("key") or c["field"]): c for c in envelope.get("claims", [])}
+    return {(c["family"], c.get("key") or c["field"]): c for c in envelope.get("claims", []) if c.get("availability", "available") == "available"}
 
 
 def diff(previous: dict[str, Any] | None, current: dict[str, Any], *, detected_at: str) -> tuple[list[dict], dict[str, Any]]:
@@ -94,7 +98,8 @@ def diff(previous: dict[str, Any] | None, current: dict[str, Any], *, detected_a
             ref = new or old
             changes.append({
                 "id": f"chg-{ref['id']}-{kind}",
-                "type": CHANGE_TYPES.get((family, kind), f"{kind}_value"),
+                "type": (ctype := FIELD_TYPES.get(ref["field"]) if kind == "changed" else None) or CHANGE_TYPES.get((family, kind), f"{kind}_value"),
+                "material": (ctype or CHANGE_TYPES.get((family, kind), "")) not in MINOR,
                 "family": family,
                 "field": ref["field"],
                 "key": key,

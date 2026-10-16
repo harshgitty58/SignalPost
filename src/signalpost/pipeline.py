@@ -33,6 +33,7 @@ from .registry import (ACCOUNTS_URL, GROUP_URL, ROLES_URL, SUBUNITS_URL, account
                        fetch_activity, fetch_entities, group_claims, load_bulk, roles_claims, subunit_claims)
 from .synthesis import build_brief
 from .web import research_website, valid_orgnr
+from .wikidata import websites as wikidata_websites
 
 
 def read_inputs(path: str | Path) -> list[str]:
@@ -99,6 +100,7 @@ class Runner:
         self.timings: dict[str, float] = {}
         self.company_ms: dict[str, int] = {}
         self.stop = threading.Event()
+        self.finished = threading.Event()
         self.job_feed = JobFeed(self.fetcher, days=job_days, max_pages=max(20, min(130, int(job_days * 2.6))))
         self.notes: list[str] = []
         self._plan(n)
@@ -108,7 +110,7 @@ class Runner:
         usable = self.budget.usable_requests
         batches = -(-n // 100)
         plan = {
-            "registry": batches * 2 + 2,
+            "registry": batches * 3 + 2,
             "activity": batches * 4 + 2,
             "jobs": self.job_feed.max_pages + 3,
             "accounts": n + n // 20 + 2,
@@ -228,6 +230,7 @@ class Runner:
     # ------------------------------------------------------------------ run
     def run(self) -> dict[str, Any]:
         self.out_dir.mkdir(parents=True, exist_ok=True)
+        threading.Thread(target=self._hard_watchdog, daemon=True, name="watchdog").start()
         partial = (self.out_dir / "envelopes.partial.jsonl").open("w", encoding="utf-8")
         self.job_feed.start()
 
@@ -303,6 +306,13 @@ class Runner:
                                              "no official registry events in the last 24 months" if not act_errors else f"registry change log unavailable: {act_errors[0]}")
         self.log(f"[activity] events for {sum(1 for o in known if ent_events.get(o) or role_events.get(o))} companies; errors={act_errors}")
         self.phase("activity", t)
+        try:
+            wd = wikidata_websites(self.fetcher, known)
+            for org, sites in wd.items():
+                self.builders[org].extra.setdefault("site_candidates", []).extend((u, "wikidata_p856") for u in sites)
+            self.log(f"[wikidata] websites for {len(wd)} companies")
+        except Exception as exc:
+            self.log(f"[wikidata] skipped: {exc}")
 
         for th in bulk_threads:
             th.join(timeout=max(0.0, min(900.0, self.budget.time_left() - 600)))
@@ -395,7 +405,31 @@ class Runner:
         for st in env["availability"].values():
             state_counts[st["state"]] = state_counts.get(st["state"], 0) + 1
         env["summary"] = {"claims": len(env["claims"]), "families_available": state_counts.get("available", 0), "states": state_counts}
+        # explicit absence, per the output contract: a claim per unavailable family with its terminal state (never a zero)
+        for fam, st in env["availability"].items():
+            if st["state"] != "available":
+                env["claims"].append({"id": f"c-absent-{org}-{fam}", "family": fam, "field": fam, "key": f"absent:{fam}",
+                                      "label": FAMILIES.get(fam, {}).get("label", fam), "value": None, "availability": st["state"],
+                                      "reason": st.get("reason"), "confidence": None, "evidence_ids": []})
         return env
+
+    def _hard_watchdog(self) -> None:
+        """Last line of defence: if the run is not finished 30 s before the limit, write every envelope and exit."""
+        if self.finished.wait(max(0.0, self.budget.max_seconds - 30 - self.budget.elapsed())):
+            return
+        self.stop.set()
+        self.log("[watchdog] hard limit reached: writing all envelopes now")
+        completed_at = utc_now()
+        envelopes = []
+        for org in self.orgs:
+            try:
+                envelopes.append(self.envelope(org, completed_at, None))
+            except Exception as exc:
+                envelopes.append(self.fallback_envelope(org, completed_at, exc))
+        try:
+            self.write(envelopes, completed_at, {})
+        finally:
+            os._exit(0)
 
     def fallback_envelope(self, org: str, completed_at: str, exc: Exception) -> dict[str, Any]:
         return {
@@ -459,6 +493,8 @@ class Runner:
             "models": [],
         }
         (out / "run-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        (out / "identity-audit.md").write_text(identity_audit(envelopes, self.run_id), encoding="utf-8")
+        self.finished.set()
         return report
 
 
@@ -470,6 +506,10 @@ def validate(envelopes: list[dict], orgs: list[str]) -> dict[str, Any]:
     for e in envelopes:
         ev_ids = {x["id"] for x in e["evidence"]} | {x["id"] for x in e.get("prior_evidence", [])}
         for c in e["claims"]:
+            if c.get("availability", "available") != "available":
+                if c["value"] is not None or c["availability"] not in STATES:
+                    zero_for_missing += 1
+                continue
             if not c["evidence_ids"] or any(i not in ev_ids for i in c["evidence_ids"]):
                 claims_without_evidence += 1
             if c["value"] is None:
@@ -486,3 +526,24 @@ def validate(envelopes: list[dict], orgs: list[str]) -> dict[str, Any]:
         "all_families_present": all(set(FAMILIES) <= set(e["availability"]) for e in envelopes),
     }
     return {"passed": all(checks.values()), "checks": checks, "invalid_states": bad_states[:20]}
+
+
+def identity_audit(envelopes: list[dict], run_id: str) -> str:
+    """Human-reviewable list of every published website (with proof) and every held-back candidate."""
+    lines = [f"# Identity audit — {run_id}", "", "## Published official websites", "",
+             "| Company | Org. nr | Website | Proof |", "|---|---|---|---|"]
+    held = []
+    for e in envelopes:
+        evidence = {x["id"]: x for x in e.get("evidence", [])}
+        for c in e.get("claims", []):
+            if c.get("field") == "official_website" and c.get("availability", "available") == "available":
+                ev = evidence.get(c["evidence_ids"][0], {})
+                proof = (ev.get("identity_reason") or "") + " — " + (ev.get("claim_span") or "")[:140]
+                lines.append(f"| {e.get('name')} | {e['organisation_number']} | {c['value']} | {proof.replace('|', '/')} |")
+        for cand in e.get("unpublished_candidates", []):
+            if cand.get("family") == "website":
+                held.append(f"| {e.get('name')} | {e['organisation_number']} | {cand.get('candidate')} | {cand.get('source')} | "
+                            f"{cand.get('decision')} | {str(cand.get('reason')).replace('|', '/')} |")
+    lines += ["", "## Held back (never published)", "", "| Company | Org. nr | Candidate | Source | Decision | Reason |",
+              "|---|---|---|---|---|---|", *held, ""]
+    return "\n".join(lines)

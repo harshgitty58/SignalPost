@@ -198,7 +198,7 @@ function valueText(v){
   return typeof v === "number" ? num(v) : String(v);
 }
 // ---------------------------------------------------------------- data loading
-window.SP_LOAD = function(org, data){ cache[org] = data; (waiters[org]||[]).forEach(f => f(data)); delete waiters[org]; };
+window.SP_LOAD = function(org, data){ data.claims = (data.claims||[]).filter(c => (c.availability||"available") === "available"); cache[org] = data; (waiters[org]||[]).forEach(f => f(data)); delete waiters[org]; };
 function load(org){
   if (cache[org]) return Promise.resolve(cache[org]);
   return new Promise((resolve, reject) => {
@@ -444,6 +444,13 @@ async function viewCompany(org){
   if (!(brief.sentences||[]).length) bc.append(el("p",{class:"muted"},"Not enough verified facts for a summary."));
   bc.append(el("div",{class:"small muted"},"Each numbered button opens the evidence behind that sentence."));
   app.append(bc);
+  const sig = brief.signals || [];
+  if (sig.length){
+    const KIND = {risk:"blocked", growth:"available", info:"not_applicable"};
+    app.append(el("div",{class:"card section"}, el("h2",null,"Signals"), el("div",{class:"list"}, sig.map(s => el("div",{class:"item"},
+      el("div",null, el("div",{class:"t"}, s.label, s.derived ? el("span",{class:"pill",style:"margin-left:6px"},"derived") : null), el("div",{class:"small muted"}, s.text)),
+      el("div",{style:"display:flex;gap:6px;align-items:center"}, chip(KIND[s.kind]||"not_applicable", s.kind), el("button",{class:"src",onclick:()=>openEvidence(env, s.claim_ids, s.label)},"Evidence")))))));
+  }
   // availability strip
   app.append(el("div",{class:"card section"}, el("h2",null,"What we found"), el("div",{class:"statusstrip"}, FAM.map(([f,l]) => { const st=(env.availability[f]||{}).state||"failed"; return el("span",{class:"chip st-"+st,title:(env.availability[f]||{}).reason||""}, STI[st]+" "+l); }))));
   // sections
