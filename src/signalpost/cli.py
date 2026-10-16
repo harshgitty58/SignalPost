@@ -31,7 +31,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     _log(f"[signalpost] run {run_id}: {len(orgs)} organisations -> {out}")
     runner = Runner(orgs, out_dir=out, run_id=run_id, bulk=args.bulk, previous=args.previous, max_requests=args.max_requests,
                     max_minutes=args.max_minutes, max_cost=args.max_cost, workers=args.workers, job_days=args.job_days,
-                    web=not args.no_web, log=_log)
+                    web=not args.no_web, bulk_files=args.bulk_files, log=_log)
     try:
         report = runner.run()
     finally:
@@ -102,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--max-cost", type=float, default=10.0)
     run.add_argument("--workers", type=int, default=24)
     run.add_argument("--job-days", type=int, default=35, help="NAV feed look-back window in days")
+    run.add_argument("--bulk-files", action="store_true", help="experimental: roles/workplaces from Brreg bulk files for large batches")
     run.add_argument("--no-web", action="store_true", help="skip website discovery (registry-only run)")
     run.add_argument("--showcase", help="where to write the static showcase site (default: <out>/site)")
     run.add_argument("--no-showcase", action="store_true")

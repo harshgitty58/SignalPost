@@ -142,14 +142,14 @@ class ProfileBuilder:
         self.evidence.setdefault(ev.id, ev)
         return ev.id
 
-    def add(self, claim: Claim) -> Claim:
+    def add(self, claim: Claim) -> Claim | None:
         if not claim.evidence_ids:
             raise ValueError(f"claim without evidence: {claim.field}")
         missing = [eid for eid in claim.evidence_ids if eid not in self.evidence]
         if missing:
             raise ValueError(f"claim references unknown evidence: {missing}")
-        if claim.value is None or claim.value == "" or claim.value == []:
-            raise ValueError(f"empty claim value for {claim.field}")
+        if claim.value is None or claim.value == "" or claim.value == [] or claim.value == {}:
+            return None  # an empty value is not a fact: never published (and never turned into zero)
         existing = self.claims.get(claim.id)
         if existing:
             for eid in claim.evidence_ids:

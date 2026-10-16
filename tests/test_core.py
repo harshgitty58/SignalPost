@@ -64,3 +64,11 @@ def test_contract_validation():
                                     "social_profiles", "contact", "description", "jobs", "activity"]})
     assert validate([env], ["923609016"])["passed"]
     assert not validate([env], ["923609016", "914778271"])["passed"]
+
+
+def test_blank_registry_fields_are_skipped_not_fatal():
+    from signalpost.registry import entity_claims
+    pb = ProfileBuilder("923609016")
+    entity_claims(pb, {"navn": "TEST AS", "vedtektsfestetFormaal": [" "], "hjemmeside": "", "kapital": {}},
+                  retrieved_at="t", source_class="official_registry", method="m")
+    assert [c.field for c in pb.claims.values()] == ["legal_name"]

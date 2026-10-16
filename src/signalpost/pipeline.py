@@ -24,6 +24,7 @@ from typing import Any
 
 from . import __version__
 from .budget import Budget, BudgetExhausted
+from .bulk import bulk_roles, bulk_subunits
 from .http import Fetcher, utc_now
 from .jobs import JobFeed, job_claims
 from .model import FAMILIES, STATES, ProfileBuilder
@@ -74,7 +75,7 @@ def git_version() -> str:
 
 class Runner:
     def __init__(self, orgs: list[str], *, out_dir: Path, run_id: str, bulk: str | None, previous: str | None,
-                 max_requests: int, max_minutes: float, max_cost: float, workers: int, job_days: int, web: bool = True,
+                 max_requests: int, max_minutes: float, max_cost: float, workers: int, job_days: int, web: bool = True, bulk_files: bool = False,
                  log=print):
         self.orgs = orgs
         self.out_dir = out_dir
@@ -83,6 +84,7 @@ class Runner:
         self.previous_path = previous
         self.workers = workers
         self.web_enabled = web
+        self.bulk_files = bulk_files
         self.log = log
         n = max(1, len(orgs))
         self.budget = Budget(max_requests=max_requests, max_seconds=max_minutes * 60, max_cost_usd=max_cost,
@@ -115,13 +117,19 @@ class Runner:
             "group": int(n * 0.35) + 2,
             "jobs_verify": max(10, int(n * 0.6)),
         }
+        self.bulk_mode = self.bulk_files and n * 3 > usable * 0.6
+        self.bulk: dict[str, dict | None] = {"roles": None, "locations": None}
+        if self.bulk_mode:
+            # large batch: roles and workplaces come from Brreg's nightly bulk files (1 request each)
+            self.notes.append(f"large batch ({n}): roles and workplaces from Brreg bulk files")
+            plan["roles"] = plan["locations"] = 2
         fixed = sum(plan.values())
         if fixed > usable * 0.75:
             # large batch: keep identity + accounts first, scale the rest down proportionally
             self.notes.append(f"large batch ({n}); per-company official sources scaled to fit {usable} requests")
             core = plan["registry"] + plan["activity"] + plan["jobs"] + plan["accounts"]
             rest = max(0, int(usable * 0.85) - core)
-            for key in ("roles", "locations", "group", "jobs_verify"):
+            for key in (("group", "jobs_verify") if self.bulk_mode else ("roles", "locations", "group", "jobs_verify")):
                 plan[key] = int(rest * {"roles": 0.4, "locations": 0.35, "group": 0.1, "jobs_verify": 0.15}[key])
             fixed = sum(plan.values())
         plan["web"] = max(0, usable - fixed) if self.web_enabled else 0
@@ -157,6 +165,13 @@ class Runner:
             for family, phase, url, handler in steps:
                 if self.stop.is_set():
                     break
+                pre = self.bulk.get(phase) if self.bulk_mode else None
+                if pre is not None:
+                    if org in pre:
+                        handler(pb, pre[org])
+                    else:
+                        pb.set_state(family, "not_available", "no record for this organisation number in Brreg's bulk file")
+                    continue
                 try:
                     snap = self.fetcher.get_json(url.format(org=org), phase=phase, retries=1)
                 except BudgetExhausted as exc:
@@ -233,16 +248,23 @@ class Runner:
         self.log(f"[registry] live entities {len(live)}/{len(self.orgs)} errors={errors}")
         for org in self.orgs:
             pb = self.builders[org]
-            if org in live:
-                entity, snap = live[org]
-                self.entities[org] = entity
-                entity_claims(pb, entity, retrieved_at=snap.retrieved_at, source_class="official_registry", method="brreg_enheter_api")
-                pb.set_state("identity", "available", "live Enhetsregisteret record", snap.url.split("?")[0])
-            elif org in self.bulk_rows:
-                entity_claims(pb, self.bulk_rows[org], retrieved_at=self.started_at, source_class="official_registry_bulk",
-                              method="brreg_bulk_snapshot", source_url="https://data.brreg.no/enhetsregisteret/api/enheter/lastned/csv")
-                pb.set_state("identity", "available", "frozen registry snapshot (live lookup unavailable)")
-            elif not valid_orgnr(org):
+            try:
+                if org in live:
+                    entity, snap = live[org]
+                    self.entities[org] = entity
+                    entity_claims(pb, entity, retrieved_at=snap.retrieved_at, source_class="official_registry", method="brreg_enheter_api")
+                    pb.set_state("identity", "available", "live Enhetsregisteret record", snap.url.split("?")[0])
+                    continue
+                if org in self.bulk_rows:
+                    entity_claims(pb, self.bulk_rows[org], retrieved_at=self.started_at, source_class="official_registry_bulk",
+                                  method="brreg_bulk_snapshot", source_url="https://data.brreg.no/enhetsregisteret/api/enheter/lastned/csv")
+                    pb.set_state("identity", "available", "frozen registry snapshot (live lookup unavailable)")
+                    continue
+            except Exception as exc:  # a malformed record must not stop the batch
+                pb.error("identity", f"{type(exc).__name__}: {exc}")
+                pb.set_state("identity", "failed", "could not parse registry record")
+                continue
+            if not valid_orgnr(org):
                 for fam in FAMILIES:
                     pb.set_state(fam, "not_applicable", "input is not a valid Norwegian organisation number (mod-11 check failed)")
             else:
@@ -251,17 +273,39 @@ class Runner:
                                  "organisation number not found in Enhetsregisteret (deleted or invalid)" if not errors else "registry unavailable")
         self.phase("registry", t)
 
+        bulk_threads = []
+        if self.bulk_mode:
+            wanted = {o for o in self.orgs if valid_orgnr(o)}
+            for key, fn in (("roles", bulk_roles), ("locations", bulk_subunits)):
+                def job(key=key, fn=fn):
+                    t1 = time.monotonic()
+                    try:
+                        self.bulk[key] = fn(wanted, self.budget)
+                        self.log(f"[bulk] {key}: {len(self.bulk[key])} companies in {time.monotonic() - t1:.0f}s")
+                    except Exception as exc:  # fall back to per-company requests
+                        self.notes.append(f"bulk {key} failed: {type(exc).__name__}")
+                        self.log(f"[bulk] {key} failed: {exc}")
+                        self.budget.set_phase_cap(key, self.budget.phase_remaining("web") // 3)
+                bulk_threads.append(threading.Thread(target=job, daemon=True))
+                bulk_threads[-1].start()
+
         t = time.monotonic()
         known = [o for o in self.orgs if o in self.entities or o in self.bulk_rows]
         ent_events, role_events, act_errors = fetch_activity(self.fetcher, known)
         for org in known:
-            n = activity_claims(self.builders[org], ent_events.get(org, []), role_events.get(org, []))
+            try:
+                n = activity_claims(self.builders[org], ent_events.get(org, []), role_events.get(org, []))
+            except Exception as exc:
+                self.builders[org].error("activity", f"{type(exc).__name__}: {exc}")
+                n = 0
             if not n:
                 self.builders[org].set_state("activity", "not_available" if not act_errors else "failed",
                                              "no official registry events in the last 24 months" if not act_errors else f"registry change log unavailable: {act_errors[0]}")
         self.log(f"[activity] events for {sum(1 for o in known if ent_events.get(o) or role_events.get(o))} companies; errors={act_errors}")
         self.phase("activity", t)
 
+        for th in bulk_threads:
+            th.join(timeout=max(0.0, min(900.0, self.budget.time_left() - 600)))
         # per-company pool with watchdog
         t = time.monotonic()
         hard_stop = self.budget.deadline_seconds - 45
@@ -302,7 +346,10 @@ class Runner:
         completed_at = utc_now()
         envelopes = []
         for org in self.orgs:
-            env = self.envelope(org, completed_at, previous.get(org))
+            try:
+                env = self.envelope(org, completed_at, previous.get(org))
+            except Exception as exc:  # last resort: still emit a valid terminal envelope
+                env = self.fallback_envelope(org, completed_at, exc)
             envelopes.append(env)
             partial.write(json.dumps(env, ensure_ascii=False, separators=(",", ":")) + "\n")
         partial.close()
@@ -349,6 +396,16 @@ class Runner:
             state_counts[st["state"]] = state_counts.get(st["state"], 0) + 1
         env["summary"] = {"claims": len(env["claims"]), "families_available": state_counts.get("available", 0), "states": state_counts}
         return env
+
+    def fallback_envelope(self, org: str, completed_at: str, exc: Exception) -> dict[str, Any]:
+        return {
+            "organisation_number": org, "name": None,
+            "run": {"run_id": self.run_id, "started_at": self.started_at, "completed_at": completed_at, "terminal_status": "failed", "agent_version": git_version()},
+            "identity": {}, "availability": {fam: {"state": "failed", "reason": f"envelope assembly error: {type(exc).__name__}"} for fam in FAMILIES},
+            "claims": [], "evidence": [], "changes": [], "refresh": {"mode": "baseline"}, "brief": {"sentences": [], "unknowns": []},
+            "unpublished_candidates": [], "errors": [{"family": "run", "message": f"{type(exc).__name__}: {exc}"}],
+            "operations": {"requests": 0, "runtime_ms": 0, "third_party_cost_usd": 0.0}, "summary": {"claims": 0, "families_available": 0, "states": {"failed": len(FAMILIES)}},
+        }
 
     # ------------------------------------------------------------------ outputs
     def write(self, envelopes: list[dict], completed_at: str, previous: dict) -> dict[str, Any]:
