@@ -40,27 +40,24 @@ number per line works as `--organisations`.
 
 ## 2. Launch the dashboard (backend + UI)
 
-The dashboard is two pages served by one small local backend:
-
-| Page | URL | What it is |
-|---|---|---|
-| **Live console** | http://127.0.0.1:8765 | Run the agent, tests, benchmark, evidence check, refresh replay; live terminal, budget meters, per-company "why" |
-| **Showcase** | http://127.0.0.1:8765/files/out-ui/site/index.html | The profiles of a run (replace `out-ui` with any `out-<name>` folder) |
+The dashboard is two pages served by one small local backend: the **live console** (run the agent, tests,
+benchmark, evidence check, refresh replay; live terminal, budget meters, per-company "why") and the **showcase**
+of any run.
 
 **Start it in your own PowerShell** (this window *is* the backend; keep it open):
 ```powershell
 cd "<path to>\SignalPost"
-uv run --group dev signalpost serve              # add --port 8780 if 8765 is taken
+uv run --group dev signalpost serve              # add --port <n> if the default port is taken
 ```
-Then open the URLs above (`start http://127.0.0.1:8765` opens the console). Press **Ctrl+C** in that PowerShell
-window to stop the backend.
+It prints the local address of the console; open it in your browser. A run's showcase is served by the same backend
+under `/files/out-<name>/site/index.html`. Press **Ctrl+C** in that PowerShell window to stop the backend.
 
 ### Connecting the UI's terminal to your PowerShell
 The showcase home page has a **"Run it locally"** panel with the setup steps and an embedded **PowerShell-style
 terminal** underneath:
 
 1. Start the backend in your PowerShell as above.
-2. Open the showcase **through the backend** (`http://127.0.0.1:8765/files/out-ui/site/index.html`), not from disk.
+2. Open the showcase **through the backend** (its `/files/out-<name>/site/index.html` address), not from disk.
    The terminal header turns green: *connected to the local backend*.
 3. Press **▶ Run** on a step, or type one of the commands at the `PS …\SignalPost>` prompt. The backend that runs
    in your PowerShell window executes it in your checkout and streams the output into the page.
@@ -92,13 +89,13 @@ the backend.
 | Limits (defaults = official limits) | `--max-requests 2000 --max-minutes 45 --max-cost 10` |
 | Rebuild a run's showcase | `uv run signalpost showcase --envelopes out-x/envelopes.jsonl --report out-x/run-report.json --output out-x/site` |
 | Draw a random test batch from a universe file | `uv run signalpost select --universe data/signalpost-universe.jsonl.gz --count 100 --output batch.jsonl` |
-| Live console | `uv run --group dev signalpost serve [--port 8765]` |
+| Live console | `uv run --group dev signalpost serve [--port <n>]` |
 | Unit tests | `uv run --group dev pytest -q` |
 | Benchmark (coverage, 95% Wilson intervals, abstentions) | `uv run python eval/benchmark.py out-x [out-y]` |
 | Re-verify evidence at the source (30 samples) | `uv run python eval/verify_evidence.py out-x/envelopes.jsonl --sample 30` |
 | Refresh replay (idempotency, typed changes, carry-forward) | `uv run python eval/refresh_replay.py out-x/envelopes.jsonl out-x/refresh-replay.json` |
 | Write measured numbers into README/SUBMISSION | `uv run python eval/write_docs.py` |
-| Headless UI checks (optional, needs Node) | `npm install --no-save jsdom@24.1.3` → `node eval/ui_check.cjs "<abs path>\out-x\site"` · `node eval/console_check.cjs http://127.0.0.1:8765` |
+| Headless UI checks (optional, needs Node) | `npm install --no-save jsdom@24.1.3` → `node eval/ui_check.cjs "<abs path>\out-x\site"` · `node eval/console_check.cjs <console address>` |
 
 **Outputs** in `out-<name>/`: `envelopes.jsonl` (one per input, input order), `run-report.json` (validation,
 coverage, identity gate per source, requests by host and phase, p50/p95, cost), `identity-audit.md`, `site/`
@@ -185,8 +182,8 @@ Evidence for these numbers is committed in [`reports/`](reports): envelopes (gz)
 | Problem | Fix |
 |---|---|
 | `uv` is not recognised | Reopen PowerShell after installing uv (or run `$env:Path += ";$HOME\.local\bin"`) |
-| Port 8765 already in use | `uv run --group dev signalpost serve --port 8780`, then use that port in the URLs |
-| The page's terminal says *backend not running* | The page was opened from disk; open it via `http://127.0.0.1:8765/files/out-<name>/site/index.html` |
+| The default port is already in use | `uv run --group dev signalpost serve --port <n>` (it prints the new address) |
+| The page's terminal says *backend not running* | The page was opened from disk; open it through the backend (`/files/out-<name>/site/index.html`) |
 | A job is already running (console) | Wait for it, or press *Stop* / Ctrl+C in the page's terminal |
 | You want a clean run instead of a refresh | add `--fresh` |
 
