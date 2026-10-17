@@ -423,6 +423,20 @@ thead th{background:color-mix(in srgb,var(--surface) 88%,transparent)}
 .term-step button{opacity:0;font:600 11px var(--sans);color:#C9D6E2;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:2px 8px;min-height:24px;transition:opacity .15s var(--ease)}
 .term-step:hover button,.term-step button:focus-visible{opacity:1}
 @media (pointer:coarse){.term-step button{opacity:1;min-height:36px}}
+.term-step .run{opacity:1;background:rgba(88,166,255,.18);border-color:rgba(88,166,255,.45);color:#CFE3FF;margin-right:4px}
+.ps{border-top:1px solid rgba(255,255,255,.10);background:#012456;font:13px/1.55 "Cascadia Mono","Cascadia Code",Consolas,var(--mono);color:#EEEDF0}
+.ps-head{display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(0,0,0,.25);font:600 12px var(--sans);color:#C9D6E2}
+.ps-head .dot{width:8px;height:8px;border-radius:50%;background:#5C6B7A}.ps-head .dot.live{background:#28C840}.ps-head .dot.busy{background:#FEBC2E;animation:pulse 1s infinite}
+.ps-head .grow{flex:1}
+.ps-head button{font:600 11.5px var(--sans);color:#EEEDF0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:2px 8px;min-height:24px}
+.ps-out{height:300px;overflow:auto;padding:10px 14px 4px;white-space:pre-wrap;word-break:break-word;overscroll-behavior:contain}
+.ps-out .p{color:#EEEDF0}.ps-out .p b{color:#F9F1A5;font-weight:400}
+.ps-out .ok{color:#7EE787}.ps-out .warn{color:#F9F1A5}.ps-out .bad{color:#FF7B72}.ps-out .dim{color:#8FA3B8}.ps-out .tg{color:#61D6D6}
+.ps-out a{color:#79C0FF}
+.ps-in{display:flex;align-items:center;gap:0;padding:2px 14px 12px}
+.ps-in label{color:#EEEDF0;white-space:nowrap}
+.ps-in input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:#EEEDF0;font:inherit;caret-color:#EEEDF0;padding:2px 0 2px 6px}
+@keyframes pulse{50%{opacity:.3}}
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:1100px){
@@ -583,6 +597,13 @@ const D = {
   meter_warn:["warning","advarsel"], meter_bad:["near limit","nær grensen"],
   "chk.one_envelope_per_input":["One envelope per input","Én konvolutt per input"], "chk.unique_organisation_numbers":["Unique organisation numbers","Unike organisasjonsnumre"], "chk.all_family_states_valid":["All family states valid","Alle tilstander gyldige"],
   "chk.every_claim_has_evidence":["Every claim has evidence","Alle fakta har kildebevis"], "chk.no_null_values_published":["No null values published","Ingen tomme verdier publisert"], "chk.all_families_present":["All families present","Alle familier til stede"],
+  ps_title:["PowerShell — Signalpost","PowerShell — Signalpost"], ps_live:["connected to the local backend","koblet til lokal backend"], ps_off:["backend not running","backend kjører ikke"],
+  ps_busy:["running…","kjører…"], ps_stop:["Stop (Ctrl+C)","Stopp (Ctrl+C)"], ps_clear:["Clear","Tøm"], ps_run:["Run","Kjør"],
+  ps_hello:["Signalpost terminal. Type a command from the steps above, press ▶ Run on a step, or type help.","Signalpost-terminal. Skriv en kommando fra stegene over, trykk ▶ Kjør på et steg, eller skriv help."],
+  ps_offline:["This page is opened from disk, so nothing can run here. Start the backend in your own PowerShell, then open http://127.0.0.1:8765 and use this terminal there:","Siden er åpnet fra disk, så ingenting kan kjøres her. Start backend i din egen PowerShell, åpne http://127.0.0.1:8765 og bruk terminalen der:"],
+  ps_blocked:["Blocked: this terminal only runs the Signalpost commands listed above (type help). Use your own PowerShell for anything else.","Blokkert: denne terminalen kjører bare Signalpost-kommandoene over (skriv help). Bruk din egen PowerShell til alt annet."],
+  ps_done_clone:["Already done: this backend is running inside your local checkout.","Allerede gjort: backend kjører i din lokale kopi."],
+  ps_done_serve:["Already running: this page is served by it.","Kjører allerede: denne siden serveres av den."],
   rl_title:["Run it locally","Kjør lokalt"], rl_copy_all:["Copy all","Kopier alle"], rl_copy:["Copy","Kopier"], rl_console:["Open live console","Åpne konsollen"],
   rl1:["Get the code","Hent koden"], rl2:["Install pinned dependencies (Python 3.12 + uv)","Installer låste avhengigheter (Python 3.12 + uv)"],
   rl3:["Research a batch (known-15 ≈ 1 min; any JSONL/TXT of org. numbers works)","Undersøk en batch (known-15 ≈ 1 min; hvilken som helst JSONL/TXT med org.nr. fungerer)"],
@@ -1084,8 +1105,75 @@ const LOCAL_STEPS = [
   ["rl5", "uv run --group dev signalpost serve"],
   ["rl7", "uv run --group dev pytest -q"],
 ];
+function psTerminal(live){
+  const out = el("div",{class:"ps-out",role:"log","aria-live":"polite",tabindex:"0"});
+  const dot = el("span",{class:"dot" + (live ? " live" : "")}), state = el("span",null, live ? t("ps_live") : t("ps_off"));
+  const input = el("input",{type:"text",spellcheck:"false",autocomplete:"off","aria-label":"PowerShell command",disabled:live ? null : true});
+  const PROMPT = "PS E:\\Harsh\\Self coding\\Hackathons\\SignalPost> ";
+  let es = null, busy = false;
+  const line = (text, cls) => { const n = el("div",{class:cls || null}, text); out.append(n); out.scrollTop = out.scrollHeight; return n; };
+  const promptLine = cmd => { out.append(el("div",{class:"p"}, el("b",null, PROMPT), cmd)); out.scrollTop = out.scrollHeight; };
+  const setBusy = b => { busy = b; dot.className = "dot " + (b ? "busy" : live ? "live" : ""); state.textContent = b ? t("ps_busy") : live ? t("ps_live") : t("ps_off"); input.disabled = !live || b; if (!b && live) input.focus(); };
+  const cls = s => /Traceback|Exception|\bError\b|FAILED|exited with code [1-9]/.test(s) ? "bad" : /watchdog|warning|refused|blocked|timeout/i.test(s) ? "warn" : /\[done\]|\bpassed\b|valid=True|PASS/.test(s) ? "ok" : null;
+  function stream(after){
+    if (es) es.close();
+    es = new EventSource("/api/stream?from=0");
+    es.onmessage = m => {
+      const s = JSON.parse(m.data);
+      if (s.startsWith("@exit")){ const code = +s.split(" ")[1]; line(code === 0 ? "✓ exit 0" : "✗ exit " + code, code === 0 ? "ok" : "bad"); es.close(); setBusy(false); if (after) after(code); return; }
+      if (s.startsWith("@event ")){ try { const e = JSON.parse(s.slice(7)); if (e.kind === "company") line("[company] " + e.org + " " + (e.name || "") + ": " + Object.values(e.states || {}).filter(x => x[0] === "available").length + "/13 families, " + e.claims + " facts, " + e.requests + " requests", "dim"); } catch(x) {} return; }
+      const tag = s.match(/^\[[a-z_]+\]/);
+      const n = el("div",{class:cls(s)}, tag ? [el("span",{class:"tg"}, tag[0]), s.slice(tag[0].length)] : s); out.append(n); out.scrollTop = out.scrollHeight;
+    };
+    es.onerror = () => { es.close(); setBusy(false); };
+  }
+  async function start(body, after){
+    setBusy(true);
+    try {
+      const r = await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok){ line(j.error || ("HTTP " + r.status), "bad"); setBusy(false); return; }
+      stream(after);
+    } catch(e){ line("Backend not reachable: " + e.message, "bad"); setBusy(false); }
+  }
+  function exec(raw){
+    const cmd = raw.trim(); if (!cmd) return;
+    promptLine(cmd);
+    let m;
+    if (/^(cls|clear)$/i.test(cmd)){ out.replaceChildren(); return; }
+    if (/^help$/i.test(cmd)){ ["Commands this terminal runs (whitelisted, executed by the local backend):", ...LOCAL_STEPS.map(x => "  " + x[1]), "  uv run python eval/benchmark.py out-<name>", "  cls · help · Ctrl+C stops a running job"].forEach(x => line(x, "dim")); return; }
+    if (/^git clone\b|^cd\b|^uv sync\b/i.test(cmd)){ line(t("ps_done_clone"), "ok"); return; }
+    if (/^uv run --group dev signalpost serve\b/i.test(cmd)){ line(t("ps_done_serve"), "ok"); return; }
+    if ((m = cmd.match(/^(?:start|open|xdg-open|ii|invoke-item)\s+(out-[A-Za-z0-9_.-]+)[\\/]site[\\/]index\.html$/i))){ const u = "/files/" + m[1] + "/site/index.html"; line("Opening " + u, "ok"); window.open(u, "_blank", "noopener"); return; }
+    if ((m = cmd.match(/^uv run signalpost run --organisations (eval\/[A-Za-z0-9_.-]+\.jsonl) --out (out-[A-Za-z0-9_.-]+)(?: --job-days (\d{1,2}))?$/))){
+      const outDir = m[2];
+      return start({action:"run", batch:m[1], out:outDir, job_days:m[3] || 60}, code => { if (code === 0){ const a = el("a",{href:"/files/" + outDir + "/site/index.html",target:"_blank",rel:"noopener"}, "/files/" + outDir + "/site/index.html"); line(""); out.lastChild.append("Showcase for this run: ", a); } });
+    }
+    if (/^uv run --group dev pytest( -q)?$/.test(cmd)) return start({action:"tests"});
+    if ((m = cmd.match(/^uv run python eval\/benchmark\.py (out-[A-Za-z0-9_.-]+)$/))) return start({action:"benchmark", target:m[1]});
+    line(t("ps_blocked"), "bad");
+  }
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter"){ const v = input.value; input.value = ""; exec(v); }
+  });
+  out.addEventListener("keydown", e => { if (e.ctrlKey && e.key.toLowerCase() === "c" && busy){ e.preventDefault(); fetch("/api/stop",{method:"POST"}); line("^C", "warn"); } });
+  input.addEventListener("keydown", e => { if (e.ctrlKey && e.key.toLowerCase() === "c" && busy){ e.preventDefault(); fetch("/api/stop",{method:"POST"}); line("^C", "warn"); } });
+  const stopBtn = el("button",{type:"button",onclick:()=>{ if (busy){ fetch("/api/stop",{method:"POST"}); line("^C", "warn"); } }}, t("ps_stop"));
+  const box = el("div",{class:"ps"},
+    el("div",{class:"ps-head"}, dot, el("span",null, t("ps_title")), el("span",{class:"grow"}), state, live ? stopBtn : null, el("button",{type:"button",onclick:()=>out.replaceChildren()}, t("ps_clear"))),
+    out, el("div",{class:"ps-in"}, el("label",null, PROMPT), input));
+  if (live){
+    line("Windows PowerShell (Signalpost)", "dim"); line(t("ps_hello"), "dim");
+    fetch("/api/state").then(r => r.json()).then(st => { if (st.job && !st.job.done){ line("Attaching to the running job: " + st.job.cmd, "warn"); setBusy(true); stream(); } }).catch(() => {});
+  } else {
+    line(t("ps_offline"), "warn"); line("  cd \"E:\\Harsh\\Self coding\\Hackathons\\SignalPost\"", "dim"); line("  uv run --group dev signalpost serve", "dim");
+  }
+  box.exec = exec;
+  return box;
+}
 function terminalPanel(){
   const live = /^https?:$/.test(location.protocol) && /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  const ps = psTerminal(live);
   return el("section",{class:"term-panel","aria-labelledby":"rlh"},
     el("div",{class:"term-bar"}, el("i"), el("i"), el("i"), el("strong",{id:"rlh"}, t("rl_title")), el("span",{class:"grow"}),
       live ? el("a",{href:"/"}, t("rl_console") + " ↗") : null,
@@ -1093,7 +1181,9 @@ function terminalPanel(){
     el("div",{class:"term-body",role:"list"}, LOCAL_STEPS.map(([k, cmd], i) => el("div",{class:"term-step",role:"listitem"},
       el("span",{class:"k"}, String(i + 1)),
       el("span",null, el("span",{class:"note"}, "# " + t(k)), el("span",{class:"c"}, cmd)),
-      el("button",{type:"button","aria-label":t("rl_copy") + ": " + cmd,onclick:()=>copy(cmd)}, t("rl_copy"))))));
+      el("span",null, live ? el("button",{class:"run",type:"button","aria-label":t("ps_run") + ": " + cmd,onclick:()=>ps.exec(cmd)}, "▶ " + t("ps_run")) : null,
+        el("button",{type:"button","aria-label":t("rl_copy") + ": " + cmd,onclick:()=>copy(cmd)}, t("rl_copy")))))),
+    ps);
 }
 
 // ================================================================ overview
