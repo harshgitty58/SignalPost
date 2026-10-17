@@ -97,3 +97,14 @@ Severity: **A** = can cost qualification · **B** = costs points or evidence acc
 **Candidate for the revision:** branch `rev-18oct` (contains `ui-upgrade`). Tests: 14 passed.
 
 **Still open (yours):** A1 push + confirm the commit on GitHub + send the hash · D1 ask Builderr rows vs distinct org numbers · D6 manual checks (Kartverket map online, CSV/copy in a browser, a real phone).
+
+### 4b. Finishing pass (17 Oct, later)
+
+| Item | Commit | Result |
+|---|---|---|
+| UI polish: light glass theme, portfolio / profile / compare charts, console sparkline; mixed currencies never drawn on one scale | `0b82c74` | ui_check + console_check `errors: []`; contrast re-checked on the effective glass colour (worst 4.61:1) |
+| GitHub Pages workflow for the 1,000-profile showcase; identity audit shipped inside the site | `0b82c74` | local simulation: 1,000 profiles, 62 MB, `errors: []`. **You:** Settings → Pages → Source: GitHub Actions |
+| Kartverket map verified live | — | HTTP 200 with `access-control-allow-origin: *`; fields match |
+| Norwegian brief (`text_no`), `last_seen` / `times_seen`, gate yield per source, 3 tests | `318dd62` | 17 tests; duplicate-key claims now carry seen-fields (was 2/2,283 missing) |
+| Reports regenerated from a clean clone of `318dd62` | this commit | smoke-100 100/100 · 899 req; 1,000: 1,000/1,000 · 1,920 req; replay PASS; re-verification 30/30; 0 claims without seen-fields; 0 sentences without `text_no`; no new website acceptances |
+| U7 filing events | not done | registry gives filing years only, no filing date; nothing honest to date an activity item with |

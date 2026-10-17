@@ -1,8 +1,8 @@
 {
-  "run_id": "dev-rev18d",
-  "agent_version": "7be8eaa46f8e",
-  "started_at": "2026-10-17T06:42:38Z",
-  "completed_at": "2026-10-17T06:46:33Z",
+  "run_id": "dev-rev18f",
+  "agent_version": "318dd62b4ff9",
+  "started_at": "2026-10-17T07:42:46Z",
+  "completed_at": "2026-10-17T07:46:46Z",
   "input_count": 100,
   "emitted_envelopes": 100,
   "validation": {
@@ -93,16 +93,47 @@
     "unreachable": 8,
     "related_site": 1
   },
+  "identity_gate_by_source": {
+    "name_slug_guess": {
+      "rejected": 7,
+      "blocked": 5,
+      "accepted": 8,
+      "ambiguous": 15,
+      "unreachable": 1
+    },
+    "registry_declared": {
+      "accepted": 4,
+      "unreachable": 4,
+      "ambiguous": 3
+    },
+    "registry_email_domain": {
+      "rejected": 6,
+      "accepted": 3,
+      "blocked": 1,
+      "ambiguous": 2,
+      "unreachable": 2
+    },
+    "subunit_email_domain": {
+      "accepted": 1,
+      "ambiguous": 2,
+      "rejected": 1,
+      "related_site": 1,
+      "unreachable": 1
+    },
+    "wikidata_p856": {
+      "accepted": 1
+    }
+  },
   "jobs_feed": {
     "pages": 125,
-    "ads_indexed": 36353,
+    "ads_indexed": 36340,
     "window_days": 60,
     "error": null
   },
   "operations": {
     "requests": 899,
     "max_requests": 2000,
-    "elapsed_seconds": 241.8,
+    "elapsed_seconds": 246.8,
     "max_seconds": 2700.0,
     "third_party_cost_usd": 0.0,
     "max_cost_usd": 10.0,
@@ -149,9 +180,9 @@
       "www.scanvital.no": 4,
       "norse-group.no": 4,
       "parkhotel.no": 4,
+      "gunnarsson.no": 4,
       "www.sea-tex.no": 4,
       "www.km.kongsberg.com": 4,
-      "gunnarsson.no": 4,
       "113forstehjelp.no": 4,
       "113hjelp.no": 4,
       "bunnpris.no": 4,
@@ -165,8 +196,8 @@
       "arvin.no": 2,
       "aircontact.com": 2,
       "enske.no": 2,
-      "panorama.as": 2,
       "sintef.no": 2,
+      "panorama.as": 2,
       "rgcrane.no": 2,
       "proel.no": 2,
       "scanvital.no": 2,
@@ -182,10 +213,10 @@
       "www.xpartner.as": 2,
       "wulffbergas.no": 2,
       "www.wulffbergas.no": 2,
-      "coop.no": 2,
       "skøyteshop.com": 2,
-      "seatex.no": 2,
+      "coop.no": 2,
       "navn.no": 2,
+      "seatex.no": 2,
       "cleannor.no": 2,
       "asanebegravelse.no": 2,
       "stavset.no": 2,
@@ -233,17 +264,17 @@
       "web_news": 188
     },
     "refused_by_budget": {},
-    "p50_company_ms": 47766,
-    "p95_company_ms": 65703
+    "p50_company_ms": 47765,
+    "p95_company_ms": 67578
   },
   "phase_seconds": {
     "bulk_snapshot": 0.0,
-    "registry": 2.0,
+    "registry": 2.7,
     "activity": 1.1,
-    "companies": 227.2,
-    "jobs": 4.4,
+    "companies": 230.8,
+    "jobs": 4.9,
     "tail": 0.0,
-    "finalise": 6.4
+    "finalise": 6.3
   },
   "budget_plan": {
     "registry": 5,
