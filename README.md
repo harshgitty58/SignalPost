@@ -32,10 +32,39 @@ Tests: `uv run --group dev pytest -q`.
 ```bash
 uv run --group dev signalpost serve      # open http://127.0.0.1:8765
 ```
-Run the agent, unit tests, benchmark, evidence re-verification or refresh replay from the browser. Terminal
-output from this machine streams live; each company appears as it finishes, and clicking it explains *why*
-every field family ended in its state (including identity-gate decisions). Bound to 127.0.0.1, whitelisted
-actions only (no arbitrary shell).
+Run the agent, re-run one company, unit tests, benchmark, evidence re-verification, refresh replay or a site
+rebuild from the browser. The terminal streams live with phase tags, level filters (warnings/errors), search and
+copy; per-family coverage bars and budget meters (requests / time / cost, warning at 70%, "near limit" at 90%)
+update as companies finish. Clicking a company explains *why* every field family ended in its state, including
+identity-gate decisions, and offers "Re-run this company". Benchmark output renders as tables; evidence
+re-verification results are saved next to the run and appear in its showcase. "Diff two runs" compares any two
+runs or archived `history/` snapshots with the agent's own change detection, in memory. Bound to 127.0.0.1,
+whitelisted actions only (no arbitrary shell), validated inputs.
+
+## Showcase site (what to look at)
+
+`out-*/site/index.html` opens straight from disk: no server, no CDN, no web fonts. Light and dark themes,
+NO/EN interface labels (data stays as sourced), 375 px mobile layout, keyboard shortcuts (`/` search, `Esc`
+close, `g o/c/h/x/m` to switch view, `?` for the list).
+
+* **Overview**: search with suggestions, a real published fact with its proof, a trust panel (evidence
+  completeness, abstention rate, re-verification result when available, identity-gate decisions, how each
+  website was proven, examples of correct rejections), coverage per family with 95% Wilson intervals, a
+  "what changed" digest and run budget meters.
+* **Companies**: sortable table (cards on mobile), filters for family state, legal form, county, website,
+  jobs and changes since a date, all kept in the URL; paginated for 1,000+ companies; CSV export.
+* **Profile**: header with org.nr copy, cited summary, signals and data checks, sections 1–7, annual-account
+  charts (revenue, result, equity; company vs group) with the exact values in a table, filing history with
+  official PDF links, roles, workplaces (optional Kartverket map, off until asked), jobs, activity timeline,
+  changes and `first_seen`, unknowns and the identity audit. Print-friendly.
+* **Evidence drawer** (bottom sheet on mobile): source class, URL, retrieval time, period, method, identity
+  reason, licence, highlighted span and the full SHA-256 with copy.
+* **Compare** (up to four, shareable URL, differing rows tinted), **Changes** (typed, material/minor
+  filter) and **Method** (pipeline, identity gate, states, sources and licences, budget plan).
+
+Design tokens and rules for both UIs live in [`DESIGN.md`](DESIGN.md). Headless checks (no browser needed):
+`npm install --no-save jsdom@24.1.3`, then `node eval/ui_check.cjs "<abs path to out-x/site>"` and, with the
+console running, `node eval/console_check.cjs http://127.0.0.1:8765`. Both must end with `errors: []`.
 
 ## What it collects
 
