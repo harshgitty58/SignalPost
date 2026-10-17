@@ -438,7 +438,10 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
     if name_in_identity and contact and registrable_domain(home.url).endswith(".no"):
         visit.decision = "accepted"
         visit.proof_page = visit.pages[0]
-        visit.proof_span = "legal name in site identity + registry contact details: " + (_span_around(identity_text, r"(?i)" + re.escape(tokens[0]))[:200])
+        # tokens are normalised (e.g. "rorservice"), the page is not ("Rørservice"): fall back to the identity fields
+        # themselves so the evidence always quotes the text that carried the name
+        visit.proof_span = "legal name in site identity + registry contact details: " + (
+            _span_around(identity_text, r"(?i)" + re.escape(tokens[0])) or identity_text.strip())[:200]
         visit.reason += "legal name in the site's identity fields and registry phone/address on the site"
         return visit
     identity_text = visit.pages[0].identity_fields(strict=True)
