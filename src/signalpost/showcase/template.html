@@ -2,549 +2,1443 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Signalpost Profiles</title>
 <meta name="description" content="Evidence-backed Norwegian company profiles. Every fact links to its source, retrieval time and content hash.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23285A80'/%3E%3Cpath d='M9 22c3.5-7 10.5-7 14-13' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='9' cy='22' r='2.6' fill='white'/%3E%3Ccircle cx='23' cy='9' r='2.6' fill='white'/%3E%3C/svg%3E">
 <style>
+/* Tokens: see DESIGN.md §2. Light = "Birch", dark = "Polar night". */
 :root{
-  --bg:#f6f7f9;--surface:#ffffff;--surface-2:#f0f2f5;--text:#16202b;--muted:#5b6876;--border:#dfe3e8;
-  --accent:#1f5fa8;--accent-soft:#e6eef8;--accent-text:#ffffff;
-  --ok:#1d7a46;--ok-soft:#e3f3e9;--na:#6b7682;--na-soft:#eef0f2;--amb:#9a6200;--amb-soft:#fbf0d9;
-  --blk:#b4431b;--blk-soft:#fbe7df;--fail:#b3261e;--fail-soft:#fbe4e2;--napp:#57606a;--napp-soft:#eceef0;
-  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
-  --radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --canvas:#F7F6F3;--surface:#FFFFFF;--surface-2:#F1EFEA;--surface-3:#E9E6E0;--line:#E4E1DA;--line-strong:#D2CEC5;
+  --ink:#1C1B19;--ink-2:#55524C;--ink-3:#6E6A63;
+  --accent:#285A80;--accent-hover:#1F4A6B;--accent-soft:#E3ECF3;--on-accent:#FFFFFF;
+  --ok:#2F6B3A;--ok-soft:#E7F0E6;--ok-fill:#3E8A4C;
+  --na:#5F5B54;--na-soft:#EEECE7;--na-fill:#BDB8AE;
+  --amb:#7F5300;--amb-soft:#F8EED3;--amb-fill:#B07A10;
+  --blk:#984519;--blk-soft:#F7E6DA;--blk-fill:#C2662F;
+  --fail:#A3302C;--fail-soft:#F8E3E1;--fail-fill:#C2413B;
+  --napp:#625E57;--napp-soft:#F1EFEA;--napp-fill:#D2CEC5;
+  --shadow-overlay:0 12px 32px -12px rgba(41,36,28,.22),0 0 0 1px rgba(41,36,28,.06);
+  --sans:"SF Pro Text","SF Pro Display","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  --mono:"SF Mono","Cascadia Mono","JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --z-sticky:10;--z-pop:20;--z-scrim:30;--z-drawer:40;--z-toast:50;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f141a;--surface:#161c24;--surface-2:#1d252f;--text:#e6ebf0;--muted:#9aa6b2;--border:#2a333e;
-  --accent:#6aa6ec;--accent-soft:#1c2c40;--accent-text:#0f141a;
-  --ok:#5cc98a;--ok-soft:#173326;--na:#9aa6b2;--na-soft:#222a33;--amb:#e9b04f;--amb-soft:#3a2d12;
-  --blk:#f08a62;--blk-soft:#3a2118;--fail:#f2867e;--fail-soft:#3b1d1b;--napp:#a6b0ba;--napp-soft:#242c35;
-  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;}}
+  --canvas:#141412;--surface:#1B1B19;--surface-2:#232320;--surface-3:#2C2C29;--line:#2E2E2B;--line-strong:#3D3D39;
+  --ink:#EDEBE6;--ink-2:#BDB9B0;--ink-3:#9A968D;
+  --accent:#8DB8DC;--accent-hover:#A6C8E5;--accent-soft:#1F2A33;--on-accent:#10161B;
+  --ok:#8CCB95;--ok-soft:#1C2A1E;--ok-fill:#5DAA69;--na:#B5B0A7;--na-soft:#262623;--na-fill:#55534D;
+  --amb:#E3B65C;--amb-soft:#2E2614;--amb-fill:#C99A3E;--blk:#E79A6C;--blk-soft:#2F2119;--blk-fill:#C77748;
+  --fail:#EE8F88;--fail-soft:#321D1B;--fail-fill:#D25A52;--napp:#A29E95;--napp-soft:#232320;--napp-fill:#3D3D39;
+  --shadow-overlay:0 12px 32px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#0f141a;--surface:#161c24;--surface-2:#1d252f;--text:#e6ebf0;--muted:#9aa6b2;--border:#2a333e;
-  --accent:#6aa6ec;--accent-soft:#1c2c40;--accent-text:#0f141a;
-  --ok:#5cc98a;--ok-soft:#173326;--na:#9aa6b2;--na-soft:#222a33;--amb:#e9b04f;--amb-soft:#3a2d12;
-  --blk:#f08a62;--blk-soft:#3a2118;--fail:#f2867e;--fail-soft:#3b1d1b;--napp:#a6b0ba;--napp-soft:#242c35;
-  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;}
+  --canvas:#141412;--surface:#1B1B19;--surface-2:#232320;--surface-3:#2C2C29;--line:#2E2E2B;--line-strong:#3D3D39;
+  --ink:#EDEBE6;--ink-2:#BDB9B0;--ink-3:#9A968D;
+  --accent:#8DB8DC;--accent-hover:#A6C8E5;--accent-soft:#1F2A33;--on-accent:#10161B;
+  --ok:#8CCB95;--ok-soft:#1C2A1E;--ok-fill:#5DAA69;--na:#B5B0A7;--na-soft:#262623;--na-fill:#55534D;
+  --amb:#E3B65C;--amb-soft:#2E2614;--amb-fill:#C99A3E;--blk:#E79A6C;--blk-soft:#2F2119;--blk-fill:#C77748;
+  --fail:#EE8F88;--fail-soft:#321D1B;--fail-fill:#D25A52;--napp:#A29E95;--napp-soft:#232320;--napp-fill:#3D3D39;
+  --shadow-overlay:0 12px 32px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);color-scheme:dark;}
+
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--sans);-webkit-text-size-adjust:100%}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-button{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
-.top-in{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;color:var(--text)}
-.brand svg{width:26px;height:26px}
-nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
-nav.tabs a{padding:7px 11px;border-radius:8px;color:var(--muted);font-weight:500;min-height:36px;display:inline-flex;align-items:center}
-nav.tabs a.on,nav.tabs a:hover{background:var(--accent-soft);color:var(--accent);text-decoration:none}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;min-height:100dvh;background:var(--canvas);color:var(--ink);font:400 15px/1.6 var(--sans);font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none;text-underline-offset:3px}
+a:hover{text-decoration:underline}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{text-wrap:pretty}
+h1{font-size:clamp(24px,3vw,32px);line-height:1.15;font-weight:650;letter-spacing:-.02em}
+h2{font-size:19px;line-height:1.3;font-weight:620;letter-spacing:-.01em}
+h3{font-size:14px;line-height:1.4;font-weight:600}
+.eyebrow{font-size:12px;line-height:1.3;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)}.faint{color:var(--ink-3)}.small{font-size:13px;line-height:1.45}
+.mono{font-family:var(--mono);font-size:12.5px}
+.num,.tnum{font-variant-numeric:tabular-nums}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;background:var(--accent);color:var(--on-accent);padding:10px 14px;border-radius:6px;z-index:var(--z-toast)}
+.skip:focus{top:10px}
+kbd{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:4px;padding:1px 6px;color:var(--ink)}
+mark{background:color-mix(in srgb,var(--amb-fill) 30%,transparent);color:inherit;border-radius:2px;padding:0 1px}
+
+/* ---------------------------------------------------------------- top bar */
+.top{position:sticky;top:0;z-index:var(--z-sticky);background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:saturate(140%) blur(8px);-webkit-backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:0 24px;min-height:56px;display:flex;gap:16px;align-items:center}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+.brand:hover{text-decoration:none}
+.brand svg{width:24px;height:24px;flex:none}
+nav.tabs{display:flex;gap:2px;align-self:stretch}
+nav.tabs a{position:relative;display:inline-flex;align-items:center;gap:6px;padding:0 10px;color:var(--ink-2);font-weight:500;font-size:14px;white-space:nowrap}
+nav.tabs a:hover{color:var(--ink);text-decoration:none}
+nav.tabs a[aria-current="page"]{color:var(--ink)}
+nav.tabs a[aria-current="page"]:after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--accent);border-radius:2px}
+.count{font-size:11.5px;font-weight:600;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:0 6px;line-height:18px}
 .grow{flex:1}
-.search{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:0 10px;min-width:220px;flex:0 1 320px}
-.search input{border:0;background:transparent;color:var(--text);font:inherit;padding:8px 0;width:100%;outline:none}
-.iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:10px;min-width:40px;min-height:40px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-main{max-width:1200px;margin:0 auto;padding:20px 16px 80px}
-h1{font-size:26px;line-height:1.2;margin:0 0 6px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.muted{color:var(--muted)}.small{font-size:13px}.mono{font-family:var(--mono);font-size:12.5px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
-.grid{display:grid;gap:14px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}.kpi .l{color:var(--muted);font-size:13px}
-.hero{padding:22px 0 10px}.hero p{max-width:760px;color:var(--muted);margin:6px 0 16px}
-.bigsearch{display:flex;gap:8px;max-width:640px}
-.bigsearch input{flex:1;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
-.btn{background:var(--accent);color:var(--accent-text);border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;min-height:40px}
-.btn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;border:1px solid transparent}
-.st-available{background:var(--ok-soft);color:var(--ok)}.st-not_available{background:var(--na-soft);color:var(--na)}
-.st-ambiguous{background:var(--amb-soft);color:var(--amb)}.st-blocked{background:var(--blk-soft);color:var(--blk)}
-.st-failed{background:var(--fail-soft);color:var(--fail)}.st-not_applicable{background:var(--napp-soft);color:var(--napp)}
-.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
-.bar>span{display:block;height:100%}
-.b-available{background:var(--ok)}.b-not_available{background:color-mix(in srgb,var(--na) 45%,transparent)}.b-ambiguous{background:var(--amb)}
-.b-blocked{background:var(--blk)}.b-failed{background:var(--fail)}.b-not_applicable{background:color-mix(in srgb,var(--napp) 30%,transparent)}
-.covrow{display:grid;grid-template-columns:170px 1fr 52px;gap:10px;align-items:center;padding:5px 0}
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-table{width:100%;border-collapse:collapse}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
-th{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tbody tr:hover{background:var(--surface-2)}
-.dots{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
-.dot{width:9px;height:9px;border-radius:3px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.filters input,.filters select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);min-height:40px}
-.co-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
-.fact{background:var(--surface-2);border-radius:10px;padding:10px 12px}.fact .v{font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}.fact .l{font-size:12.5px;color:var(--muted)}
-.brief p{margin:0 0 8px}
-.cite{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:3px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;vertical-align:2px}
+.searchbox{position:relative;flex:0 1 300px;min-width:200px}
+.searchbox input{width:100%;height:36px;border:1px solid var(--line-strong);background:var(--surface);border-radius:6px;padding:0 34px 0 32px;outline:none;transition:border-color .15s var(--ease)}
+.searchbox input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.searchbox .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-3);pointer-events:none}
+.searchbox kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+.tools{display:flex;gap:6px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:0 10px;min-height:32px;font-size:13px;font-weight:500;color:var(--ink-2);transition:background .15s var(--ease)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.seg button:hover{color:var(--ink)}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:34px;min-height:34px;padding:0 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--ink-2);font-size:13px;transition:background .15s var(--ease),color .15s var(--ease)}
+.iconbtn:hover{background:var(--surface-2);color:var(--ink)}
+.iconbtn svg{width:16px;height:16px}
+
+/* ---------------------------------------------------------------- layout */
+main{max-width:1240px;margin:0 auto;padding:28px 24px 96px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.page-head p{margin:6px 0 0;max-width:68ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.panel>h2,.panel>.ph{margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ph h2,.ph h3{margin:0}
+.stack{display:grid;gap:16px}
+.section{margin-top:32px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start}
+.split{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}
+.rule{border:0;border-top:1px solid var(--line);margin:16px 0}
+
+/* ---------------------------------------------------------------- buttons & inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;font-weight:550;font-size:14px;white-space:nowrap;transition:background .15s var(--ease),border-color .15s var(--ease),transform .1s var(--ease)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover);text-decoration:none}
+.btn.secondary{background:var(--surface);border-color:var(--line-strong);color:var(--ink)}
+.btn.secondary:hover{background:var(--surface-2);text-decoration:none}
+.btn.quiet{background:transparent;color:var(--accent);padding:0 8px}
+.btn.quiet:hover{background:var(--accent-soft);text-decoration:none}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,var(--line-strong));color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.field{display:grid;gap:4px;min-width:0}
+.field>span{font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.input,select.input{height:38px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);padding:0 10px;min-width:0;width:100%;outline:none}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.toolbar{display:grid;grid-template-columns:minmax(220px,2fr) repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:end}
+.toolbar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:14px 0 10px}
+.toggles{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------------------------------------------------------------- state chips */
+.chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;line-height:1}
+.chip .g{font-size:11px;width:12px;text-align:center}
+.st-available{background:var(--ok-soft);color:var(--ok)}
+.st-not_available{background:var(--na-soft);color:var(--na)}
+.st-ambiguous{background:var(--amb-soft);color:var(--amb)}
+.st-blocked{background:var(--blk-soft);color:var(--blk)}
+.st-failed{background:var(--fail-soft);color:var(--fail)}
+.st-not_applicable{background:var(--napp-soft);color:var(--napp);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.f-available{background:var(--ok-fill)}.f-not_available{background:var(--na-fill)}.f-ambiguous{background:var(--amb-fill)}
+.f-blocked{background:var(--blk-fill)}.f-failed{background:var(--fail-fill)}
+.f-not_applicable{background:repeating-linear-gradient(45deg,var(--napp-fill) 0 2px,transparent 2px 5px);box-shadow:inset 0 0 0 1px var(--napp-fill)}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);font-size:12px;font-weight:500;white-space:nowrap}
+.tag.accent{background:var(--accent-soft);color:var(--accent)}
+.tag.warn{background:var(--amb-soft);color:var(--amb)}
+.tag.bad{background:var(--fail-soft);color:var(--fail)}
+.tag.good{background:var(--ok-soft);color:var(--ok)}
+.dots{display:grid;grid-template-columns:repeat(13,10px);gap:3px}
+.dot{width:10px;height:10px;border-radius:2px}
+
+/* ---------------------------------------------------------------- evidence affordances */
+.cite{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:3px;border-radius:4px;border:1px solid var(--line-strong);background:var(--surface);font:600 11px/1 var(--mono);color:var(--accent);vertical-align:2px;transition:background .15s var(--ease)}
 .cite:hover{background:var(--accent-soft)}
-.section{margin-top:18px}
-.statusstrip{display:flex;gap:6px;flex-wrap:wrap}
-dl.kv{display:grid;grid-template-columns:minmax(150px,240px) 1fr;margin:0}
-dl.kv dt,dl.kv dd{padding:8px 0;border-bottom:1px solid var(--border);margin:0}
-dl.kv dt{color:var(--muted);font-size:13.5px;padding-right:10px}
-dl.kv dd{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
-.src{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--muted);cursor:pointer;min-height:28px}
+.src{flex:none;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:0 7px;min-height:26px;font-size:12px;color:var(--ink-2);white-space:nowrap;transition:color .15s var(--ease),border-color .15s var(--ease)}
 .src:hover{color:var(--accent);border-color:var(--accent)}
-.list{display:grid;gap:8px}
-.item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
-.item .t{font-weight:600}
-.unknown{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--border)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.fin-wrap{overflow-x:auto}
-.fin td button{all:unset;cursor:pointer;font-variant-numeric:tabular-nums}.fin td button:hover{color:var(--accent);text-decoration:underline}
-.seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.seg button{border:0;background:var(--surface);padding:6px 12px;cursor:pointer;min-height:34px}.seg button.on{background:var(--accent);color:var(--accent-text)}
-.timeline{border-left:2px solid var(--border);margin-left:6px;padding-left:14px}
-.tl{position:relative;padding:6px 0 10px}.tl:before{content:"";position:absolute;left:-20px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
-#drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,100%);background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .2s ease;z-index:50;display:flex;flex-direction:column}
-#drawer.open{transform:none}
-#drawer header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
-#drawer .body{overflow:auto;padding:16px}
-.ev{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
-.span{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;margin:8px 0}
-.evrow{display:grid;grid-template-columns:110px 1fr;gap:6px;font-size:13px;padding:3px 0}
-.evrow span:first-child{color:var(--muted)}
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:40;display:none}.scrim.open{display:block}
-.empty{padding:30px;text-align:center;color:var(--muted)}
-.cmp th{position:sticky;top:0;background:var(--surface)}
-.pill{display:inline-block;padding:1px 7px;border-radius:6px;background:var(--surface-2);font-size:12px;color:var(--muted)}
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;z-index:60}
-.toast.on{opacity:1}
+.src svg{width:12px;height:12px}
+.linkbtn{all:unset;cursor:pointer;color:inherit;border-bottom:1px dashed var(--line-strong);font-variant-numeric:tabular-nums}
+.linkbtn:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------------------------------------------------------------- overview */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:center;padding:28px 0 36px}
+.hero h1{font-size:clamp(30px,4.2vw,46px);line-height:1.08;letter-spacing:-.025em;margin:10px 0 14px}
+.hero .lede{font-size:16.5px;line-height:1.6;color:var(--ink-2);max-width:58ch;margin:0 0 22px}
+.bezel{padding:5px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);max-width:560px}
+.bezel form{display:flex;gap:6px;background:var(--surface);border-radius:8px;padding:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.bezel input{flex:1;border:0;background:transparent;outline:none;font-size:16px;padding:0 10px;min-height:42px;min-width:0}
+.examples{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.examples a{font-size:13px;padding:3px 9px;border-radius:4px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.examples a:hover{color:var(--accent);border-color:var(--accent);text-decoration:none}
+.specimen{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;position:relative}
+.specimen .val{font-size:22px;font-weight:620;letter-spacing:-.01em;margin:4px 0 12px;word-break:break-word}
+.specimen dl{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;margin:0;font-size:13px}
+.specimen dt{color:var(--ink-3)}.specimen dd{margin:0;word-break:break-word}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.kpi{padding:18px 20px}
+.kpi+.kpi{border-left:1px solid var(--line)}
+.kpi .v{font-size:26px;font-weight:620;letter-spacing:-.015em;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .l{color:var(--ink-2);font-size:13px;margin-top:4px}
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);margin:0 -20px}
+.trust>div{padding:16px 20px}
+.trust>div+div{border-left:1px solid var(--line)}
+.trust .big{font-size:22px;font-weight:620;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.trust-list{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.trust-list li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+.trust-list li:first-child{border-top:0}
+.covrow{display:grid;grid-template-columns:minmax(120px,170px) 1fr 108px;gap:12px;align-items:center;padding:6px 0}
+.covrow a{color:var(--ink);font-size:13.5px}
+.covrow a:hover{color:var(--accent)}
+.cbar{position:relative;display:flex;gap:2px;height:12px}
+.cbar>span{display:block;height:100%;border-radius:2px;min-width:2px;transform-origin:left;animation:grow .5s var(--ease) both}
+.cbar .ci{position:absolute;top:-3px;height:18px;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);pointer-events:none}
+.cbar .ci:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px solid var(--ink)}
+.covpct{text-align:right;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.covpct span{color:var(--ink-3);font-size:12px}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.meter{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0}
+.meter .track{grid-column:1/-1;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.meter .track span{display:block;height:100%;background:var(--accent);border-radius:4px;transform-origin:left;animation:grow .5s var(--ease) both}
+.meter.warn .track span{background:var(--amb-fill)}.meter.bad .track span{background:var(--fail-fill)}
+.hbar{display:grid;grid-template-columns:minmax(90px,160px) 1fr 70px;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.hbar .t{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.hbar .t span{display:block;height:100%;background:var(--accent);border-radius:4px;transform-origin:left;animation:grow .5s var(--ease) both}
+.hbar .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.checks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px}
+.checks li{display:flex;gap:6px;align-items:baseline}
+
+/* ---------------------------------------------------------------- tables */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+thead th{position:sticky;top:0;background:var(--surface);font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:nowrap;z-index:1}
+th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.num{font-family:var(--mono);font-size:13px}
+tbody tr:hover{background:var(--surface-2)}
+.sortbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.sortbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.sortbtn .ar{color:var(--ink-3);font-size:10px;width:8px}
+th[aria-sort] .sortbtn{color:var(--ink)}
+.coname{font-weight:600;color:var(--ink)}
+.coname:hover{color:var(--accent)}
+.sub{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.cv>.sub{display:block}
+.filters>summary{cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:28px}
+.filters>summary::-webkit-details-marker{display:none}
+.filters>summary:after{content:"+";font:500 18px var(--mono);color:var(--ink-3)}
+.filters[open]>summary:after{content:"−"}
+.filters[open]>summary{margin-bottom:12px}
+.pager{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.empty{padding:40px 20px;text-align:center;color:var(--ink-2)}
+.empty h3{color:var(--ink);margin-bottom:6px}
+.empty p{max-width:52ch;margin:0 auto 12px}
+.skel{background:var(--surface-3);border-radius:6px}
+
+/* ---------------------------------------------------------------- profile */
+.profile{display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px;align-items:start}
+.toc{position:sticky;top:76px;display:grid;gap:1px;font-size:13px}
+.toc button{all:unset;cursor:pointer;padding:6px 10px;border-left:2px solid var(--line);color:var(--ink-2)}
+.toc button:hover,.toc button[aria-current="true"]{color:var(--ink);border-left-color:var(--accent)}
+.toc button:focus-visible{outline:2px solid var(--accent)}
+.cohead{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.cohead h1{margin:6px 0 4px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.facts{display:grid;grid-template-columns:repeat(5,1fr);margin:20px -20px -20px;border-top:1px solid var(--line)}
+.fact{padding:14px 20px}
+.fact+.fact{border-left:1px solid var(--line)}
+.fact .v{font-size:19px;font-weight:620;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.25}
+.fact .l{font-size:12.5px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:2px}
+.secthead{display:flex;align-items:baseline;gap:10px;margin:36px 0 12px;scroll-margin-top:72px}
+.secthead .n{font:600 12px var(--mono);color:var(--ink-3)}
+.brief p{margin:0 0 10px;max-width:72ch}
+.famhead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
+.reason{font-size:13px;color:var(--ink-2);margin:0}
+dl.kv{display:grid;grid-template-columns:minmax(110px,32%) minmax(0,1fr);margin:0}
+dl.kv dt,dl.kv dd{padding:9px 0;border-top:1px solid var(--line);margin:0}
+dl.kv dt:first-of-type,dl.kv dd:first-of-type{border-top:0}
+dl.kv dt{color:var(--ink-2);font-size:13.5px;padding-right:12px}
+dl.kv dd{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:space-between;align-items:flex-start;min-width:0}
+dl.kv dd>span:first-child{flex:1 1 16ch;min-width:0;overflow-wrap:break-word}
+.rows{display:grid}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);align-items:flex-start}
+.row:first-child{border-top:0}
+.row .t{font-weight:550}
+.row>div:first-child{min-width:0;overflow-wrap:break-word}
+.signal{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.signal:first-child{border-top:0}
+.sig-ico{width:24px;height:24px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.strip{display:flex;flex-wrap:wrap;gap:6px}
+.charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.chart{border:1px solid var(--line);border-radius:8px;padding:12px 12px 6px}
+.chart h4{margin:0;font-size:13px;font-weight:600}
+.chart .cu{font-size:12px;color:var(--ink-3)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .bar{cursor:pointer;transition:opacity .15s var(--ease)}
+.chart g.pt:hover .bar,.chart g.pt:focus .bar{opacity:.78}
+.chart g.pt:focus{outline:none}
+.chart g.pt:focus-visible .hit{stroke:var(--accent);stroke-width:2}
+.chart text{font:11px var(--sans);fill:var(--ink-3)}
+.chart text.lbl{fill:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.tl{position:relative;display:flex;gap:0;overflow-x:auto;padding:6px 0 4px}
+.tl .node{flex:1 0 84px;position:relative;padding-top:22px;text-align:center;font-size:13px}
+.tl .node:before{content:"";position:absolute;top:8px;left:0;right:0;border-top:1.5px solid var(--line-strong)}
+.tl .node:first-child:before{left:50%}.tl .node:last-child:before{right:50%}
+.tl .node:after{content:"";position:absolute;top:3px;left:50%;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.tl .node a{font-weight:600;font-variant-numeric:tabular-nums}
+.vtl{position:relative;margin-left:6px;padding-left:18px;border-left:1.5px solid var(--line-strong)}
+.vtl .ev{position:relative;padding:4px 0 12px}
+.vtl .ev:before{content:"";position:absolute;left:-23.5px;top:11px;width:9px;height:9px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.map{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);margin-bottom:12px;overflow:hidden}
+.map svg{display:block;width:100%;height:auto}
+.map circle{fill:var(--accent);stroke:var(--surface);stroke-width:1.5}
+.map .grid line{stroke:var(--line-strong);stroke-width:.5}
+.map .note{position:absolute;left:10px;bottom:8px;font-size:11.5px;color:var(--ink-3);background:color-mix(in srgb,var(--surface) 80%,transparent);padding:2px 6px;border-radius:4px}
+.foot{margin-top:32px;font-size:12.5px;color:var(--ink-3)}
+
+/* ---------------------------------------------------------------- compare / changes / method */
+.cmp td,.cmp th{min-width:170px}
+.cmp td:first-child,.cmp th:first-child{min-width:150px;color:var(--ink-2);font-size:13px;position:sticky;left:0;background:var(--surface);z-index:1}
+.cmp tr.diff td:not(:first-child){background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.cmp .chead{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}
+.chg{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.chg:first-child{border-top:0}
+.chg .d{font:12.5px var(--mono);color:var(--ink-3);padding-top:2px}
+.delta{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.delta s{color:var(--ink-3)}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s;display:grid;gap:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;position:relative}
+.steps li:before{content:counter(s);width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font:600 12px var(--mono);display:flex;align-items:center;justify-content:center;background:var(--surface);z-index:1}
+.steps li:not(:last-child):after{content:"";position:absolute;left:13px;top:36px;bottom:-10px;border-left:1.5px solid var(--line-strong)}
+.steps b{display:block;font-weight:600}
+.steps span{font-size:13.5px;color:var(--ink-2)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;align-items:center;font-size:14px;margin:0}
+.keys dd{margin:0}
+
+/* ---------------------------------------------------------------- typeahead */
+.ta{position:absolute;left:0;right:0;top:calc(100% + 4px);list-style:none;margin:0;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow-overlay);z-index:var(--z-pop);max-height:360px;overflow:auto}
+.ta[hidden]{display:none}
+.ta li{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:5px;cursor:pointer;font-size:14px}
+.ta li[aria-selected="true"],.ta li:hover{background:var(--accent-soft)}
+.ta li .o{font:12px var(--mono);color:var(--ink-3);white-space:nowrap}
+.ta li.none{color:var(--ink-3);cursor:default;background:none}
+.rel{position:relative}
+
+/* ---------------------------------------------------------------- drawer */
+.scrim{position:fixed;inset:0;background:rgba(20,18,14,.32);z-index:var(--z-scrim);opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
+.scrim.open{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:0;height:100dvh;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow-overlay);transform:translateX(104%);transition:transform .22s var(--ease);z-index:var(--z-drawer);display:flex;flex-direction:column;visibility:hidden}
+#drawer.open{transform:none;visibility:visible}
+#drawer header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 14px 20px;border-bottom:1px solid var(--line)}
+#drawer header strong{font-size:15px;font-weight:600}
+#drawer .body{overflow:auto;padding:18px 20px 28px;overscroll-behavior:contain}
+.grab{display:none}
+.evclaim .v{font-size:18px;font-weight:620;margin:4px 0 6px;overflow-wrap:anywhere}
+.evitem{border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:14px}
+.span{font:12.5px/1.55 var(--mono);background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 12px;border-radius:4px;white-space:pre-wrap;word-break:break-word;margin:10px 0}
+.evrow{display:grid;grid-template-columns:100px 1fr;gap:8px;font-size:13px;padding:5px 0;border-top:1px solid var(--line)}
+.evrow>span:first-child{color:var(--ink-3)}
+.evrow>span:last-child,.evrow>a{overflow-wrap:anywhere;min-width:0}
+.hash{display:flex;gap:8px;align-items:flex-start}
+.hash code{font:11.5px/1.5 var(--mono);word-break:break-all;color:var(--ink-2)}
+#tip{position:fixed;z-index:var(--z-toast);pointer-events:none;background:var(--ink);color:var(--canvas);font-size:12.5px;padding:6px 9px;border-radius:5px;max-width:260px;opacity:0;transition:opacity .1s;font-variant-numeric:tabular-nums}
+#tip.on{opacity:1}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,8px);background:var(--ink);color:var(--canvas);padding:9px 14px;border-radius:6px;font-size:13px;opacity:0;transition:opacity .2s var(--ease),transform .2s var(--ease);z-index:var(--z-toast);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width:1100px){
+  .profile{grid-template-columns:1fr}.toc{display:none}
+  .charts{grid-template-columns:1fr 1fr}
+}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:24px}
+  .split,.grid2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}.kpi:nth-child(3){border-left:0}.kpi:nth-child(n+3){border-top:1px solid var(--line)}
+  .trust{grid-template-columns:1fr}.trust>div+div{border-left:0;border-top:1px solid var(--line)}
+  .facts{grid-template-columns:repeat(3,1fr)}.fact:nth-child(4){border-left:0}.fact:nth-child(n+4){border-top:1px solid var(--line)}
+}
 @media (max-width:760px){
-  .two{grid-template-columns:1fr}
-  dl.kv{grid-template-columns:1fr}dl.kv dt{border-bottom:0;padding-bottom:0}
-  .covrow{grid-template-columns:110px 1fr 44px}
+  .top-in{flex-wrap:wrap;padding:8px 16px;gap:8px 10px}
+  nav.tabs{order:3;flex:1 1 100%;overflow-x:auto;margin:0 -16px;padding:0 10px;min-height:44px;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  .searchbox{order:4;flex:1 1 100%}
+  .searchbox kbd{display:none}
+  main{padding:20px 16px 80px}
+  .panel{padding:16px}
+  .trust,.facts{margin-left:-16px;margin-right:-16px}
+  .facts{margin-bottom:-16px;grid-template-columns:1fr 1fr}.fact{padding:12px 16px}
+  .fact:nth-child(n){border-left:0;border-top:1px solid var(--line)}.fact:nth-child(even){border-left:1px solid var(--line)}
+  .facts .fact:nth-child(-n+2){border-top:0}
+  .facts .fact:last-child:nth-child(odd){grid-column:1/-1;border-left:0}
+  .trust>div{padding:14px 16px}
+  .cohead{grid-template-columns:1fr}.actions{justify-content:flex-start}
+  .charts{grid-template-columns:1fr}
+  .covrow{grid-template-columns:1fr 92px;gap:4px 10px}.covrow .cbar{grid-column:1/-1;grid-row:2}
+  dl.kv{grid-template-columns:1fr}dl.kv dt{border-top:1px solid var(--line);padding-bottom:0}dl.kv dd{border-top:0;padding-top:2px}
+  dl.kv dt:first-of-type{border-top:0}
+  .checks{grid-template-columns:1fr}
+  .chg{grid-template-columns:1fr auto}.chg .d{grid-column:1/-1}
+  .toolbar{grid-template-columns:1fr 1fr}.toolbar .field:first-child{grid-column:1/-1}
+  .tablewrap.resp{border:0;background:transparent;overflow:visible}
   table.resp thead{display:none}
-  table.resp tr{display:block;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--surface);padding:6px 4px}
-  table.resp td{display:flex;justify-content:space-between;gap:12px;border:0;padding:5px 10px;text-align:right}
-  table.resp td:before{content:attr(data-l);color:var(--muted);font-size:12.5px;text-align:left}
+  table.resp tr{display:block;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--surface);padding:6px 2px}
+  table.resp td{display:flex;justify-content:space-between;gap:12px;border:0;padding:5px 12px;text-align:right}
+  table.resp td:before{content:attr(data-l);color:var(--ink-3);font-size:12.5px;text-align:left;font-family:var(--sans)}
   table.resp td.first{display:block;text-align:left}table.resp td.first:before{content:none}
-  #drawer{top:auto;bottom:0;height:85%;width:100%;border-left:0;border-top:1px solid var(--border);border-radius:16px 16px 0 0;transform:translateY(105%)}
+  table.resp tr:hover{background:var(--surface)}
+  table.resp .cv>.sub{display:inline;margin-left:6px}
+  #drawer{top:auto;bottom:0;height:88dvh;width:100%;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;transform:translateY(104%)}
   #drawer.open{transform:none}
-  .search{flex:1 1 100%;order:3}
-  h1{font-size:22px}
+  .grab{display:block;width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:8px auto 0}
+  .hero{padding-top:8px}
+  .specimen dl{grid-template-columns:84px 1fr}
+}
+@media (pointer:coarse){
+  .btn,.input,select.input,.iconbtn,.seg button{min-height:44px}
+  .src{min-height:36px;padding:0 10px}
+  .cite{min-width:28px;height:28px}
+  nav.tabs a{min-height:44px}
+  .toc button{padding:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media print{
+  .top,.toc,.actions,#drawer,.scrim,.toast,.no-print,.src,.cite,.skip{display:none!important}
+  body{background:#fff;color:#000;font-size:11pt}
+  main{max-width:none;padding:0}
+  .panel,.chart,.evitem{border-color:#ccc;break-inside:avoid}
+  .profile{grid-template-columns:1fr}
+  a{color:#000;text-decoration:underline}
+  .secthead{break-after:avoid}
 }
 </style>
 </head>
 <body>
+<a class="skip" href="#app" id="skip">Skip to content</a>
 <header class="top"><div class="top-in">
-  <a class="brand" href="#/" aria-label="Signalpost home">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="var(--accent)"/><path d="M10 21c3-6 9-6 12-12" stroke="var(--accent-text)" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="10" cy="21" r="2.6" fill="var(--accent-text)"/><circle cx="22" cy="9" r="2.6" fill="var(--accent-text)"/></svg>
-    Signalpost</a>
-  <nav class="tabs" aria-label="Sections">
-    <a href="#/" data-r="">Overview</a><a href="#/companies" data-r="companies">Companies</a><a href="#/changes" data-r="changes">Changes</a>
-    <a href="#/compare" data-r="compare">Compare <span id="cmpn"></span></a><a href="#/method" data-r="method">Method</a>
-  </nav>
+  <a class="brand" href="#/" aria-label="Signalpost">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M9 22c3.5-7 10.5-7 14-13" stroke="var(--on-accent)" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="9" cy="22" r="2.6" fill="var(--on-accent)"/><circle cx="23" cy="9" r="2.6" fill="var(--on-accent)"/></svg>
+    <span>Signalpost</span></a>
+  <nav class="tabs" id="nav" aria-label="Sections"></nav>
   <div class="grow"></div>
-  <label class="search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="Org. number or company name" aria-label="Search companies"></label>
-  <button class="iconbtn" id="theme" aria-label="Toggle colour theme" title="Toggle theme">◐</button>
+  <div class="searchbox rel" role="search">
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <input id="q" type="search" autocomplete="off" spellcheck="false">
+    <kbd aria-hidden="true">/</kbd>
+  </div>
+  <div class="tools">
+    <div class="seg" id="lang" role="group"></div>
+    <button class="iconbtn" id="theme" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span id="themeLabel" class="sr"></span></button>
+    <button class="iconbtn" id="help" type="button"><span aria-hidden="true">?</span><span class="sr" id="helpLabel"></span></button>
+  </div>
 </div></header>
 <main id="app" tabindex="-1"></main>
 <div class="scrim" id="scrim"></div>
-<aside id="drawer" aria-hidden="true" aria-label="Evidence"><header><strong id="dtitle">Evidence</strong><button class="iconbtn" id="dclose" aria-label="Close evidence">✕</button></header><div class="body" id="dbody"></div></aside>
-<div class="toast" id="toast" role="status"></div>
+<aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="dtitle" aria-hidden="true" inert>
+  <div class="grab" aria-hidden="true"></div>
+  <header><strong id="dtitle">Evidence</strong><button class="iconbtn" id="dclose" type="button"><span aria-hidden="true">✕</span><span class="sr" id="dcloseLabel">Close</span></button></header>
+  <div class="body" id="dbody"></div>
+</aside>
+<div id="tip" role="tooltip"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 const BOOT = /*__BOOT__*/null;
 (function(){
 "use strict";
-const INDEX = (BOOT && BOOT.index) || [], REPORT = (BOOT && BOOT.report) || {};
+const INDEX = (BOOT && BOOT.index) || [], REPORT = (BOOT && BOOT.report) || {}, TRUST = (BOOT && BOOT.trust) || {};
 const BYORG = Object.fromEntries(INDEX.map(r => [r.o, r]));
-const FAM = [["identity","Legal identity"],["status","Registry status"],["industry","Industry"],["financials","Annual accounts"],["leadership","Leadership & roles"],["locations","Registered workplaces"],["group","Group structure"],["website","Official website"],["social_profiles","Company-owned profiles"],["contact","Contact"],["description","Self-description"],["jobs","Job postings"],["activity","Dated activity"]];
-const FAML = Object.fromEntries(FAM);
+const FAMS = ["identity","status","industry","financials","leadership","locations","group","website","social_profiles","contact","description","jobs","activity"];
 const STATES = ["available","not_available","ambiguous","blocked","failed","not_applicable"];
-const STL = {available:"Available",not_available:"Not available",ambiguous:"Ambiguous",blocked:"Blocked",failed:"Failed",not_applicable:"Not applicable"};
-const STI = {available:"✓",not_available:"–",ambiguous:"?",blocked:"⛔",failed:"✕",not_applicable:"∅"};
-const SRC = {official_registry:"Official registry",official_registry_bulk:"Registry snapshot",company_owned:"Company-owned site",public_api:"Public API",open_data:"Open data"};
-const cache = {}, waiters = {};
-const nf = new Intl.NumberFormat("nb-NO");
-// ---------------------------------------------------------------- helpers
+const GLYPH = {available:"✓",not_available:"–",ambiguous:"?",blocked:"⊘",failed:"✕",not_applicable:"∅"};
+const cache = {}, waiters = {}, MEM = {};
+
+// ================================================================ i18n (UI labels only; data stays as sourced)
+const D = {
+  nav_overview:["Overview","Oversikt"], nav_companies:["Companies","Selskaper"], nav_changes:["Changes","Endringer"], nav_compare:["Compare","Sammenlign"], nav_method:["Method","Metode"],
+  search_ph:["Org. number or company name","Org.nr. eller selskapsnavn"], search_label:["Search companies","Søk etter selskap"], search:["Search","Søk"], no_match:["No company matches","Ingen treff"],
+  theme_system:["Theme: system","Tema: system"], theme_light:["Theme: light","Tema: lyst"], theme_dark:["Theme: dark","Tema: mørkt"], shortcuts:["Keyboard shortcuts","Hurtigtaster"], close:["Close","Lukk"], lang_label:["Interface language","Språk i grensesnittet"],
+  skip:["Skip to content","Gå til innhold"], copied:["Copied","Kopiert"], copy_fail:["Copy is not available here","Kopiering er ikke tilgjengelig her"],
+  // families
+  "fam.identity":["Legal identity","Juridisk identitet"], "fam.status":["Registry status","Registerstatus"], "fam.industry":["Industry","Bransje"], "fam.financials":["Annual accounts","Årsregnskap"],
+  "fam.leadership":["Leadership & roles","Ledelse og roller"], "fam.locations":["Registered workplaces","Registrerte arbeidssteder"], "fam.group":["Group structure","Konsernstruktur"],
+  "fam.website":["Official website","Offisielt nettsted"], "fam.social_profiles":["Company-owned profiles","Egne profiler"], "fam.contact":["Contact","Kontakt"],
+  "fam.description":["Self-description","Egenbeskrivelse"], "fam.jobs":["Job postings","Stillingsannonser"], "fam.activity":["Dated activity","Datert aktivitet"],
+  // states
+  "st.available":["Available","Funnet"], "st.not_available":["Not available","Ikke tilgjengelig"], "st.ambiguous":["Ambiguous","Tvetydig"], "st.blocked":["Blocked","Blokkert"], "st.failed":["Failed","Feilet"], "st.not_applicable":["Not applicable","Ikke relevant"],
+  "std.available":["Found and published with evidence.","Funnet og publisert med kildebevis."], "std.not_available":["Checked; the source has nothing for this company.","Sjekket; kilden har ingenting om selskapet."],
+  "std.ambiguous":["A candidate exists but identity could not be proven, so nothing was published.","En kandidat finnes, men identiteten kunne ikke bevises, så ingenting ble publisert."],
+  "std.blocked":["The source refused access (robots.txt or HTTP 401/403/429).","Kilden nektet tilgang (robots.txt eller HTTP 401/403/429)."], "std.failed":["The run could not complete this check (error or budget).","Kjøringen fikk ikke fullført sjekken (feil eller budsjett)."],
+  "std.not_applicable":["The question does not apply to this entity.","Spørsmålet gjelder ikke denne enheten."],
+  // sources
+  "src.official_registry":["Official registry","Offentlig register"], "src.official_registry_bulk":["Registry snapshot","Registeruttrekk"], "src.company_owned":["Company-owned site","Selskapets nettsted"], "src.public_api":["Public API","Offentlig API"], "src.open_data":["Open data","Åpne data"],
+  "srcs.official_registry":["Registry","Register"], "srcs.official_registry_bulk":["Snapshot","Uttrekk"], "srcs.company_owned":["Site","Nettsted"], "srcs.public_api":["API","API"], "srcs.open_data":["Open data","Åpne data"],
+  // overview
+  hero_eyebrow:["Run","Kjøring"], hero_title:["Norwegian company profiles you can verify","Norske selskapsprofiler du kan etterprøve"],
+  hero_lede:["{0} companies researched from nothing but their organisation number. Every published fact carries its source link, retrieval time, reporting period and content hash. Where identity could not be proven, the profile says so instead of guessing.","{0} selskaper undersøkt med bare organisasjonsnummeret som utgangspunkt. Hvert publisert faktum har kildelenke, hentetidspunkt, rapportperiode og innholdshash. Der identiteten ikke kunne bevises, sier profilen det i stedet for å gjette."],
+  hero_try:["Try","Prøv"], specimen_title:["What a published fact looks like","Slik ser et publisert faktum ut"], specimen_open:["Open profile","Åpne profil"], specimen_ev:["Show evidence","Vis kildebevis"],
+  kpi_companies:["companies profiled","selskaper profilert"], kpi_facts:["evidence-backed facts","fakta med kildebevis"], kpi_sites:["websites passed the identity gate","nettsteder bestod identitetskontrollen"], kpi_held:["website candidates held back","nettstedskandidater holdt tilbake"],
+  trust_title:["Trust","Tillit"], trust_sub:["Counted from this run's envelopes. Abstaining is a result, not a gap.","Telt fra denne kjøringens konvolutter. Å avstå er et resultat, ikke et hull."],
+  trust_evidence:["evidence complete","komplette kildebevis"], trust_evidence_d:["{0} of {1} facts have URL, retrieval time, SHA-256 and span","{0} av {1} fakta har URL, hentetid, SHA-256 og utdrag"],
+  trust_abst:["companies with an abstention","selskaper med minst én avståelse"], trust_abst_d:["{0} family results ended ambiguous: a candidate was found but not published","{0} familieresultater endte tvetydig: kandidat funnet, men ikke publisert"],
+  trust_verify:["evidence re-found at source","kildebevis gjenfunnet hos kilden"], trust_verify_d:["{0} sampled sources re-fetched; {1} drifted, {2} fetch errors","{0} tilfeldige kilder hentet på nytt; {1} endret, {2} hentefeil"],
+  trust_verify_none:["Not re-verified for this build","Ikke etterprøvd for dette bygget"], trust_verify_how:["Run “Verify evidence” in the live console, or eval/verify_evidence.py","Kjør «Verifiser kildebevis» i konsollen, eller eval/verify_evidence.py"],
+  trust_proofs:["How published websites were proven","Slik ble publiserte nettsteder bevist"], trust_rejections:["Correct rejections","Riktige avvisninger"],
+  trust_rejections_d:["Candidates the identity gate refused, with its reason. None of these appear as facts.","Kandidater identitetskontrollen avviste, med begrunnelse. Ingen av dem vises som fakta."],
+  trust_audit:["Hand audit of every published website: identity-audit.md","Manuell kontroll av hvert publiserte nettsted: identity-audit.md"], trust_none:["No rejections in this run.","Ingen avvisninger i denne kjøringen."],
+  gate_title:["Identity gate decisions","Beslutninger i identitetskontrollen"],
+  "gate.accepted":["Accepted","Godkjent"], "gate.ambiguous":["Ambiguous","Tvetydig"], "gate.rejected":["Rejected","Avvist"], "gate.related_site":["Related group site","Konsernnettsted"], "gate.blocked":["Blocked","Blokkert"], "gate.unreachable":["Unreachable","Utilgjengelig"],
+  cov_title:["Coverage by field family","Dekning per felt-familie"], cov_sub:["Share of companies per terminal state. The bracket is the 95% Wilson interval for “available”.","Andel selskaper per sluttilstand. Klammen er 95 % Wilson-intervall for «funnet»."],
+  changed_title:["What changed","Hva er endret"], changed_none_base:["Baseline run. Re-run into the same output folder (or with --previous) to see new filings, role changes, jobs and address moves.","Grunnlagskjøring. Kjør på nytt i samme mappe (eller med --previous) for å se nye regnskap, rolleendringer, stillinger og adresser."],
+  changed_none_ref:["The refresh found no changes since the previous run. Re-running on unchanged sources produces zero false changes.","Oppdateringen fant ingen endringer siden forrige kjøring. Ny kjøring på uendrede kilder gir null falske endringer."],
+  changed_n:["{0} changes in {1} companies ({2} material)","{0} endringer i {1} selskaper ({2} vesentlige)"], all_changes:["All changes","Alle endringer"],
+  run_title:["Run","Kjøring"], run_requests:["Outbound requests","Utgående forespørsler"], run_time:["Run time","Kjøretid"], run_cost:["Third-party cost","Tredjepartskostnad"], run_of:["of {0}","av {0}"],
+  run_valid:["Contract checks","Kontraktsjekker"], run_phases:["Time by phase","Tid per fase"], run_p:["p50 / p95 per company","p50 / p95 per selskap"], run_mode:["Mode","Modus"], run_refresh:["Refresh (diffed against previous run)","Oppdatering (sammenlignet med forrige kjøring)"], run_baseline:["Baseline","Grunnlag"],
+  run_jobs:["NAV job feed","NAV-stillingsfeed"], run_jobs_v:["{0} ads indexed over {1} days","{0} annonser indeksert over {1} dager"], run_agent:["Agent version","Agentversjon"], run_env:["Envelopes","Konvolutter"],
+  meter_warn:["warning","advarsel"], meter_bad:["near limit","nær grensen"],
+  "chk.one_envelope_per_input":["One envelope per input","Én konvolutt per input"], "chk.unique_organisation_numbers":["Unique organisation numbers","Unike organisasjonsnumre"], "chk.all_family_states_valid":["All family states valid","Alle tilstander gyldige"],
+  "chk.every_claim_has_evidence":["Every claim has evidence","Alle fakta har kildebevis"], "chk.no_null_values_published":["No null values published","Ingen tomme verdier publisert"], "chk.all_families_present":["All families present","Alle familier til stede"],
+  // explorer
+  companies_title:["Companies","Selskaper"], companies_sub:["Filter, sort and export. Filters are saved in the address, so a filtered view can be shared.","Filtrer, sorter og eksporter. Filtrene lagres i adressen, så visningen kan deles."],
+  f_text:["Name, org. number, municipality or industry","Navn, org.nr., kommune eller bransje"], f_family:["Field family","Felt-familie"], f_state:["State","Tilstand"], f_any:["Any","Alle"], f_form:["Legal form","Organisasjonsform"],
+  f_county:["County","Fylke"], f_since:["Changed since","Endret siden"], f_web:["Has website","Har nettsted"], f_jobs:["Has jobs","Har stillinger"], f_changed:["Has changes","Har endringer"], f_clear:["Clear filters","Nullstill filtre"], filters:["Filters","Filtre"],
+  export_csv:["Export CSV","Eksporter CSV"], shown:["{0}–{1} of {2} companies","{0}–{1} av {2} selskaper"], shown0:["0 of {0} companies","0 av {0} selskaper"], prev:["Previous","Forrige"], next:["Next","Neste"], page:["Page {0} of {1}","Side {0} av {1}"],
+  col_company:["Company","Selskap"], col_place:["Municipality","Kommune"], col_emp:["Employees","Ansatte"], col_rev:["Revenue","Driftsinntekter"], col_res:["Net result","Årsresultat"], col_web:["Website","Nettsted"], col_jobs:["Jobs","Stillinger"], col_facts:["Facts","Fakta"], col_fams:["Families","Familier"], col_cmp:["Compare","Sammenlign"],
+  add:["Add","Legg til"], added:["Added","Lagt til"], none_match_t:["No companies match these filters","Ingen selskaper passer filtrene"], none_match_d:["Loosen a filter or clear them all.","Løsne et filter eller nullstill alle."],
+  // profile
+  loading:["Loading profile","Laster profil"], no_profile:["No profile for {0} in this run.","Ingen profil for {0} i denne kjøringen."], load_fail:["Profile data could not be loaded. The data/ folder must sit next to index.html.","Profildata kunne ikke lastes. Mappen data/ må ligge ved siden av index.html."],
+  org:["Org. no.","Org.nr."], copy_org:["Copy organisation number","Kopier organisasjonsnummer"], active:["Active","Aktiv"], inactive:["Inactive / winding up","Inaktiv / under avvikling"], brand:["Public brand","Merkenavn"],
+  in_compare:["In compare","I sammenligning"], to_compare:["Compare","Sammenlign"], print:["Print","Skriv ut"], raw:["Raw data","Rådata"], copy_link:["Copy link","Kopier lenke"],
+  f_revenue:["Revenue {0}","Driftsinntekter {0}"], f_result:["Net result {0}","Årsresultat {0}"], f_emp:["Registered employees","Registrerte ansatte"], f_work:["Registered workplaces","Registrerte arbeidssteder"], f_jobsn:["Active job postings","Aktive stillingsannonser"],
+  toc_summary:["Summary","Sammendrag"], toc_signals:["Signals and checks","Signaler og sjekker"], toc_found:["What we found","Hva vi fant"],
+  s1:["Legal identity and public brand","Juridisk identitet og merkenavn"], s2:["Annual accounts","Årsregnskap"], s3:["Leadership and workplaces","Ledelse og arbeidssteder"], s4:["Website and company-owned profiles","Nettsted og egne profiler"],
+  s5:["Hiring and dated activity","Rekruttering og datert aktivitet"], s6:["Changes since the previous run","Endringer siden forrige kjøring"], s7:["Unknowns and identity audit","Ukjent og identitetskontroll"],
+  summary:["Summary","Sammendrag"], summary_note:["Each numbered button opens the evidence behind that sentence. Sentences are generated deterministically from the facts, in English.","Hver nummerknapp åpner kildebeviset bak setningen. Setningene lages deterministisk fra faktaene, på engelsk."], summary_none:["Not enough verified facts for a summary.","For få bekreftede fakta til et sammendrag."],
+  signals:["Signals","Signaler"], checks:["Data checks","Datasjekker"], derived:["derived","avledet"], evidence:["Evidence","Kildebevis"], "kind.risk":["Risk","Risiko"], "kind.growth":["Growth","Vekst"], "kind.info":["Info","Info"],
+  "res.pass":["Pass","Bestått"], "res.warn":["Warning","Advarsel"], "res.fail":["Fail","Ikke bestått"], no_signals:["No signals or checks for this company.","Ingen signaler eller sjekker for selskapet."],
+  no_data:["No data","Ingen data"], company_acc:["Company","Selskap"], group_acc:["Group","Konsern"], acc_type:["Account type","Regnskapstype"],
+  fin_note:["Values are copied verbatim from Regnskapsregisteret in the unit shown; missing values stay missing. Tap a bar or a value for its evidence.","Verdiene er kopiert ordrett fra Regnskapsregisteret i oppgitt enhet; manglende verdier forblir tomme. Trykk på en søyle eller verdi for kildebevis."],
+  fin_table:["All reported lines","Alle rapporterte linjer"], filings:["Filing history","Innsendte årsregnskap"], filings_d:["Official annual-account copies (PDF) from Brønnøysundregistrene","Offisielle kopier av årsregnskap (PDF) fra Brønnøysundregistrene"],
+  no_accounts:["No annual accounts","Ingen årsregnskap"], line:["Line","Linje"],
+  "fin.revenue":["Revenue","Driftsinntekter"], "fin.net_result":["Net result","Årsresultat"], "fin.equity":["Equity","Egenkapital"],
+  leaders:["Leadership & roles","Ledelse og roller"], workplaces:["Registered workplaces","Registrerte arbeidssteder"], map_load:["Show on map","Vis på kart"],
+  map_note:["Positions geocoded by Kartverket at view time from the registered addresses; approximate and not part of the evidence.","Posisjoner geokodet av Kartverket ved visning fra registrerte adresser; omtrentlige og ikke del av kildebeviset."],
+  map_consent:["Sends up to 30 workplace addresses to Kartverket's address API (ws.geonorge.no).","Sender opptil 30 adresser til Kartverkets adresse-API (ws.geonorge.no)."], map_fail:["Map unavailable (offline or the address API did not answer). The addresses are listed below.","Kartet er utilgjengelig (frakoblet eller adresse-API-et svarte ikke). Adressene står under."],
+  map_n:["{0} of {1} addresses located","{0} av {1} adresser funnet"], more:["{0} more","{0} til"], employees_n:["{0} employees","{0} ansatte"], opened:["opened {0}","åpnet {0}"],
+  site:["Official website","Offisielt nettsted"], social:["Company-owned profiles","Egne profiler"], contact:["Contact","Kontakt"], description:["Company's own description (promotional, company-owned)","Selskapets egen beskrivelse (markedsføring, selskapseid)"],
+  jobs:["Active job postings (NAV)","Aktive stillingsannonser (NAV)"], activity:["Dated activity","Datert aktivitet"], published:["published {0}","publisert {0}"], expires:["expires {0}","utløper {0}"],
+  ch_none_ref:["No changes since the previous run ({0}).","Ingen endringer siden forrige kjøring ({0})."], ch_none_base:["Baseline run. Re-run with --previous to see what changed.","Grunnlagskjøring. Kjør med --previous for å se hva som er endret."],
+  first_seen_title:["Facts by first seen","Fakta etter først sett"], first_seen_n:["{0} facts first seen {1}","{0} fakta først sett {1}"], material:["material","vesentlig"], minor:["minor","mindre"], removed:["removed","fjernet"],
+  unknowns:["What we could not establish","Hva vi ikke kunne fastslå"], unknowns_none:["Every field family has published facts.","Alle felt-familier har publiserte fakta."],
+  audit:["Identity audit","Identitetskontroll"], audit_d:["Candidates we checked but did not publish, with the reason. These are never shown as facts.","Kandidater vi sjekket, men ikke publiserte, med begrunnelse. De vises aldri som fakta."], audit_none:["No rejected candidates.","Ingen avviste kandidater."],
+  ops_line:["Run {0} · completed {1} · {2} requests · {3} s · ${4}","Kjøring {0} · fullført {1} · {2} forespørsler · {3} s · ${4}"],
+  // evidence drawer
+  ev_title:["Evidence","Kildebevis"], ev_source:["Source","Kilde"], ev_retrieved:["Retrieved","Hentet"], ev_period:["Period","Periode"], ev_method:["Method","Metode"], ev_identity:["Identity","Identitet"], ev_licence:["Licence","Lisens"],
+  ev_hash:["SHA-256","SHA-256"], ev_copy:["Copy","Kopier"], ev_none:["No claims referenced.","Ingen fakta referert."], ev_period_c:["Reporting period {0} → {1}","Rapportperiode {0} → {1}"], ev_effective:["Effective {0}","Gjelder fra {0}"],
+  ev_first:["First seen {0}","Først sett {0}"], ev_stale:["Carried forward (source unreadable since {0})","Videreført (kilden uleselig siden {0})"], ev_derived:["Derived value","Avledet verdi"], ev_span_none:["(no span)","(intet utdrag)"],
+  ev_exact:["Exact value","Eksakt verdi"], sentence_src:["Source for this sentence","Kilde for setningen"], change_ev:["Change evidence","Kildebevis for endringen"],
+  // compare
+  cmp_title:["Compare companies","Sammenlign selskaper"], cmp_sub:["Up to four companies side by side. Tap any value for its evidence. Rows that differ are tinted.","Opptil fire selskaper side om side. Trykk på en verdi for kildebevis. Rader som er ulike er farget."],
+  cmp_add:["Add a company","Legg til selskap"], cmp_empty_t:["Nothing to compare yet","Ingenting å sammenligne ennå"], cmp_empty_d:["Search above, or use “Add” in the company list or “Compare” on a profile.","Søk over, eller bruk «Legg til» i listen eller «Sammenlign» på en profil."],
+  cmp_share:["Copy share link","Kopier delingslenke"], cmp_full:["Comparing up to 4 companies","Sammenligner opptil 4 selskaper"], remove:["Remove {0}","Fjern {0}"],
+  r_form:["Legal form","Organisasjonsform"], r_muni:["Municipality","Kommune"], r_founded:["Founded","Stiftet"], r_industry:["Industry","Bransje"], r_emp:["Employees","Ansatte"], r_rev:["Revenue","Driftsinntekter"],
+  r_op:["Operating result","Driftsresultat"], r_net:["Net result","Årsresultat"], r_eq:["Equity","Egenkapital"], r_assets:["Total assets","Sum eiendeler"], r_ceo:["CEO","Daglig leder"], r_chair:["Board chair","Styreleder"],
+  r_work:["Workplaces","Arbeidssteder"], r_site:["Website","Nettsted"], r_jobs:["Active jobs","Aktive stillinger"], r_facts:["Facts published","Publiserte fakta"],
+  // changes
+  chg_title:["Changes since the previous run","Endringer siden forrige kjøring"], chg_sub:["Typed changes detected by diffing stable claim keys. Unreadable sources are carried forward, never reported as removed.","Typede endringer funnet ved å sammenligne stabile nøkler. Uleselige kilder videreføres og meldes aldri som fjernet."],
+  chg_all:["All","Alle"], chg_mat:["Material","Vesentlige"], chg_minor:["Minor","Mindre"], chg_n:["{0} changes","{0} endringer"], chg_filter:["Filter by company or value","Filtrer på selskap eller verdi"],
+  // method
+  m_title:["How Signalpost works","Slik fungerer Signalpost"], m_sub:["Deterministic, registry-anchored and evidence-first. No language model and no paid data.","Deterministisk, forankret i registrene og kildebevis først. Ingen språkmodell og ingen betalte data."],
+  m_pipeline:["Pipeline","Prosess"], m_gate:["Identity gate","Identitetskontroll"], m_states:["Availability states","Tilgjengelighetstilstander"], m_sources:["Sources and licences","Kilder og lisenser"], m_budget:["Budget plan for this run (requests by phase)","Budsjettplan for kjøringen (forespørsler per fase)"],
+  m_hosts:["Requests by host (actual)","Forespørsler per vert (faktisk)"], m_keys:["Keyboard shortcuts","Hurtigtaster"],
+  p1:["Anchor on the organisation number","Forankring i organisasjonsnummeret"], p1d:["Live Enhetsregisteret record, 100 companies per request.","Levende oppslag i Enhetsregisteret, 100 selskaper per forespørsel."],
+  p2:["Official facts by exact key","Offisielle fakta med eksakt nøkkel"], p2d:["Annual accounts, filing history, roles, registered workplaces, group structure and the registry's dated change log.","Årsregnskap, innsendingshistorikk, roller, underenheter, konsern og registerets daterte endringslogg."],
+  p3:["Website discovery and identity gate","Nettstedsøk og identitetskontroll"], p3d:["Registry-declared site, registry e-mail domain and name-based .no domains, then the gate below.","Registrert nettsted, e-postdomene fra registeret og navnebaserte .no-domener, deretter kontrollen under."],
+  p4:["Company-owned facts","Selskapseide fakta"], p4d:["From a verified site only: social profiles, role mailboxes, self-description and dated news.","Bare fra bekreftet nettsted: sosiale profiler, felles e-post, egenbeskrivelse og daterte nyheter."],
+  p5:["Hiring","Rekruttering"], p5d:["NAV's public vacancy feed; an ad is published only if its employer org. number equals the company or one of its workplaces.","NAVs åpne stillingsfeed; en annonse publiseres bare om arbeidsgivers org.nr. er selskapet eller en av underenhetene."],
+  p6:["Refresh","Oppdatering"], p6d:["Diff against the previous run on stable claim keys; unreadable sources are carried forward.","Sammenligning med forrige kjøring på stabile nøkler; uleselige kilder videreføres."],
+  p7:["Summary","Sammendrag"], p7d:["Deterministic sentences, each citing the claims it rests on.","Deterministiske setninger som hver viser til faktaene de bygger på."],
+  g_intro:["A website is published as the company's own only if:","Et nettsted publiseres som selskapets eget bare hvis:"],
+  g1:["the exact organisation number is printed on the site (and not merely among several companies' numbers), or","eksakt organisasjonsnummer står på nettstedet (og ikke bare blant flere selskapers numre), eller"],
+  g2:["the legal name is in the site's identity fields and the registry phone or street address is on the site, or","juridisk navn står i nettstedets identitetsfelt og registerets telefon eller gateadresse står på nettstedet, eller"],
+  g3:["the registry's e-mail domain is the site's domain and the legal name is in its identity fields, or","registerets e-postdomene er nettstedets domene og juridisk navn står i identitetsfeltene, eller"],
+  g4:["the registry itself declares the site and its identity fields carry the legal name.","registeret selv oppgir nettstedet og identitetsfeltene har det juridiske navnet."],
+  g_out:["Parked pages, cross-domain redirects without proof, address-like names and sites showing another company's number are held back as ambiguous, rejected, or labelled as a related group site.","Parkerte sider, omdirigeringer uten bevis, adresselignende navn og nettsteder med et annet selskaps nummer holdes tilbake som tvetydige, avvises eller merkes som konsernnettsted."],
+  lic_brreg:["Brønnøysundregistrene (Enhetsregisteret, Regnskapsregisteret, roles, sub-units, group, change log)","Brønnøysundregistrene (Enhetsregisteret, Regnskapsregisteret, roller, underenheter, konsern, endringslogg)"], lic_brreg_v:["NLOD 2.0 — data.brreg.no open APIs","NLOD 2.0 — åpne API-er på data.brreg.no"],
+  lic_nav:["NAV pam-stilling-feed","NAV pam-stilling-feed"], lic_nav_v:["Free public API (arbeidsplassen.nav.no terms); active ads only, no contact persons","Åpent API (vilkår for arbeidsplassen.nav.no); bare aktive annonser, ingen kontaktpersoner"],
+  lic_web:["Company websites","Selskapenes nettsteder"], lic_web_v:["Company-owned; robots.txt honoured; identifying User-Agent; bounded pages per site","Selskapseid; robots.txt respekteres; identifiserende User-Agent; begrenset antall sider"],
+  lic_kv:["Kartverket address API (map, optional)","Kartverkets adresse-API (kart, valgfritt)"], lic_kv_v:["CC BY 4.0; only called when you press “Show on map”","CC BY 4.0; brukes bare når du trykker «Vis på kart»"],
+  k_search:["Focus search","Gå til søk"], k_close:["Close drawer or dialog","Lukk panel eller dialog"], k_go:["Go to overview / companies / changes / compare / method","Gå til oversikt / selskaper / endringer / sammenligning / metode"], k_help:["Show this list","Vis denne listen"],
+  // change types
+  "ct.address_change":["Address change","Adresseendring"], "ct.name_change":["Name change","Navneendring"], "ct.employee_count_change":["Employee count change","Endret antall ansatte"], "ct.capital_change":["Share capital change","Kapitalendring"],
+  "ct.legal_form_change":["Legal form change","Endret organisasjonsform"], "ct.industry_change":["Industry change","Bransjeendring"], "ct.website_change":["Website change","Endret nettsted"], "ct.ceo_change":["CEO change","Ny daglig leder"],
+  "ct.new_role":["New role","Ny rolle"], "ct.ended_role":["Ended role","Avsluttet rolle"], "ct.changed_role":["Changed role","Endret rolle"], "ct.new_location":["New workplace","Nytt arbeidssted"], "ct.closed_location":["Closed workplace","Nedlagt arbeidssted"],
+  "ct.changed_location":["Changed workplace","Endret arbeidssted"], "ct.new_job":["New job posting","Ny stillingsannonse"], "ct.closed_job":["Closed job posting","Avsluttet stillingsannonse"], "ct.changed_job":["Changed job posting","Endret stillingsannonse"],
+  "ct.new_filing":["New filing","Nytt regnskap"], "ct.restated_value":["Restated value","Korrigert verdi"], "ct.removed_filing_value":["Removed filing value","Fjernet regnskapsverdi"], "ct.new_activity":["New activity","Ny aktivitet"], "ct.aged_out_activity":["Activity aged out","Aktivitet utløpt"],
+  "ct.new_website":["New website","Nytt nettsted"], "ct.website_removed":["Website removed","Nettsted fjernet"], "ct.status_change":["Status change","Statusendring"], "ct.changed_description":["Changed description","Endret beskrivelse"], "ct.new_description":["New description","Ny beskrivelse"],
+  "ct.new_profile":["New profile","Ny profil"], "ct.removed_profile":["Removed profile","Fjernet profil"], "ct.changed_profile":["Changed profile","Endret profil"],
+};
+let LANG = store("sp-lang") || ((navigator.language || "").toLowerCase().match(/^(nb|nn|no)/) ? "no" : "en");
+function t(k, ...a){ const e = D[k]; let s = e ? e[LANG === "no" ? 1 : 0] : k; a.forEach((v,i) => { s = s.split("{"+i+"}").join(String(v)); }); return s; }
+function famL(f){ return D["fam."+f] ? t("fam."+f) : f; }
+function stL(s){ return D["st."+s] ? t("st."+s) : String(s).replace(/_/g," "); }
+function srcL(c, short){ const k = (short ? "srcs." : "src.") + c; return D[k] ? t(k) : (c || "Source"); }
+function ctL(c){ return D["ct."+c] ? t("ct."+c) : String(c||"").replace(/_/g," "); }
+function loc(){ return LANG === "no" ? "nb-NO" : "en-GB"; }
+function nf(v, opt){ return new Intl.NumberFormat(loc(), opt).format(v); }
+
+// ================================================================ helpers
 function el(tag, props, ...kids){
   const n = document.createElement(tag);
   if (props) for (const [k,v] of Object.entries(props)){
     if (v == null || v === false) continue;
     if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
-    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
     else if (k === "href") n.setAttribute("href", safeHref(v)); else n.setAttribute(k, v === true ? "" : v);
   }
-  for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
   return n;
 }
-function safeHref(u){ u = String(u||""); return /^(https?:|#|mailto:|data\/)/i.test(u) ? u : "#"; }
+const SVGNS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs, ...kids){ const n = document.createElementNS(SVGNS, tag); for (const [k,v] of Object.entries(attrs||{})) if (v != null) { if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); } kids.flat().forEach(k => k != null && n.append(k instanceof Node ? k : document.createTextNode(String(k)))); return n; }
+function safeHref(u){ u = String(u||""); return /^(https?:|#|mailto:|data\/|\.\.\/)/i.test(u) ? u : "#"; }
 function ext(u, label){ return el("a",{href:u,target:"_blank",rel:"noopener noreferrer nofollow"}, label || u); }
-function chip(state, label){ return el("span",{class:"chip st-"+state,title:STL[state]||state}, el("span",{"aria-hidden":"true"},STI[state]||"•"), label || STL[state] || state); }
-function num(v){ return (typeof v === "number") ? nf.format(v) : String(v); }
-function money(v, unit){
-  if (typeof v !== "number") return v == null ? "—" : String(v);
-  const a = Math.abs(v); let s;
-  if (a >= 1e9) s = (v/1e9).toLocaleString("nb-NO",{maximumFractionDigits:1})+" mrd"; else if (a >= 1e6) s = (v/1e6).toLocaleString("nb-NO",{maximumFractionDigits:1})+" mill"; else s = nf.format(v);
-  return s + " " + (unit || "NOK");
+function host(u){ return String(u||"").replace(/^https?:\/\//,"").replace(/\/$/,""); }
+function chip(state, label){ return el("span",{class:"chip st-"+state}, el("span",{class:"g","aria-hidden":"true"}, GLYPH[state]||"•"), label || stL(state)); }
+function num(v){ return typeof v === "number" ? nf(v) : String(v); }
+function exactMoney(v, unit){ return typeof v === "number" ? nf(v) + (unit ? " " + unit : "") : String(v); }
+function compact(v){
+  const a = Math.abs(v), no = LANG === "no";
+  if (a >= 1e9) return nf(v/1e9,{maximumFractionDigits:1}) + (no ? " mrd." : " bn");
+  if (a >= 1e6) return nf(v/1e6,{maximumFractionDigits:1}) + (no ? " mill." : " m");
+  if (a >= 1e4) return nf(v/1e3,{maximumFractionDigits:0}) + " k";
+  return nf(v);
 }
-function fmtOrg(o){ return o ? o.replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3") : ""; }
-function toast(t){ const n = document.getElementById("toast"); n.textContent = t; n.classList.add("on"); setTimeout(()=>n.classList.remove("on"), 1600); }
-function copy(t){ try { navigator.clipboard.writeText(t).then(()=>toast("Copied")); } catch(e) { toast("Copy not available"); } }
-function store(k, v){ try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "null"); localStorage.setItem(k, JSON.stringify(v)); } catch(e) { return null; } }
+function money(v, unit){ if (typeof v !== "number") return v == null ? "—" : String(v); return LANG === "no" ? compact(v) + (unit ? " " + unit : "") : (unit ? unit + " " : "") + compact(v); }
+function pct(x, d){ return nf(x*100,{maximumFractionDigits:d||0}) + " %".replace(" ", LANG === "no" ? " " : ""); }
+function fmtOrg(o){ return o ? String(o).replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3") : ""; }
+function fmtDate(s){ return s ? String(s).slice(0,10) : ""; }
+function toast(msg){ const n = document.getElementById("toast"); n.textContent = msg; n.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>n.classList.remove("on"), 1600); }
+function copy(text){
+  const fallback = () => { try { const ta = el("textarea",{style:"position:fixed;opacity:0"}); ta.value = text; document.body.append(ta); ta.select(); const ok = document.execCommand && document.execCommand("copy"); ta.remove(); toast(ok ? t("copied") : t("copy_fail")); } catch(e){ toast(t("copy_fail")); } };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(t("copied")), fallback); else fallback(); } catch(e){ fallback(); }
+}
+function store(k, v){ // localStorage when allowed, in-memory otherwise (private mode, locked-down file://)
+  if (v !== undefined) MEM[k] = v;
+  try { if (v === undefined){ const raw = localStorage.getItem(k); return raw == null ? (k in MEM ? MEM[k] : null) : JSON.parse(raw); } localStorage.setItem(k, JSON.stringify(v)); }
+  catch(e) { return k in MEM ? MEM[k] : null; }
+}
+function wilson(k, n){ if (!n) return [0,0]; const z = 1.96, p = k/n, d = 1 + z*z/n, c = (p + z*z/(2*n))/d, h = z*Math.sqrt(p*(1-p)/n + z*z/(4*n*n))/d; return [Math.max(0,c-h), Math.min(1,c+h)]; }
 function valueText(v){
   if (v == null) return "—";
   if (typeof v === "object"){
-    if (v.title) return v.title + (v.location ? " · " + v.location : "") + (v.date ? " · " + v.date : "") + (v.published ? " · published " + v.published : "");
+    if (v.title) return v.title + (v.location ? " · " + v.location : "") + (v.date ? " · " + v.date : "");
     if (v.name) return v.name + (v.organisation_number ? " (" + fmtOrg(v.organisation_number) + ")" : "") + (v.relation ? " · " + v.relation : "") + (v.share ? " " + v.share : "");
+    if (v.year) return String(v.year);
     return JSON.stringify(v);
   }
   return typeof v === "number" ? num(v) : String(v);
 }
-// ---------------------------------------------------------------- data loading
+function claimText(c){ return typeof c.value === "number" && c.unit ? money(c.value, c.unit) : valueText(c.value); }
+function ico(path){ return svg("svg",{viewBox:"0 0 16 16","aria-hidden":"true"}, svg("path",{d:path,fill:"none",stroke:"currentColor","stroke-width":"1.5","stroke-linecap":"round","stroke-linejoin":"round"})); }
+const ICO_DOC = "M4 1.5h5l3 3v10H4zM9 1.5v3h3M6 8h4M6 10.5h4";
+const tip = document.getElementById("tip");
+function showTip(e, text){ tip.textContent = text; tip.classList.add("on"); const x = Math.min(window.innerWidth - 270, (e.clientX || 0) + 12), y = (e.clientY || 0) + 14; tip.style.left = x + "px"; tip.style.top = y + "px"; }
+function hideTip(){ tip.classList.remove("on"); }
+
+// ================================================================ data loading
 window.SP_LOAD = function(org, data){ data.claims = (data.claims||[]).filter(c => (c.availability||"available") === "available"); cache[org] = data; (waiters[org]||[]).forEach(f => f(data)); delete waiters[org]; };
 function load(org){
   if (cache[org]) return Promise.resolve(cache[org]);
   return new Promise((resolve, reject) => {
+    const first = !waiters[org];
     (waiters[org] = waiters[org] || []).push(resolve);
-    if (waiters[org].length > 1) return;
+    if (!first) return;
     const s = document.createElement("script"); s.src = "data/" + org + ".js"; s.async = true;
     s.onerror = () => { delete waiters[org]; reject(new Error("missing profile")); };
     document.head.append(s);
   });
 }
-// ---------------------------------------------------------------- compare set
-let CMP = (store("sp-compare") || []).filter(o => BYORG[o]);
-function setCmp(list){ CMP = list.slice(0,4); store("sp-compare", CMP); document.getElementById("cmpn").textContent = CMP.length ? "("+CMP.length+")" : ""; }
-function toggleCmp(o){ setCmp(CMP.includes(o) ? CMP.filter(x => x !== o) : CMP.concat(o)); if (CMP.length === 4) toast("Comparing up to 4 companies"); }
-setCmp(CMP);
-// ---------------------------------------------------------------- evidence drawer
-const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
-function closeDrawer(){ drawer.classList.remove("open"); scrim.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
-document.getElementById("dclose").onclick = closeDrawer; scrim.onclick = closeDrawer;
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
-function openEvidence(env, claimIds, title){
-  const claims = env.claims.filter(c => claimIds.includes(c.id));
-  const evs = Object.fromEntries(env.evidence.concat(env.prior_evidence || []).map(e => [e.id, e]));
-  const body = document.getElementById("dbody"); body.replaceChildren();
-  document.getElementById("dtitle").textContent = title || "Evidence";
-  claims.forEach(c => {
-    body.append(el("div",{class:"small muted"}, (FAML[c.family]||c.family) + " · " + (c.label || c.field)));
-    body.append(el("div",{style:"font-weight:700;margin:2px 0 8px"}, valueText(c.value) + (c.unit && typeof c.value === "number" ? " " + c.unit : "")));
-    const meta = [];
-    if (c.period && c.period.to) meta.push("Reporting period " + (c.period.from || "?") + " → " + c.period.to);
-    if (c.effective_date) meta.push("Effective " + c.effective_date);
-    if (c.stale_since) meta.push("Carried forward (source unreadable since " + c.stale_since + ")");
-    if (c.derived) meta.push("Derived value");
-    if (meta.length) body.append(el("div",{class:"small muted",style:"margin-bottom:8px"}, meta.join(" · ")));
-    c.evidence_ids.forEach(id => {
-      const e = evs[id]; if (!e) return;
-      body.append(el("div",{class:"ev"},
-        el("div",{style:"display:flex;justify-content:space-between;gap:8px;align-items:center"}, el("span",{class:"pill"}, SRC[e.source_class] || e.source_class), e.license ? el("span",{class:"small muted"}, e.license) : null),
-        el("div",{class:"span"}, e.claim_span || "(no span)"),
-        el("div",{class:"evrow"}, el("span",null,"Source"), ext(e.source_url, e.source_url.length > 70 ? e.source_url.slice(0,70)+"…" : e.source_url)),
-        el("div",{class:"evrow"}, el("span",null,"Retrieved"), el("span",null, e.retrieved_at)),
-        e.reporting_period && e.reporting_period.to ? el("div",{class:"evrow"}, el("span",null,"Period"), el("span",null, (e.reporting_period.from||"")+" → "+e.reporting_period.to)) : null,
-        el("div",{class:"evrow"}, el("span",null,"Method"), el("span",{class:"mono"}, e.extraction_method)),
-        e.identity_reason ? el("div",{class:"evrow"}, el("span",null,"Identity"), el("span",null, e.identity_reason)) : null,
-        el("div",{class:"evrow"}, el("span",null,"SHA-256"), el("span",null, el("span",{class:"mono"}, e.content_sha256.slice(0,16)+"…"), " ", el("button",{class:"src",onclick:()=>copy(e.content_sha256)},"Copy"))),
-      ));
-    });
-  });
-  if (!claims.length) body.append(el("p",{class:"muted"},"No claims referenced."));
-  drawer.classList.add("open"); scrim.classList.add("open"); drawer.setAttribute("aria-hidden","false");
-  document.getElementById("dclose").focus();
-}
-function srcBtn(env, claim){
-  const e = env.evidence.find(x => x.id === claim.evidence_ids[0]) || {};
-  return el("button",{class:"src",title:"Show evidence",onclick:()=>openEvidence(env,[claim.id], claim.label)}, (SRC[e.source_class]||"Source") + " · " + String(e.retrieved_at||"").slice(0,10));
-}
-// ---------------------------------------------------------------- router
-const app = document.getElementById("app");
-function route(){
-  const h = location.hash.replace(/^#\/?/,"");
-  const [r, arg] = [h.split("/")[0], decodeURIComponent(h.split("/").slice(1).join("/"))];
-  document.querySelectorAll("nav.tabs a").forEach(a => a.classList.toggle("on", a.dataset.r === (r === "c" ? "companies" : r)));
-  closeDrawer(); app.replaceChildren();
-  if (r === "c" && arg) return viewCompany(arg);
-  if (r === "companies") return viewCompanies(arg);
-  if (r === "compare") return viewCompare(arg);
-  if (r === "changes") return viewChanges();
-  if (r === "method") return viewMethod();
-  return viewOverview();
-}
-window.addEventListener("hashchange", () => { route(); window.scrollTo(0,0); });
-const q = document.getElementById("q");
-q.addEventListener("keydown", e => { if (e.key === "Enter"){ const v = q.value.trim(); const d = v.replace(/\D/g,""); if (d.length === 9 && BYORG[d]) location.hash = "#/c/"+d; else location.hash = "#/companies/" + encodeURIComponent(v); }});
-document.getElementById("theme").onclick = () => {
-  const root = document.documentElement; const cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  root.dataset.theme = cur === "dark" ? "light" : "dark"; store("sp-theme", root.dataset.theme);
-};
-(function(){ const t = store("sp-theme"); if (t) document.documentElement.dataset.theme = t; })();
-// ---------------------------------------------------------------- overview
-function coverageCard(){
-  const n = INDEX.length || 1;
-  const card = el("div",{class:"card"}, el("h2",null,"Coverage by field family"), el("p",{class:"small muted",style:"margin-top:-6px"},"Share of companies per terminal state. Ambiguous = a candidate was found but failed the exact-identity gate, so nothing was published."));
-  FAM.forEach(([f,l]) => {
-    const counts = {}; INDEX.forEach(r => { const s = r.s[f] || "failed"; counts[s] = (counts[s]||0)+1; });
-    const bar = el("div",{class:"bar",role:"img","aria-label":l+": "+STATES.map(s=>(counts[s]||0)+" "+STL[s]).join(", ")}, STATES.filter(s=>counts[s]).map(s => el("span",{class:"b-"+s,style:"width:"+(counts[s]/n*100)+"%",title:STL[s]+": "+counts[s]})));
-    card.append(el("div",{class:"covrow"}, el("a",{href:"#/companies/"+encodeURIComponent("has:"+f)}, l), bar, el("span",{class:"small",style:"text-align:right;font-variant-numeric:tabular-nums"}, Math.round((counts.available||0)/n*100)+"%")));
-  });
-  card.append(el("div",{class:"legend"}, STATES.map(s => chip(s))));
-  return card;
-}
-function viewOverview(){
-  const ops = REPORT.operations || {}; const n = INDEX.length;
-  const claims = INDEX.reduce((a,r)=>a+r.k,0), sites = INDEX.filter(r=>r.w).length, jobs = INDEX.reduce((a,r)=>a+r.j,0);
-  const gate = REPORT.identity_gate || {};
-  app.append(el("section",{class:"hero"},
-    el("h1",null,"Norwegian company profiles you can verify"),
-    el("p",null, n + " companies researched from nothing but their organisation number. Every published fact carries its source link, retrieval time, reporting period and content hash. Where identity could not be proven, the profile says so instead of guessing."),
-    el("form",{class:"bigsearch",onsubmit:e=>{e.preventDefault(); const v=e.target.elements.s.value.trim(); const d=v.replace(/\D/g,""); location.hash = (d.length===9&&BYORG[d]) ? "#/c/"+d : "#/companies/"+encodeURIComponent(v);}},
-      el("input",{name:"s",placeholder:"Try an org. number or name…","aria-label":"Search"}), el("button",{class:"btn",type:"submit"},"Search"))));
-  app.append(el("div",{class:"grid kpis"},
-    kpi(nf.format(n),"companies profiled"), kpi(nf.format(claims),"evidence-backed facts"), kpi(nf.format(sites),"verified official websites"),
-    kpi(nf.format(jobs),"verified job postings"), kpi(nf.format(gate.ambiguous||0)+" / "+nf.format((gate.rejected||0)+(gate.related_site||0)),"sites held back: ambiguous / rejected"),
-    kpi(ops.requests != null ? nf.format(ops.requests) : "—","outbound requests"), kpi(ops.elapsed_seconds != null ? Math.round(ops.elapsed_seconds/60*10)/10+" min" : "—","run time"),
-    kpi("$"+(REPORT.third_party_cost_usd||0).toFixed(2),"third-party cost")));
-  app.append(el("div",{class:"section two"}, coverageCard(), runCard()));
-  const recent = INDEX.filter(r=>r.w || r.j).slice(0,8);
-  app.append(el("div",{class:"section card"}, el("h2",null,"Explore"), companyTable(recent.length ? recent : INDEX.slice(0,8), true), el("p",null, el("a",{href:"#/companies"},"All "+n+" companies →"))));
-}
-function kpi(v,l){ return el("div",{class:"card kpi"}, el("div",{class:"v"}, v), el("div",{class:"l"}, l)); }
-function runCard(){
-  const r = REPORT, ops = r.operations || {}, v = (r.validation||{}).checks || {};
-  return el("div",{class:"card"}, el("h2",null,"Run"),
-    el("dl",{class:"kv"},
-      kv("Run ID", r.run_id), kv("Agent version", r.agent_version), kv("Mode", r.mode === "refresh" ? "Refresh (diffed against previous run)" : "Baseline"),
-      kv("Envelopes", (r.emitted_envelopes||0)+" / "+(r.input_count||0)+" inputs"), kv("Contract checks", Object.values(v).every(Boolean) ? "All passed" : "Some failed"),
-      kv("p50 / p95 per company", (ops.p50_company_ms!=null? (ops.p50_company_ms/1000).toFixed(1)+"s":"—")+" / "+(ops.p95_company_ms!=null?(ops.p95_company_ms/1000).toFixed(1)+"s":"—")),
-      kv("Changes detected", r.changes_detected || 0), kv("Job feed", r.jobs_feed ? (r.jobs_feed.ads_indexed+" ads indexed over "+r.jobs_feed.window_days+" days") : "—")));
-}
-function kv(k, v){ return [el("dt",null,k), el("dd",null, el("span",null, v == null ? "—" : String(v)))]; }
-// ---------------------------------------------------------------- companies
-function companyTable(rows, compact){
-  const t = el("table",{class:"resp"});
-  t.append(el("thead",null, el("tr",null, el("th",null,"Company"), el("th",null,"Municipality"), el("th",{class:"num"},"Employees"), el("th",{class:"num"},"Revenue"), el("th",null,"Website"), el("th",{class:"num"},"Jobs"), compact ? null : el("th",null,"Families"), compact ? null : el("th",null,"Compare"))));
-  const tb = el("tbody");
-  rows.forEach(r => tb.append(el("tr",null,
-    el("td",{class:"first"}, el("a",{href:"#/c/"+r.o,style:"font-weight:600"}, r.b && r.b.toLowerCase() !== r.n.toLowerCase() ? r.n + " · " + r.b : r.n), el("div",{class:"small muted"}, fmtOrg(r.o) + (r.f ? " · "+r.f : "") + (r.i ? " · "+r.i.split(" ").slice(1).join(" ").slice(0,42) : ""))),
-    el("td",{"data-l":"Municipality"}, r.m || "—"),
-    el("td",{class:"num","data-l":"Employees"}, r.e != null ? num(r.e) : "—"),
-    el("td",{class:"num","data-l":"Revenue"}, r.r != null ? money(r.r, r.ru) + (r.ry ? " ("+r.ry+")" : "") : "—"),
-    el("td",{"data-l":"Website"}, r.w ? ext(r.w, r.w.replace(/^https?:\/\//,"").replace(/\/$/,"")) : chip(r.s.website||"failed")),
-    el("td",{class:"num","data-l":"Jobs"}, r.j ? String(r.j) : "—"),
-    compact ? null : el("td",{"data-l":"Families"}, el("div",{class:"dots"}, FAM.map(([f,l]) => el("span",{class:"dot b-"+(r.s[f]||"failed"),title:l+": "+STL[r.s[f]||"failed"]})))),
-    compact ? null : el("td",{"data-l":"Compare"}, el("button",{class:"src",onclick:e=>{toggleCmp(r.o); e.target.textContent = CMP.includes(r.o) ? "✓ Added" : "Add";}}, CMP.includes(r.o) ? "✓ Added" : "Add")))));
-  t.append(tb); return t;
-}
-function viewCompanies(arg){
-  let text = arg && !arg.startsWith("has:") ? arg : "", has = arg && arg.startsWith("has:") ? arg.slice(4) : "", form = "", sort = "name";
-  const wrap = el("div");
-  const forms = [...new Set(INDEX.map(r=>r.f).filter(Boolean))].sort();
-  const inp = el("input",{type:"search",placeholder:"Filter by name, org. number, municipality, industry",value:text,"aria-label":"Filter",style:"flex:1 1 260px"});
-  const selHas = el("select",{"aria-label":"Family filter"}, el("option",{value:""},"Any data"), FAM.map(([f,l]) => el("option",{value:f, selected: f===has || null},"Has "+l.toLowerCase())));
-  const selForm = el("select",{"aria-label":"Legal form"}, el("option",{value:""},"All legal forms"), forms.map(f => el("option",{value:f},f)));
-  const selSort = el("select",{"aria-label":"Sort"}, [["name","Sort: name"],["rev","Sort: revenue"],["emp","Sort: employees"],["facts","Sort: most facts"],["recent","Sort: latest activity"]].map(([v,l])=>el("option",{value:v},l)));
-  const count = el("div",{class:"small muted",style:"margin-bottom:8px"});
-  function render(){
-    const t = text.toLowerCase(), d = text.replace(/\D/g,"");
-    let rows = INDEX.filter(r => (!t || (r.n+" "+(r.b||"")+" "+(r.m||"")+" "+(r.i||"")).toLowerCase().includes(t) || (d.length>=3 && r.o.includes(d))) && (!has || r.s[has]==="available") && (!form || r.f===form));
-    const key = {name:r=>r.n, rev:r=>-(r.r||-1e18), emp:r=>-(r.e||-1), facts:r=>-r.k, recent:r=>r.a ? -Date.parse(r.a) : 0}[sort];
-    rows.sort((a,b)=>{ const x=key(a), y=key(b); return x<y?-1:x>y?1:0; });
-    count.textContent = rows.length + " of " + INDEX.length + " companies";
-    wrap.replaceChildren(rows.length ? companyTable(rows.slice(0,500)) : el("div",{class:"empty"},"No companies match these filters."));
-  }
-  inp.oninput = () => { text = inp.value; render(); }; selHas.onchange = () => { has = selHas.value; render(); };
-  selForm.onchange = () => { form = selForm.value; render(); }; selSort.onchange = () => { sort = selSort.value; render(); };
-  app.append(el("h1",null,"Companies"), el("div",{class:"filters"}, inp, selHas, selForm, selSort), count, wrap); render();
-}
-// ---------------------------------------------------------------- company profile
 function claimsOf(env, fam){ return env.claims.filter(c => c.family === fam); }
 function first(env, field){ return env.claims.find(c => c.field === field); }
+function acctType(c){ const m = /account_type=(\w+)/.exec(c.note || ""); return m ? m[1] : null; }
 function latestFin(env){
-  const fin = env.claims.filter(c => c.family === "financials" && c.period);
-  for (const t of ["SELSKAP","KONSERN"]){
-    const typed = fin.filter(c => (c.note||"").includes("account_type="+t));
-    if (typed.length){ const last = typed.map(c=>c.period.to).sort().pop(); return Object.fromEntries(typed.filter(c=>c.period.to===last).map(c=>[c.field,c])); }
+  const fin = env.claims.filter(c => c.family === "financials" && c.period && acctType(c));
+  for (const tp of ["SELSKAP","KONSERN"]){
+    const typed = fin.filter(c => acctType(c) === tp);
+    if (typed.length){ const last = typed.map(c => c.period.to).sort().pop(); return Object.fromEntries(typed.filter(c => c.period.to === last).map(c => [c.field, c])); }
   }
   return {};
 }
-function stateBox(env, fam){
-  const st = (env.availability||{})[fam] || {state:"failed",reason:"not processed"};
-  return el("div",{class:"unknown"}, chip(st.state), el("div",null, el("div",{class:"small"}, st.reason || "")));
+
+// ================================================================ compare set
+let CMP = (store("sp-compare") || []).filter(o => BYORG[o]);
+function setCmp(list){ CMP = [...new Set(list)].filter(o => BYORG[o]).slice(0,4); store("sp-compare", CMP); renderNav(); }
+function toggleCmp(o){ if (!CMP.includes(o) && CMP.length >= 4) { toast(t("cmp_full")); return; } setCmp(CMP.includes(o) ? CMP.filter(x => x !== o) : CMP.concat(o)); }
+
+// ================================================================ drawer (evidence + shortcuts), focus-trapped
+const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
+let lastFocus = null;
+function openDrawer(title, nodes){
+  if (!drawer.classList.contains("open")) lastFocus = document.activeElement;
+  document.getElementById("dtitle").textContent = title;
+  const body = document.getElementById("dbody"); body.replaceChildren(...nodes); body.scrollTop = 0;
+  drawer.removeAttribute("inert"); drawer.setAttribute("aria-hidden","false");
+  drawer.classList.add("open"); scrim.classList.add("open");
+  document.getElementById("dclose").focus();
 }
-function famCard(env, fam, title, bodyFn){
-  const st = (env.availability||{})[fam] || {state:"failed"};
+function closeDrawer(restore){
+  if (!drawer.classList.contains("open")) return;
+  drawer.classList.remove("open"); scrim.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); drawer.setAttribute("inert","");
+  if (restore !== false && lastFocus && document.contains(lastFocus) && lastFocus.focus) lastFocus.focus();
+}
+document.getElementById("dclose").onclick = () => closeDrawer();
+scrim.onclick = () => closeDrawer();
+drawer.addEventListener("keydown", e => {
+  if (e.key !== "Tab") return;
+  const f = [...drawer.querySelectorAll("a[href],button:not([disabled]),input,select,[tabindex]:not([tabindex='-1'])")].filter(x => x.offsetParent !== null || x === document.activeElement);
+  if (!f.length) return;
+  const a = f[0], z = f[f.length-1];
+  if (e.shiftKey && document.activeElement === a){ e.preventDefault(); z.focus(); }
+  else if (!e.shiftKey && document.activeElement === z){ e.preventDefault(); a.focus(); }
+});
+function highlight(span, claim){
+  const needles = [];
+  const v = claim.value;
+  if (typeof v === "number") needles.push(String(v));
+  else if (typeof v === "string") needles.push(v, v.replace(/^https?:\/\//,"").replace(/\/$/,""));
+  else if (v && typeof v === "object") ["name","title","year","address","organisation_number"].forEach(k => v[k] && needles.push(String(v[k])));
+  const lower = span.toLowerCase();
+  for (const nd of needles){
+    if (!nd || nd.length < 2) continue;
+    const i = lower.indexOf(nd.toLowerCase());
+    if (i >= 0) return [span.slice(0,i), el("mark",null, span.slice(i, i+nd.length)), span.slice(i+nd.length)];
+  }
+  return [span];
+}
+function evidenceNodes(env, claimIds){
+  const claims = env.claims.filter(c => claimIds.includes(c.id));
+  const evs = Object.fromEntries((env.evidence||[]).concat(env.prior_evidence || []).map(e => [e.id, e]));
+  const out = [];
+  claims.forEach((c, ci) => {
+    const meta = [];
+    if (c.period && c.period.to) meta.push(t("ev_period_c", c.period.from || "?", c.period.to));
+    if (c.effective_date) meta.push(t("ev_effective", c.effective_date));
+    if (c.first_seen) meta.push(t("ev_first", fmtDate(c.first_seen)));
+    if (c.stale_since) meta.push(t("ev_stale", c.stale_since));
+    if (c.derived) meta.push(t("ev_derived"));
+    const box = el("section",{class:"evclaim",style: ci ? "margin-top:26px;padding-top:18px;border-top:1px solid var(--line)" : null},
+      el("div",{class:"eyebrow"}, famL(c.family) + " · " + (c.label || c.field)),
+      el("div",{class:"v"}, claimText(c)),
+      typeof c.value === "number" && c.unit ? el("div",{class:"small muted"}, t("ev_exact") + ": ", el("span",{class:"mono"}, exactMoney(c.value, c.unit))) : null,
+      meta.length ? el("div",{class:"small faint",style:"margin-top:4px"}, meta.join(" · ")) : null);
+    (c.evidence_ids||[]).forEach(id => {
+      const e = evs[id]; if (!e) return;
+      box.append(el("div",{class:"evitem"},
+        el("div",{style:"display:flex;justify-content:space-between;gap:8px;align-items:center"}, el("span",{class:"eyebrow"}, srcL(e.source_class)), e.license ? el("span",{class:"tag"}, e.license) : null),
+        el("div",{class:"span"}, e.claim_span ? highlight(e.claim_span, c) : t("ev_span_none")),
+        el("div",{class:"evrow"}, el("span",null,t("ev_source")), ext(e.source_url, e.source_url.length > 90 ? e.source_url.slice(0,90)+"…" : e.source_url)),
+        el("div",{class:"evrow"}, el("span",null,t("ev_retrieved")), el("span",{class:"mono"}, e.retrieved_at)),
+        e.reporting_period && e.reporting_period.to ? el("div",{class:"evrow"}, el("span",null,t("ev_period")), el("span",{class:"mono"}, (e.reporting_period.from||"")+" → "+e.reporting_period.to)) : null,
+        el("div",{class:"evrow"}, el("span",null,t("ev_method")), el("span",{class:"mono"}, e.extraction_method)),
+        e.identity_reason ? el("div",{class:"evrow"}, el("span",null,t("ev_identity")), el("span",null, e.identity_reason)) : null,
+        el("div",{class:"evrow"}, el("span",null,t("ev_hash")), el("span",{class:"hash"}, el("code",null, e.content_sha256), el("button",{class:"src",type:"button",onclick:()=>copy(e.content_sha256),"aria-label":t("ev_copy")+" SHA-256"}, t("ev_copy"))))));
+    });
+    out.push(box);
+  });
+  if (!claims.length) out.push(el("p",{class:"muted"}, t("ev_none")));
+  return out;
+}
+function openEvidence(env, claimIds, title){ openDrawer(title || t("ev_title"), evidenceNodes(env, claimIds)); }
+function srcBtn(env, claim, label){
+  const e = (env.evidence||[]).concat(env.prior_evidence||[]).find(x => x.id === (claim.evidence_ids||[])[0]) || {};
+  return el("button",{class:"src",type:"button","aria-label":t("ev_title")+": "+(label || claim.label || claim.field),onclick:()=>openEvidence(env,[claim.id], label || claim.label)}, ico(ICO_DOC), srcL(e.source_class, true) + " · " + fmtDate(e.retrieved_at));
+}
+function cite(env, ids, n, title){ return el("button",{class:"cite",type:"button","aria-label":t("ev_title")+" "+n,onclick:()=>openEvidence(env, ids, title)}, String(n)); }
+function valBtn(env, claim, text, title){ return el("button",{class:"linkbtn",type:"button",onclick:()=>openEvidence(env,[claim.id], title || claim.label)}, text); }
+
+// ================================================================ typeahead (search, compare picker)
+let taSeq = 0;
+function searchIndex(q, limit){
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const d = q.replace(/\s/g,"");
+  const out = [];
+  for (const r of INDEX){
+    const name = (r.n + " " + (r.b||"")).toLowerCase();
+    let score = -1;
+    if (/^\d{3,9}$/.test(d) && r.o.includes(d)) score = r.o.startsWith(d) ? 3 : 1;
+    else if (name.startsWith(q)) score = 4;
+    else if (name.includes(" " + q)) score = 3;
+    else if (name.includes(q)) score = 2;
+    else if ((r.m||"").toLowerCase().startsWith(q)) score = 1;
+    if (score >= 0) out.push([score, r]);
+  }
+  return out.sort((a,b) => b[0]-a[0] || b[1].k - a[1].k).slice(0, limit || 8).map(x => x[1]);
+}
+function typeahead(input, onPick, onSubmit){
+  const id = "ta" + (++taSeq);
+  const list = el("ul",{class:"ta",role:"listbox",id,hidden:true});
+  input.setAttribute("role","combobox"); input.setAttribute("aria-autocomplete","list"); input.setAttribute("aria-expanded","false"); input.setAttribute("aria-controls", id);
+  input.parentNode.append(list);
+  let items = [], act = -1;
+  function render(){
+    list.replaceChildren();
+    if (!input.value.trim()) { hide(); return; }
+    items = searchIndex(input.value, 8);
+    if (!items.length) list.append(el("li",{class:"none",role:"option","aria-disabled":"true"}, t("no_match")));
+    items.forEach((r,i) => list.append(el("li",{role:"option",id:id+"-"+i,"aria-selected":String(i===act),onmousedown:e=>{e.preventDefault(); pick(i);}},
+      el("span",null, r.n, r.b && r.b.toLowerCase() !== r.n.toLowerCase() ? el("span",{class:"faint"}," · "+r.b) : null), el("span",{class:"o"}, fmtOrg(r.o)))));
+    list.hidden = false; input.setAttribute("aria-expanded","true");
+    if (act >= 0) input.setAttribute("aria-activedescendant", id+"-"+act); else input.removeAttribute("aria-activedescendant");
+  }
+  function hide(){ list.hidden = true; input.setAttribute("aria-expanded","false"); input.removeAttribute("aria-activedescendant"); act = -1; }
+  function pick(i){ const r = items[i]; if (!r) return; hide(); onPick(r); }
+  input.addEventListener("input", () => { act = -1; render(); });
+  input.addEventListener("focus", () => { if (input.value.trim()) render(); });
+  input.addEventListener("blur", () => setTimeout(hide, 120));
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown"){ e.preventDefault(); if (list.hidden) render(); act = Math.min(items.length-1, act+1); render(); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); act = Math.max(-1, act-1); render(); }
+    else if (e.key === "Enter"){ e.preventDefault(); if (act >= 0 && items[act]) pick(act); else if (onSubmit) { hide(); onSubmit(input.value.trim(), items); } else if (items.length) pick(0); }
+    else if (e.key === "Escape"){ if (!list.hidden){ e.stopPropagation(); hide(); } }
+  });
+  return {hide};
+}
+function goSearch(v, items){
+  const d = v.replace(/\D/g,"");
+  if (d.length === 9 && BYORG[d]) location.hash = "#/c/" + d;
+  else if (items && items.length === 1) location.hash = "#/c/" + items[0].o;
+  else location.hash = "#/companies?q=" + encodeURIComponent(v);
+}
+
+// ================================================================ shell: nav, language, theme, shortcuts
+const ROUTES = [["","nav_overview","o"],["companies","nav_companies","c"],["changes","nav_changes","h"],["compare","nav_compare","x"],["method","nav_method","m"]];
+let CURRENT = "";
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.setAttribute("aria-label", LANG === "no" ? "Seksjoner" : "Sections");
+  nav.replaceChildren(...ROUTES.map(([r,k]) => el("a",{href:"#/"+r,"aria-current":CURRENT === r ? "page" : null}, t(k), r === "compare" && CMP.length ? el("span",{class:"count"}, CMP.length) : null)));
+}
+function renderChrome(){
+  document.documentElement.lang = LANG === "no" ? "nb" : "en";
+  const q = document.getElementById("q"); q.placeholder = t("search_ph"); q.setAttribute("aria-label", t("search_label"));
+  document.getElementById("skip").textContent = t("skip");
+  const lang = document.getElementById("lang"); lang.setAttribute("aria-label", t("lang_label"));
+  lang.replaceChildren(...[["no","NO","Norsk"],["en","EN","English"]].map(([c,l,full]) => el("button",{type:"button","aria-pressed":String(LANG===c),lang:c==="no"?"nb":"en",title:full,onclick:()=>{ if (LANG !== c){ LANG = c; store("sp-lang", c); renderChrome(); route(); } }}, l)));
+  const th = store("sp-theme") || "system";
+  const tl = t("theme_" + th);
+  document.getElementById("theme").title = tl; document.getElementById("themeLabel").textContent = tl;
+  document.getElementById("help").title = t("shortcuts"); document.getElementById("helpLabel").textContent = t("shortcuts");
+  document.getElementById("dcloseLabel").textContent = t("close");
+  renderNav();
+}
+function applyTheme(){ const th = store("sp-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme; }
+document.getElementById("theme").onclick = () => { const order = ["system","light","dark"]; const cur = store("sp-theme") || "system"; const nx = order[(order.indexOf(cur)+1) % 3]; store("sp-theme", nx); applyTheme(); renderChrome(); toast(t("theme_" + nx)); };
+function shortcutsNodes(){
+  return [el("dl",{class:"keys"},
+    el("dt",null, el("kbd",null,"/")), el("dd",null, t("k_search")),
+    el("dt",null, el("kbd",null,"Esc")), el("dd",null, t("k_close")),
+    el("dt",null, el("kbd",null,"g"), " ", el("kbd",null,"o"), " ", el("kbd",null,"c"), " ", el("kbd",null,"h"), " ", el("kbd",null,"x"), " ", el("kbd",null,"m")), el("dd",null, t("k_go")),
+    el("dt",null, el("kbd",null,"?")), el("dd",null, t("k_help")))];
+}
+document.getElementById("help").onclick = () => openDrawer(t("shortcuts"), shortcutsNodes());
+let gPending = 0;
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape"){ closeDrawer(); return; }
+  const tg = e.target, typing = tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName));
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === "/"){ e.preventDefault(); closeDrawer(false); document.getElementById("q").focus(); return; }
+  if (e.key === "?"){ e.preventDefault(); openDrawer(t("shortcuts"), shortcutsNodes()); return; }
+  if (e.key === "g"){ gPending = Date.now(); return; }
+  if (gPending && Date.now() - gPending < 1200){
+    const r = ROUTES.find(x => x[2] === e.key.toLowerCase());
+    gPending = 0;
+    if (r){ e.preventDefault(); location.hash = "#/" + r[0]; }
+  }
+});
+const topQ = document.getElementById("q");
+typeahead(topQ, r => { topQ.value = ""; location.hash = "#/c/" + r.o; }, (v, items) => { if (v) { topQ.blur(); goSearch(v, items); } });
+
+// ================================================================ router
+const app = document.getElementById("app");
+function parseHash(){
+  const raw = location.hash.replace(/^#\/?/,"");
+  const [path, query] = [raw.split("?")[0], raw.split("?").slice(1).join("?")];
+  const parts = path.split("/");
+  return {r: parts[0], arg: decodeURIComponent(parts.slice(1).join("/")), params: new URLSearchParams(query || "")};
+}
+let SILENT = null;
+function replaceHash(h){
+  if (location.hash === h || (location.hash === "" && h === "#/")) return;
+  try { history.replaceState(null, "", h); } catch(e){ SILENT = h; location.replace(h); } // file:// in some engines refuses replaceState
+}
+function setQuery(r, params){ const s = params.toString(); replaceHash("#/" + r + (s ? "?" + s : "")); }
+function route(){
+  const {r, arg, params} = parseHash();
+  CURRENT = r === "c" ? "companies" : (ROUTES.some(x => x[0] === r) ? r : "");
+  renderNav();
+  closeDrawer(false); hideTip(); app.replaceChildren();
+  document.title = (r === "c" && BYORG[arg] ? BYORG[arg].n + " · " : "") + "Signalpost";
+  if (r === "c" && arg) return viewCompany(arg);
+  if (r === "companies") return viewCompanies(arg, params);
+  if (r === "compare") return viewCompare(arg);
+  if (r === "changes") return viewChanges(params);
+  if (r === "method") return viewMethod();
+  return viewOverview();
+}
+window.addEventListener("hashchange", () => { if (SILENT && location.hash === SILENT){ SILENT = null; return; } SILENT = null; route(); window.scrollTo(0,0); });
+
+// ================================================================ overview
+function meterRow(label, value, max, text){
+  const frac = max ? value / max : 0, cls = frac >= .9 ? "bad" : frac >= .7 ? "warn" : "";
+  return el("div",{class:"meter " + cls},
+    el("span",{class:"small muted"}, label), el("span",{class:"small tnum"}, text, cls ? el("span",{class:"tag " + (cls === "bad" ? "bad" : "warn"),style:"margin-left:6px"}, t(cls === "bad" ? "meter_bad" : "meter_warn")) : null),
+    el("div",{class:"track",role:"meter","aria-label":label,"aria-valuemin":"0","aria-valuemax":String(max||0),"aria-valuenow":String(value||0),"aria-valuetext":text}, el("span",{style:"width:"+Math.min(100, frac*100)+"%"})));
+}
+function coveragePanel(){
+  const n = INDEX.length || 1;
+  const box = el("section",{class:"panel","aria-labelledby":"covh"}, el("div",{class:"ph"}, el("h2",{id:"covh"}, t("cov_title"))), el("p",{class:"small muted",style:"margin:-8px 0 12px"}, t("cov_sub")));
+  FAMS.forEach(f => {
+    const counts = {}; INDEX.forEach(r => { const s = r.s[f] || "failed"; counts[s] = (counts[s]||0)+1; });
+    const k = counts.available || 0, [lo, hi] = wilson(k, INDEX.length);
+    const label = famL(f) + ": " + STATES.filter(s => counts[s]).map(s => counts[s] + " " + stL(s)).join(", ") + "; 95% CI " + pct(lo) + "–" + pct(hi);
+    const bar = el("div",{class:"cbar",role:"img","aria-label":label},
+      STATES.filter(s => counts[s]).map(s => el("span",{class:"f-"+s,style:"flex:"+counts[s]+" 1 0",onmousemove:e=>showTip(e, stL(s)+": "+counts[s]+" ("+pct(counts[s]/n)+")"),onmouseleave:hideTip})),
+      k && INDEX.length > 1 ? el("i",{class:"ci",style:"left:"+(lo*100)+"%;width:"+Math.max(0.5,(hi-lo)*100)+"%","aria-hidden":"true"}) : null);
+    box.append(el("div",{class:"covrow"}, el("a",{href:"#/companies?fam="+f+"&st=available"}, famL(f)), bar, el("div",{class:"covpct"}, pct(k/n), " ", el("span",null, pct(lo)+"–"+pct(hi)))));
+  });
+  box.append(el("div",{class:"legend"}, STATES.map(s => el("span",null, el("i",{class:"f-"+s}), stL(s)))));
+  return box;
+}
+function trustPanel(){
+  const gate = REPORT.identity_gate || {}, tr = TRUST, n = INDEX.length || 1;
+  const v = tr.verification;
+  const pairs = Object.values(tr.family_states || {}).reduce((a,b)=>a+b,0) || 1;
+  const cells = el("div",{class:"trust"},
+    el("div",null, el("div",{class:"big"}, tr.claims ? pct((tr.evidence_complete||0)/tr.claims, 1) : "—"), el("div",{class:"small"}, t("trust_evidence")), el("div",{class:"small faint"}, t("trust_evidence_d", nf(tr.evidence_complete||0), nf(tr.claims||0)))),
+    el("div",null, el("div",{class:"big"}, pct((tr.abstained_companies||0)/n)), el("div",{class:"small"}, t("trust_abst")), el("div",{class:"small faint"}, t("trust_abst_d", nf((tr.family_states||{}).ambiguous||0)) + " (" + pct(((tr.family_states||{}).ambiguous||0)/pairs, 1) + ")")),
+    v && v.sampled ? el("div",null, el("div",{class:"big"}, pct(v.refound_rate||0, 1)), el("div",{class:"small"}, t("trust_verify")), el("div",{class:"small faint"}, t("trust_verify_d", v.sampled, v.drift_or_changed||0, v.fetch_errors||0)))
+      : el("div",null, el("div",{class:"big faint"}, "—"), el("div",{class:"small"}, t("trust_verify_none")), el("div",{class:"small faint"}, t("trust_verify_how"))));
+  const gateOrder = ["accepted","related_site","ambiguous","rejected","blocked","unreachable"];
+  const gmax = Math.max(1, ...gateOrder.map(g => gate[g] || 0));
+  const proofs = Object.entries(tr.website_proofs || {});
+  const rej = tr.rejection_examples || [];
+  return el("section",{class:"panel","aria-labelledby":"trusth"},
+    el("div",{class:"ph"}, el("h2",{id:"trusth"}, t("trust_title")), el("a",{class:"small",href:"../identity-audit.md"}, t("trust_audit"))),
+    el("p",{class:"small muted",style:"margin:-8px 0 14px"}, t("trust_sub")),
+    cells,
+    el("div",{class:"grid2",style:"margin-top:18px"},
+      el("div",null, el("h3",{style:"margin-bottom:8px"}, t("gate_title")),
+        gateOrder.filter(g => gate[g] != null).map(g => el("div",{class:"hbar"}, el("span",null, t("gate."+g)), el("div",{class:"t"}, el("span",{style:"width:"+((gate[g]||0)/gmax*100)+"%;"+(g==="accepted"?"":"background:var(--ink-3)")})), el("span",{class:"n"}, nf(gate[g]||0)))),
+        proofs.length ? [el("h3",{style:"margin:16px 0 6px"}, t("trust_proofs")), el("ul",{class:"trust-list"}, proofs.map(([p,c]) => el("li",null, el("span",null,p), el("span",{class:"tnum faint"}, nf(c)))))] : null),
+      el("div",null, el("h3",{style:"margin-bottom:4px"}, t("trust_rejections")), el("p",{class:"small faint",style:"margin:0 0 6px"}, t("trust_rejections_d")),
+        rej.length ? el("ul",{class:"trust-list"}, rej.map(x => el("li",{style:"grid-template-columns:1fr"}, el("div",null, el("a",{href:"#/c/"+x.o,style:"font-weight:550"}, x.n || x.o), el("span",{class:"faint"}," · "), /^https?:/.test(String(x.c||"")) ? el("span",{class:"mono"}, host(x.c)) : el("span",null, String(x.c||""))), el("div",{class:"small muted"}, x.r))))
+          : el("p",{class:"small muted"}, t("trust_none")))));
+}
+function changesDigest(){
+  const rows = INDEX.flatMap(r => (r.ch||[]).map(c => ({...c, o:r.o, n:r.n})));
+  const box = el("section",{class:"panel","aria-labelledby":"chgh"}, el("div",{class:"ph"}, el("h2",{id:"chgh"}, t("changed_title")), rows.length ? el("a",{class:"small",href:"#/changes"}, t("all_changes")+" →") : null));
+  if (!rows.length){ box.append(el("p",{class:"small muted",style:"margin:0"}, REPORT.mode === "refresh" ? t("changed_none_ref") : t("changed_none_base"))); return box; }
+  const mat = rows.filter(r => r.m !== false), cos = new Set(rows.map(r => r.o)).size;
+  const types = {}; rows.forEach(r => { types[r.t] = (types[r.t]||0)+1; });
+  const tmax = Math.max(...Object.values(types));
+  box.append(el("p",{class:"small muted",style:"margin:-6px 0 10px"}, t("changed_n", nf(rows.length), nf(cos), nf(mat.length))),
+    Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([tp,c]) => el("div",{class:"hbar"}, el("a",{href:"#/changes?type="+tp}, ctL(tp)), el("div",{class:"t"}, el("span",{style:"width:"+(c/tmax*100)+"%"})), el("span",{class:"n"}, nf(c)))),
+    el("div",{class:"rows",style:"margin-top:10px"}, mat.slice(0,5).map(r => el("div",{class:"row"}, el("div",null, el("a",{href:"#/c/"+r.o,class:"t"}, r.n), el("div",{class:"delta"}, ctL(r.t) + " · " + deltaText(r))), el("span",{class:"mono faint"}, fmtDate(r.d))))));
+  return box;
+}
+function deltaText(r){ return (r.l ? r.l + ": " : "") + (r.p != null ? valueText(r.p) + " → " : "") + (r.v != null ? valueText(r.v) : t("removed")); }
+function runPanel(){
+  const r = REPORT, ops = r.operations || {}, checks = (r.validation||{}).checks || {};
+  const phases = Object.entries(r.phase_seconds || {}).filter(([,s]) => s > 0);
+  const pmax = Math.max(1, ...phases.map(p => p[1]));
+  return el("section",{class:"panel","aria-labelledby":"runh"},
+    el("div",{class:"ph"}, el("h2",{id:"runh"}, t("run_title")), el("span",{class:"mono faint"}, r.run_id || "")),
+    ops.requests != null ? meterRow(t("run_requests"), ops.requests, ops.max_requests || 2000, nf(ops.requests) + " " + t("run_of", nf(ops.max_requests || 2000))) : null,
+    ops.elapsed_seconds != null ? meterRow(t("run_time"), ops.elapsed_seconds, ops.max_seconds || 2700, nf(Math.round(ops.elapsed_seconds/6)/10) + " min " + t("run_of", nf((ops.max_seconds||2700)/60) + " min")) : null,
+    meterRow(t("run_cost"), r.third_party_cost_usd || 0, ops.max_cost_usd || 10, "$" + (r.third_party_cost_usd||0).toFixed(2) + " " + t("run_of", "$" + (ops.max_cost_usd || 10).toFixed(2))),
+    el("hr",{class:"rule"}),
+    el("dl",{class:"kv"},
+      kv(t("run_mode"), r.mode === "refresh" ? t("run_refresh") : t("run_baseline")),
+      kv(t("run_env"), nf(r.emitted_envelopes||0) + " / " + nf(r.input_count||0)),
+      kv(t("run_p"), (ops.p50_company_ms != null ? (ops.p50_company_ms/1000).toFixed(1) + " s" : "—") + " / " + (ops.p95_company_ms != null ? (ops.p95_company_ms/1000).toFixed(1) + " s" : "—")),
+      kv(t("run_jobs"), r.jobs_feed ? t("run_jobs_v", nf(r.jobs_feed.ads_indexed||0), r.jobs_feed.window_days) : "—"),
+      kv(t("run_agent"), r.agent_version)),
+    Object.keys(checks).length ? [el("h3",{style:"margin:16px 0 8px"}, t("run_valid")), el("ul",{class:"checks"}, Object.entries(checks).map(([k,ok]) => el("li",null, el("span",{style:"color:var(--"+(ok?"ok":"fail")+")","aria-hidden":"true"}, ok ? "✓" : "✕"), el("span",null, D["chk."+k] ? t("chk."+k) : k.replace(/_/g," "), el("span",{class:"sr"}, ok ? " — pass" : " — fail")))))] : null,
+    phases.length ? [el("h3",{style:"margin:16px 0 6px"}, t("run_phases")), phases.map(([p,s]) => el("div",{class:"hbar"}, el("span",{class:"mono small"}, p), el("div",{class:"t"}, el("span",{style:"width:"+(s/pmax*100)+"%"})), el("span",{class:"n"}, s.toFixed(1)+" s")))] : null);
+}
+function kv(k, v){ return [el("dt",null,k), el("dd",null, el("span",null, v == null ? "—" : v))]; }
+function viewOverview(){
+  const n = INDEX.length, gate = REPORT.identity_gate || {};
+  const claims = INDEX.reduce((a,r)=>a+r.k,0), sites = INDEX.filter(r=>r.w).length;
+  const held = (gate.ambiguous||0) + (gate.rejected||0) + (gate.related_site||0);
+  const examples = INDEX.slice().sort((a,b) => b.k - a.k).slice(0,3);
+  const specimenOrg = (INDEX.find(r => r.w) || examples[0] || {}).o;
+  const spec = el("aside",{class:"specimen","aria-label":t("specimen_title")}, el("div",{class:"eyebrow"}, t("specimen_title")), el("div",{class:"skel",style:"height:28px;margin:10px 0 14px;width:70%"}), el("div",{class:"skel",style:"height:90px"}));
+  const form = el("form",{role:"search",onsubmit:e=>{e.preventDefault(); const v = e.target.elements.s.value.trim(); if (v) goSearch(v, searchIndex(v, 2));}},
+    el("input",{name:"s",type:"search",autocomplete:"off",placeholder:t("search_ph"),"aria-label":t("search_label")}), el("button",{class:"btn primary",type:"submit"}, t("search")));
+  app.append(el("section",{class:"hero"},
+    el("div",null,
+      el("div",{class:"eyebrow"}, t("hero_eyebrow") + " ", el("span",{class:"mono",style:"text-transform:none;letter-spacing:0"}, REPORT.run_id || "—"), " · " + fmtDate(REPORT.completed_at)),
+      el("h1",null, t("hero_title")),
+      el("p",{class:"lede"}, t("hero_lede", nf(n))),
+      el("div",{class:"bezel rel"}, form),
+      examples.length ? el("div",{class:"examples"}, el("span",{class:"small faint"}, t("hero_try")+":"), examples.map(r => el("a",{href:"#/c/"+r.o}, r.n))) : null),
+    spec));
+  typeahead(form.elements.s, r => { location.hash = "#/c/" + r.o; }, (v, items) => v && goSearch(v, items));
+  if (specimenOrg) load(specimenOrg).then(env => {
+    const c = first(env,"official_website") || first(env,"legal_name");
+    if (!c) return;
+    const e = (env.evidence||[]).find(x => x.id === c.evidence_ids[0]) || {};
+    spec.replaceChildren(el("div",{class:"eyebrow"}, t("specimen_title")),
+      el("div",{class:"small muted",style:"margin-top:10px"}, env.name + " · " + c.label),
+      el("div",{class:"val"}, c.field === "official_website" ? host(c.value) : claimText(c)),
+      el("dl",null,
+        el("dt",null,t("ev_source")), el("dd",{class:"mono",style:"font-size:12px"}, host(e.source_url||"").slice(0,60)),
+        el("dt",null,t("ev_retrieved")), el("dd",{class:"mono",style:"font-size:12px"}, e.retrieved_at || ""),
+        e.identity_reason ? [el("dt",null,t("ev_identity")), el("dd",null, e.identity_reason)] : null,
+        el("dt",null,t("ev_hash")), el("dd",{class:"mono",style:"font-size:12px"}, (e.content_sha256||"").slice(0,24)+"…")),
+      el("div",{style:"display:flex;gap:6px;margin-top:14px;flex-wrap:wrap"}, el("button",{class:"btn secondary",type:"button",onclick:()=>openEvidence(env,[c.id], c.label)}, t("specimen_ev")), el("a",{class:"btn quiet",href:"#/c/"+env.organisation_number}, t("specimen_open")+" →")));
+  }).catch(() => spec.remove());
+  app.append(el("div",{class:"kpis"},
+    kpiCell(nf(n), t("kpi_companies")), kpiCell(nf(claims), t("kpi_facts")), kpiCell(nf(sites), t("kpi_sites")), kpiCell(nf(held), t("kpi_held"))));
+  app.append(el("div",{class:"section"}, trustPanel()));
+  app.append(el("div",{class:"section split"}, coveragePanel(), el("div",{class:"stack"}, changesDigest(), runPanel())));
+}
+function kpiCell(v,l){ return el("div",{class:"kpi"}, el("div",{class:"v"}, v), el("div",{class:"l"}, l)); }
+
+// ================================================================ explorer
+const PAGE = 50;
+const COLS = [
+  ["name","col_company", r => r.n.toLowerCase()], ["place","col_place", r => (r.m||"~").toLowerCase()], ["emp","col_emp", r => r.e != null ? -r.e : 1], ["rev","col_rev", r => r.r != null ? -r.r : Infinity],
+  ["res","col_res", r => r.nr != null ? -r.nr : Infinity], ["web","col_web", r => r.w ? 0 : 1], ["jobs","col_jobs", r => -r.j], ["facts","col_facts", r => -r.k],
+];
+function viewCompanies(arg, params){
+  const P = {q: params.get("q") || (arg && !arg.startsWith("has:") ? arg : ""), fam: params.get("fam") || (arg && arg.startsWith("has:") ? arg.slice(4) : ""), st: params.get("st") || "",
+    form: params.get("form") || "", county: params.get("county") || "", web: params.get("web") === "1", jobs: params.get("jobs") === "1", changed: params.get("changed") === "1",
+    since: params.get("since") || "", sort: params.get("sort") || "name", dir: params.get("dir") || "asc", p: Math.max(1, +params.get("p") || 1)};
+  if (P.fam && !P.st) P.st = "available";
+  const forms = [...new Set(INDEX.map(r=>r.f).filter(Boolean))].sort();
+  const counties = [...new Set(INDEX.map(r=>r.co).filter(Boolean))].sort((a,b)=>a.localeCompare(b, "nb"));
+  function save(){ const s = new URLSearchParams(); Object.entries(P).forEach(([k,v]) => { if (v === true) s.set(k,"1"); else if (v && !(k==="sort"&&v==="name") && !(k==="dir"&&v==="asc") && !(k==="p"&&v===1)) s.set(k, v); }); setQuery("companies", s); }
+  const inp = el("input",{class:"input",type:"search",value:P.q,placeholder:t("f_text"),id:"fq"});
+  const selFam = el("select",{class:"input",id:"ffam"}, el("option",{value:""}, t("f_any")), FAMS.map(f => el("option",{value:f,selected:f===P.fam||null}, famL(f))));
+  const selSt = el("select",{class:"input",id:"fst"}, el("option",{value:""}, t("f_any")), STATES.map(s => el("option",{value:s,selected:s===P.st||null}, stL(s))));
+  const selForm = el("select",{class:"input",id:"fform"}, el("option",{value:""}, t("f_any")), forms.map(f => el("option",{value:f,selected:f===P.form||null}, f)));
+  const selCounty = el("select",{class:"input",id:"fcounty"}, el("option",{value:""}, t("f_any")), counties.map(f => el("option",{value:f,selected:f===P.county||null}, f)));
+  const since = el("input",{class:"input",type:"date",id:"fsince",value:P.since});
+  const tog = (key, label) => el("button",{class:"btn secondary",type:"button","aria-pressed":String(P[key]),onclick:e=>{P[key] = !P[key]; e.currentTarget.setAttribute("aria-pressed", String(P[key])); P.p = 1; render();}}, label);
+  const count = el("div",{class:"small muted",role:"status","aria-live":"polite"});
+  const wrap = el("div");
+  let rows = [];
+  function filtered(){
+    const q = P.q.trim().toLowerCase(), d = P.q.replace(/\D/g,"");
+    return INDEX.filter(r =>
+      (!q || (r.n+" "+(r.b||"")+" "+(r.m||"")+" "+(r.i||"")+" "+(r.co||"")).toLowerCase().includes(q) || (d.length >= 3 && r.o.includes(d))) &&
+      (!P.fam || (r.s[P.fam] || "failed") === (P.st || "available")) && (P.fam || !P.st || Object.values(r.s).includes(P.st)) &&
+      (!P.form || r.f === P.form) && (!P.county || r.co === P.county) && (!P.web || r.w) && (!P.jobs || r.j > 0) && (!P.changed || r.c > 0) &&
+      (!P.since || (r.ch||[]).some(c => fmtDate(c.d) >= P.since)));
+  }
+  function render(){
+    save();
+    rows = filtered();
+    const col = COLS.find(c => c[0] === P.sort) || COLS[0], sgn = P.dir === "desc" ? -1 : 1;
+    rows.sort((a,b) => { const x = col[2](a), y = col[2](b); return (x < y ? -1 : x > y ? 1 : a.n.localeCompare(b.n)) * sgn; });
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE)); P.p = Math.min(P.p, pages);
+    const start = (P.p - 1) * PAGE, slice = rows.slice(start, start + PAGE);
+    count.textContent = rows.length ? t("shown", nf(start+1), nf(start+slice.length), nf(rows.length)) : t("shown0", nf(INDEX.length));
+    if (!rows.length){ wrap.replaceChildren(el("div",{class:"panel empty"}, el("h3",null,t("none_match_t")), el("p",null,t("none_match_d")), el("button",{class:"btn secondary",type:"button",onclick:clearAll}, t("f_clear")))); return; }
+    wrap.replaceChildren(companyTable(slice, P, render),
+      pages > 1 ? el("nav",{class:"pager","aria-label":"Pagination"}, el("span",null, t("page", P.p, pages)), el("div",{class:"toggles"},
+        el("button",{class:"btn secondary",type:"button",disabled:P.p<=1||null,onclick:()=>{P.p--; render(); count.scrollIntoView({block:"nearest"});}}, "← " + t("prev")),
+        el("button",{class:"btn secondary",type:"button",disabled:P.p>=pages||null,onclick:()=>{P.p++; render(); count.scrollIntoView({block:"nearest"});}}, t("next") + " →"))) : null);
+  }
+  function activeCount(){ return ["q","fam","form","county","since"].filter(k => P[k]).length + ["web","jobs","changed"].filter(k => P[k]).length; }
+  function clearAll(){ Object.assign(P, {q:"",fam:"",st:"",form:"",county:"",web:false,jobs:false,changed:false,since:"",p:1}); setQuery("companies", new URLSearchParams()); route(); }
+  let deb; inp.oninput = () => { clearTimeout(deb); deb = setTimeout(() => { P.q = inp.value; P.p = 1; render(); }, 120); };
+  selFam.onchange = () => { P.fam = selFam.value; if (P.fam && !selSt.value){ selSt.value = "available"; } P.st = selSt.value; P.p = 1; render(); };
+  selSt.onchange = () => { P.st = selSt.value; P.p = 1; render(); };
+  selForm.onchange = () => { P.form = selForm.value; P.p = 1; render(); };
+  selCounty.onchange = () => { P.county = selCounty.value; P.p = 1; render(); };
+  since.onchange = () => { P.since = since.value; P.p = 1; render(); };
+  const field = (label, ctl) => el("label",{class:"field"}, el("span",null,label), ctl);
+  app.append(el("div",{class:"page-head"}, el("div",null, el("h1",null,t("companies_title")), el("p",{class:"muted"}, t("companies_sub"))),
+      el("button",{class:"btn secondary",type:"button",onclick:()=>exportCsv(rows)}, t("export_csv"))),
+    el("details",{class:"panel filters",open:(window.innerWidth || 1024) > 760 || null},
+      el("summary",null, t("filters"), activeCount() ? el("span",{class:"count",style:"margin-left:8px;margin-right:auto"}, activeCount()) : null),
+      el("div",{class:"toolbar"}, field(t("search"), inp), field(t("f_family"), selFam), field(t("f_state"), selSt), field(t("f_form"), selForm), field(t("f_county"), selCounty), field(t("f_since"), since)),
+      el("div",{class:"toolbar-row",style:"margin-bottom:0"}, el("div",{class:"toggles"}, tog("web", t("f_web")), tog("jobs", t("f_jobs")), tog("changed", t("f_changed"))), el("button",{class:"btn quiet",type:"button",onclick:clearAll}, t("f_clear")))),
+    el("div",{class:"toolbar-row"}, count), wrap);
+  render();
+}
+function companyTable(rows, P, rerender){
+  const th = (key, labelKey, numeric) => {
+    const on = P && P.sort === key;
+    return el("th",{class:numeric?"num":null,scope:"col","aria-sort":on ? (P.dir === "desc" ? "descending" : "ascending") : null},
+      P ? el("button",{class:"sortbtn",type:"button",onclick:()=>{ if (P.sort === key) P.dir = P.dir === "asc" ? "desc" : "asc"; else { P.sort = key; P.dir = "asc"; } P.p = 1; rerender(); }}, t(labelKey), el("span",{class:"ar","aria-hidden":"true"}, on ? (P.dir === "desc" ? "▼" : "▲") : "")) : t(labelKey));
+  };
+  const table = el("table",{class:"resp"},
+    el("thead",null, el("tr",null, th("name","col_company"), th("place","col_place"), th("emp","col_emp",true), th("rev","col_rev",true), th("res","col_res",true), th("web","col_web"), th("jobs","col_jobs",true), th("facts","col_facts",true), el("th",{scope:"col"}, t("col_fams")), el("th",{scope:"col"}, el("span",{class:"sr"}, t("col_cmp"))))),
+    el("tbody",null, rows.map(r => el("tr",null,
+      el("td",{class:"first"}, el("a",{href:"#/c/"+r.o,class:"coname"}, r.n), r.b && r.b.toLowerCase() !== r.n.toLowerCase() ? el("span",{class:"faint"}," · " + r.b) : null,
+        el("div",{class:"sub"}, el("span",{class:"mono"}, fmtOrg(r.o)), r.f ? " · " + r.f : "", r.i ? " · " + r.i.split(" ").slice(1).join(" ").slice(0,44) : "")),
+      el("td",{"data-l":t("col_place")}, el("span",{class:"cv"}, r.m || "—", r.co ? el("span",{class:"sub"}, r.co) : null)),
+      el("td",{class:"num","data-l":t("col_emp")}, r.e != null ? num(r.e) : "—"),
+      el("td",{class:"num","data-l":t("col_rev")}, el("span",{class:"cv"}, r.r != null ? el("span",{title:exactMoney(r.r, r.ru)}, money(r.r, r.ru)) : "—", r.r != null && r.ry ? el("span",{class:"sub"}, r.ry) : null)),
+      el("td",{class:"num","data-l":t("col_res"),style:r.nr < 0 ? "color:var(--fail)" : null}, r.nr != null ? el("span",{title:exactMoney(r.nr, r.nu)}, money(r.nr, r.nu)) : "—"),
+      el("td",{"data-l":t("col_web")}, r.w ? ext(r.w, host(r.w)) : chip(r.s.website || "failed")),
+      el("td",{class:"num","data-l":t("col_jobs")}, r.j ? String(r.j) : "—"),
+      el("td",{class:"num","data-l":t("col_facts")}, nf(r.k)),
+      el("td",{"data-l":t("col_fams")}, el("div",{class:"dots",role:"img","aria-label":FAMS.map(f => famL(f)+": "+stL(r.s[f]||"failed")).join("; ")}, FAMS.map(f => el("span",{class:"dot f-"+(r.s[f]||"failed"),onmousemove:e=>showTip(e, famL(f)+": "+stL(r.s[f]||"failed")),onmouseleave:hideTip})))),
+      el("td",{"data-l":t("col_cmp")}, el("button",{class:"btn secondary",type:"button",style:"min-height:30px;padding:0 10px;font-size:13px","aria-pressed":String(CMP.includes(r.o)),"aria-label":t("col_cmp")+": "+r.n,onclick:e=>{toggleCmp(r.o); e.currentTarget.setAttribute("aria-pressed", String(CMP.includes(r.o))); e.currentTarget.textContent = CMP.includes(r.o) ? "✓ " + t("added") : "+ " + t("add");}}, CMP.includes(r.o) ? "✓ " + t("added") : "+ " + t("add")))))));
+  return el("div",{class:"tablewrap resp"}, table);
+}
+function exportCsv(rows){
+  const head = ["organisation_number","name","public_brand","legal_form","municipality","county","employees","revenue","revenue_unit","accounts_year","net_result","net_result_unit","official_website","active_jobs","published_facts","changes"].concat(FAMS.map(f => "state_"+f));
+  const esc = v => { if (v == null) return ""; const s = String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; };
+  const lines = [head.join(",")].concat(rows.map(r => [r.o, r.n, r.b, r.f, r.m, r.co, r.e, r.r, r.ru, r.ry, r.nr, r.nu, r.w, r.j, r.k, r.c].concat(FAMS.map(f => r.s[f] || "failed")).map(esc).join(",")));
+  const csv = "﻿" + lines.join("\n");
+  const name = "signalpost-" + (REPORT.run_id || "companies") + ".csv";
+  const a = el("a",{download:name});
+  try { a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"})); } catch(e){ a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); }
+  document.body.append(a); a.click(); a.remove();
+  toast(nf(rows.length) + " → " + name);
+}
+
+// ================================================================ company profile
+function famPanel(env, fam, title, bodyFn, extra){
+  const st = (env.availability||{})[fam] || {state:"failed",reason:"not processed"};
   const cs = claimsOf(env, fam);
-  const card = el("div",{class:"card"}, el("div",{style:"display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px"}, el("h3",{style:"margin:0"}, title), chip(st.state)));
-  if (cs.length) card.append(bodyFn(cs)); else card.append(el("p",{class:"small muted",style:"margin:0"}, st.reason || "No data"));
-  return card;
+  return el("section",{class:"panel","aria-label":title},
+    el("div",{class:"famhead"}, el("h3",null, title), chip(st.state)),
+    cs.length ? bodyFn(cs) : el("p",{class:"reason"}, st.reason || t("no_data")), extra || null);
 }
 function kvClaims(env, cs){
-  return el("dl",{class:"kv"}, cs.map(c => [el("dt",null, c.label), el("dd",null, el("span",null, c.field === "official_website" || /^https?:/.test(String(c.value)) ? ext(String(c.value)) : (typeof c.value === "number" && c.unit ? money(c.value, c.unit) : valueText(c.value)), c.effective_date ? el("span",{class:"small muted"}," · "+c.effective_date) : null), srcBtn(env, c))]));
+  return el("dl",{class:"kv"}, cs.map(c => [el("dt",null, c.label || c.field), el("dd",null,
+    el("span",null, c.field === "official_website" || /^https?:\/\//.test(String(c.value)) ? ext(String(c.value), host(c.value)) : claimText(c), c.effective_date ? el("span",{class:"faint small"}," · " + c.effective_date) : null),
+    srcBtn(env, c))]));
 }
-function finTable(env){
-  const fin = claimsOf(env,"financials").filter(c => c.period && c.unit !== undefined || (c.period && typeof c.value === "number"));
-  const types = [...new Set(fin.map(c => (c.note||"").split("=")[1]).filter(Boolean))];
-  if (!fin.length) return el("p",{class:"small muted"}, ((env.availability||{}).financials||{}).reason || "No annual accounts");
-  let type = types.includes("SELSKAP") ? "SELSKAP" : types[0];
+function chartPoints(fin, field){ return fin.filter(c => c.field === field && typeof c.value === "number").sort((a,b) => a.period.to.localeCompare(b.period.to)); }
+function barChart(env, pts, title){
+  const W = 300, H = 150, top = 22, bot = 22, left = 4, right = 4;
+  const vals = pts.map(p => p.value), mx = Math.max(0, ...vals), mn = Math.min(0, ...vals), span = (mx - mn) || 1;
+  const y = v => top + (mx - v) / span * (H - top - bot);
+  const n = pts.length, slot = (W - left - right) / Math.max(n, 1), bw = Math.min(40, slot * 0.56);
+  const unit = (pts[0] || {}).unit || "";
+  const g = svg("svg",{viewBox:"0 0 "+W+" "+H,role:"group","aria-label":title + (unit ? " (" + unit + ")" : "")});
+  g.append(svg("line",{x1:0,x2:W,y1:y(0),y2:y(0),stroke:"var(--line-strong)","stroke-width":1}));
+  pts.forEach((p, i) => {
+    const cx = left + slot * i + slot / 2, y0 = y(0), y1 = y(p.value), h = Math.max(1.5, Math.abs(y1 - y0)), yt = Math.min(y0, y1);
+    const year = p.period.to.slice(0,4), lab = title + " " + year + ": " + exactMoney(p.value, p.unit);
+    const isLast = i === n - 1;
+    const node = svg("g",{class:"pt",tabindex:"0",role:"button","aria-label":lab,
+      onclick:()=>openEvidence(env,[p.id], title + " " + year), onkeydown:e=>{ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openEvidence(env,[p.id], title + " " + year); } },
+      onmousemove:e=>showTip(e, lab), onmouseleave:hideTip},
+      svg("rect",{class:"hit",x:cx - slot/2 + 1,y:0,width:slot - 2,height:H - 4,fill:"transparent",rx:4}),
+      svg("rect",{class:"bar",x:cx - bw/2,y:yt,width:bw,height:h,rx:3,fill:p.value < 0 ? "var(--fail-fill)" : "var(--accent)"}),
+      svg("text",{x:cx,y:H - 6,"text-anchor":"middle"}, year),
+      isLast || n <= 2 ? svg("text",{class:"lbl",x:cx,y:p.value < 0 ? Math.min(H - bot + 12, yt + h + 13) : yt - 6,"text-anchor":"middle"}, (p.value < 0 ? "−" : "") + compact(Math.abs(p.value))) : null);
+    g.append(node);
+  });
+  return el("figure",{class:"chart",style:"margin:0"}, el("h4",null, title), el("div",{class:"cu"}, unit || "—"), g);
+}
+function finBlock(env){
+  const all = claimsOf(env,"financials");
+  const fin = all.filter(c => c.period && typeof c.value === "number" && acctType(c));
+  const types = [...new Set(fin.map(acctType))].sort().reverse();
+  const filings = all.filter(c => c.field === "filed_annual_accounts" && c.value && c.value.year).sort((a,b) => String(a.value.year).localeCompare(String(b.value.year)));
+  const other = all.filter(c => !(typeof c.value === "number" && c.period) && c.field !== "filed_annual_accounts");
   const holder = el("div");
+  let type = types.includes("SELSKAP") ? "SELSKAP" : types[0];
   const order = ["revenue","sales_revenue","operating_expenses","operating_result","net_financial_items","profit_before_tax","net_result","total_assets","fixed_assets","current_assets","cash","equity","total_debt","short_term_debt","long_term_debt"];
   function render(){
-    const rows = fin.filter(c => (c.note||"").includes("account_type="+type));
-    const years = [...new Set(rows.map(c=>c.period.to))].sort().reverse();
-    const t = el("table",{class:"fin"}, el("thead",null, el("tr",null, el("th",null,"NOK unless noted"), years.map(y => el("th",{class:"num"}, y.slice(0,4))))));
+    const rows = fin.filter(c => acctType(c) === type);
+    const charts = ["revenue","net_result","equity"].map(f => [f, chartPoints(rows, f)]).filter(([,p]) => p.length);
+    const years = [...new Set(rows.map(c => c.period.to))].sort().reverse();
+    const fields = order.concat([...new Set(rows.map(c => c.field))].filter(f => !order.includes(f)));
     const tb = el("tbody");
-    order.forEach(f => {
-      const byY = Object.fromEntries(rows.filter(c=>c.field===f).map(c=>[c.period.to,c]));
+    fields.forEach(f => {
+      const byY = Object.fromEntries(rows.filter(c => c.field === f).map(c => [c.period.to, c]));
       if (!Object.keys(byY).length) return;
-      const label = (Object.values(byY)[0].label||f).replace(/ \((company|group.*)\)$/,"");
-      tb.append(el("tr",null, el("td",null,label), years.map(y => el("td",{class:"num"}, byY[y] ? el("button",{title:"Show evidence",onclick:()=>openEvidence(env,[byY[y].id],label+" "+y.slice(0,4))}, money(byY[y].value, byY[y].unit)) : "—"))));
+      const label = (Object.values(byY)[0].label || f).replace(/ \((company|group[^)]*|selskap|konsern)\)$/i,"");
+      tb.append(el("tr",null, el("td",{"data-l":t("line")}, label), years.map(yy => el("td",{class:"num","data-l":yy.slice(0,4)}, byY[yy] ? valBtn(env, byY[yy], exactMoney(byY[yy].value, byY[yy].unit), label + " " + yy.slice(0,4)) : "—"))));
     });
-    t.append(tb);
-    holder.replaceChildren(el("div",{class:"fin-wrap"}, t));
+    holder.replaceChildren(
+      charts.length ? el("div",{class:"charts"}, charts.map(([f,p]) => barChart(env, p, t("fin."+f)))) : null,
+      years.length ? el("details",{open:true}, el("summary",{class:"small",style:"cursor:pointer;margin-bottom:8px;color:var(--ink-2)"}, t("fin_table")),
+        el("div",{class:"tablewrap"}, el("table",null, el("thead",null, el("tr",null, el("th",{scope:"col"}, t("line")), years.map(yy => el("th",{class:"num",scope:"col"}, yy.slice(0,4))))), tb))) : null);
   }
-  const seg = types.length > 1 ? el("div",{class:"seg",role:"group","aria-label":"Account type"}, types.map(tp => el("button",{class: tp===type?"on":"", onclick:e=>{type=tp; seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b===e.target)); render();}}, tp==="SELSKAP"?"Company":"Group"))) : null;
-  render();
-  const filings = claimsOf(env,"financials").filter(c => c.field === "filed_annual_accounts").sort((a,b)=>b.value.year.localeCompare(a.value.year));
-  const other = claimsOf(env,"financials").filter(c => !(typeof c.value === "number" && c.period) && c.field !== "filed_annual_accounts");
-  return el("div",null, seg ? el("div",{style:"margin-bottom:8px"}, seg) : null, holder, other.length ? el("div",{style:"margin-top:10px"}, kvClaims(env, other.slice(0,4))) : null,
-    filings.length ? el("div",{style:"margin-top:12px"}, el("div",{class:"small muted"},"Filing history — official annual-account copies (PDF): "), el("div",{class:"legend"}, filings.map(c => ext(c.value.official_copy, c.value.year)), srcBtn(env, filings[0]))) : null,
-    el("p",{class:"small muted",style:"margin:8px 0 0"},"Values are copied verbatim from Regnskapsregisteret; missing values stay missing. Tap a value for its evidence."));
+  if (!fin.length && !filings.length && !other.length) return el("p",{class:"reason"}, ((env.availability||{}).financials||{}).reason || t("no_accounts"));
+  const seg = types.length > 1 ? el("div",{class:"seg",role:"group","aria-label":t("acc_type")}, types.map(tp => el("button",{type:"button","aria-pressed":String(tp===type),onclick:e=>{ type = tp; seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === e.currentTarget))); render(); }}, tp === "SELSKAP" ? t("company_acc") : t("group_acc")))) : null;
+  if (fin.length) render();
+  return el("div",null,
+    el("div",{class:"ph",style:"margin-bottom:14px"}, el("p",{class:"small muted",style:"margin:0;max-width:70ch"}, t("fin_note")), seg),
+    holder,
+    filings.length ? el("div",{style:"margin-top:18px"}, el("div",{class:"ph"}, el("h3",null, t("filings")), srcBtn(env, filings[filings.length-1], t("filings"))), el("p",{class:"small faint",style:"margin:2px 0 6px"}, t("filings_d")),
+      el("div",{class:"tl"}, filings.map(c => el("div",{class:"node"}, ext(c.value.official_copy, String(c.value.year)), el("div",{class:"small faint"}, "PDF"))))) : null,
+    other.length ? el("div",{style:"margin-top:16px"}, kvClaims(env, other.slice(0,6))) : null);
 }
+const ROLE_ORDER = ["ceo","board_chair","board_member","deputy_board_member","owner","business_manager","contact_person","auditor","accountant"];
+function leadersBody(env, cs){
+  const sorted = cs.slice().sort((a,b) => (ROLE_ORDER.indexOf(a.field)+1||99) - (ROLE_ORDER.indexOf(b.field)+1||99));
+  return el("div",{class:"rows"}, sorted.map(c => el("div",{class:"row"}, el("div",null, el("div",{class:"t"}, valueText(c.value)), el("div",{class:"small faint"}, (c.label || c.field) + (c.effective_date ? " · " + c.effective_date : ""))), srcBtn(env, c))));
+}
+function workplacesBody(env, cs){
+  const list = el("div",{class:"rows"});
+  const LIMIT = 30;
+  cs.slice(0, LIMIT).forEach(c => list.append(el("div",{class:"row"}, el("div",null, el("div",{class:"t"}, c.value.name || "—"),
+    el("div",{class:"small faint"}, [c.value.address, c.value.employees != null ? t("employees_n", c.value.employees) : null, c.value.opened ? t("opened", c.value.opened) : null].filter(Boolean).join(" · "))), srcBtn(env, c))));
+  if (cs.length > LIMIT) list.append(el("p",{class:"small faint"}, t("more", cs.length - LIMIT)));
+  const mapBox = el("div");
+  const withAddr = cs.filter(c => c.value && c.value.address).slice(0, LIMIT);
+  const btn = withAddr.length ? el("div",{class:"no-print",style:"margin-bottom:10px"}, el("button",{class:"btn secondary",type:"button",onclick:()=>loadMap(withAddr, mapBox, btn)}, t("map_load")), el("div",{class:"small faint",style:"margin-top:4px"}, t("map_consent"))) : null;
+  return el("div",null, btn, mapBox, list);
+}
+async function loadMap(cs, box, btn){
+  if (btn) btn.remove();
+  box.replaceChildren(el("div",{class:"skel",style:"height:220px;margin-bottom:12px"}));
+  const pts = [];
+  try {
+    if (typeof fetch !== "function") throw new Error("no fetch");
+    await Promise.all(cs.map(async c => {
+      const ctl = typeof AbortController === "function" ? new AbortController() : null;
+      const timer = ctl ? setTimeout(() => ctl.abort(), 6000) : null;
+      try {
+        const res = await fetch("https://ws.geonorge.no/adresser/v1/sok?treffPerSide=1&utkoordsys=4258&sok=" + encodeURIComponent(c.value.address), ctl ? {signal:ctl.signal} : {});
+        const j = await res.json(); const a = (j.adresser || [])[0];
+        if (a && a.representasjonspunkt) pts.push({lat:a.representasjonspunkt.lat, lon:a.representasjonspunkt.lon, c});
+      } catch(e) { /* one address failing is fine */ } finally { if (timer) clearTimeout(timer); }
+    }));
+  } catch(e) { /* offline */ }
+  if (!pts.length){ box.replaceChildren(el("p",{class:"small muted",role:"status"}, t("map_fail"))); return; }
+  // equirectangular, scaled by cos(mid-latitude); bounds pad around the points (min span keeps single points sane)
+  let la0 = Math.min(...pts.map(p=>p.lat)), la1 = Math.max(...pts.map(p=>p.lat)), lo0 = Math.min(...pts.map(p=>p.lon)), lo1 = Math.max(...pts.map(p=>p.lon));
+  const padLa = Math.max(0.4, (la1-la0)*0.12), padLo = Math.max(0.8, (lo1-lo0)*0.12);
+  la0 -= padLa; la1 += padLa; lo0 -= padLo; lo1 += padLo;
+  const k = Math.cos((la0+la1)/2 * Math.PI/180), W = 600, H = Math.max(180, Math.min(420, W * (la1-la0) / ((lo1-lo0)*k)));
+  const X = lon => (lon - lo0) / (lo1 - lo0) * W, Y = lat => (la1 - lat) / (la1 - la0) * H;
+  const grid = svg("g",{class:"grid"});
+  for (let a = Math.ceil(la0); a <= la1; a++) grid.append(svg("line",{x1:0,x2:W,y1:Y(a),y2:Y(a)}));
+  for (let o = Math.ceil(lo0); o <= lo1; o++) grid.append(svg("line",{y1:0,y2:H,x1:X(o),x2:X(o)}));
+  const g = svg("svg",{viewBox:"0 0 "+W+" "+H.toFixed(0),role:"img","aria-label":t("map_n", pts.length, cs.length)}, grid,
+    pts.map(p => svg("a",{href:"https://www.openstreetmap.org/?mlat="+p.lat+"&mlon="+p.lon+"#map=14/"+p.lat+"/"+p.lon,target:"_blank",rel:"noopener noreferrer"},
+      svg("circle",{cx:X(p.lon).toFixed(1),cy:Y(p.lat).toFixed(1),r:6,onmousemove:e=>showTip(e, (p.c.value.name||"")+" · "+p.c.value.address),onmouseleave:hideTip}, svg("title",null, (p.c.value.name||"")+" · "+p.c.value.address)))));
+  box.replaceChildren(el("div",{class:"map"}, g, el("span",{class:"note"}, t("map_n", pts.length, cs.length))), el("p",{class:"small faint",style:"margin:-4px 0 12px"}, t("map_note")));
+}
+function sectHead(id, n, title){ return el("div",{class:"secthead",id}, n ? el("span",{class:"n"}, String(n).padStart(2,"0")) : null, el("h2",null, title)); }
 async function viewCompany(org){
   const idx = BYORG[org];
-  if (!idx){ app.append(el("div",{class:"empty"},"No profile for "+org+" in this run.")); return; }
-  app.append(el("div",{class:"empty"},"Loading profile…"));
-  let env; try { env = await load(org); } catch(e){ app.replaceChildren(el("div",{class:"empty"},"Profile data could not be loaded.")); return; }
+  if (!idx){ app.append(el("div",{class:"panel empty"}, el("h3",null, t("no_profile", org)), el("a",{class:"btn secondary",href:"#/companies"}, t("nav_companies")))); return; }
+  app.append(el("div",{class:"panel","aria-busy":"true"}, el("span",{class:"sr"}, t("loading")), el("div",{class:"skel",style:"height:14px;width:120px"}), el("div",{class:"skel",style:"height:32px;width:55%;margin:12px 0"}), el("div",{class:"skel",style:"height:70px"})));
+  let env; try { env = await load(org); } catch(e){ app.replaceChildren(el("div",{class:"panel empty"}, el("h3",null, t("load_fail")))); return; }
+  if (parseHash().arg !== org) return; // user navigated away while loading
   app.replaceChildren();
-  const fin = latestFin(env), emp = first(env,"employees"), site = first(env,"official_website"), status = first(env,"registry_status");
-  const head = el("div",{class:"card"},
-    el("div",{class:"co-head"},
-      el("div",null, el("div",{class:"small muted"}, (first(env,"legal_form")||{}).value || ""),
-        el("h1",null, env.name || org), first(env,"public_brand") ? el("div",{class:"muted"},"Public brand: "+first(env,"public_brand").value) : null,
-        el("div",{class:"badges"}, el("button",{class:"src",onclick:()=>copy(org),title:"Copy organisation number"}, "Org. "+fmtOrg(org)+" ⧉"),
-          status ? chip(status.value === "active" ? "available" : "blocked", status.value === "active" ? "Active" : "Inactive / winding up") : null,
-          first(env,"municipality") ? el("span",{class:"pill"}, first(env,"municipality").value) : null,
-          site ? ext(site.value, "↗ "+site.value.replace(/^https?:\/\//,"").replace(/\/$/,"")) : null)),
-      el("div",{style:"display:flex;gap:8px;flex-wrap:wrap"},
-        el("button",{class:"btn ghost",onclick:e=>{toggleCmp(org); e.target.textContent = CMP.includes(org) ? "✓ In compare" : "+ Compare";}}, CMP.includes(org) ? "✓ In compare" : "+ Compare"),
-        el("a",{class:"btn ghost",href:"data/"+org+".js",download:org+".js"},"Raw data"))),
-    el("div",{class:"facts"},
-      fact(fin.revenue ? money(fin.revenue.value, fin.revenue.unit) : "—", "Revenue"+(fin.revenue ? " "+fin.revenue.period.to.slice(0,4) : ""), fin.revenue, env),
-      fact(fin.net_result ? money(fin.net_result.value, fin.net_result.unit) : "—", "Net result"+(fin.net_result ? " "+fin.net_result.period.to.slice(0,4) : ""), fin.net_result, env),
-      fact(emp ? num(emp.value) : "—", "Registered employees", emp, env),
-      fact(String(claimsOf(env,"locations").length || "—"), "Registered workplaces", claimsOf(env,"locations")[0], env),
-      fact(String(claimsOf(env,"jobs").length || "—"), "Active job postings", claimsOf(env,"jobs")[0], env)));
-  app.append(head);
-  // brief
+  const fin = latestFin(env), emp = first(env,"employees"), site = first(env,"official_website"), status = first(env,"registry_status"), brand = first(env,"public_brand"), muni = first(env,"municipality");
   const brief = env.brief || {};
-  const bc = el("div",{class:"card section brief"}, el("h2",null,"Summary"));
+  const toc = [["sum",t("toc_summary")],["sig",t("toc_signals")],["found",t("toc_found")],["s1",t("s1")],["s2",t("s2")],["s3",t("s3")],["s4",t("s4")],["s5",t("s5")],["s6",t("s6")],["s7",t("s7")]];
+  const tocNav = el("nav",{class:"toc","aria-label":"Profile sections"}, toc.map(([id,l]) => el("button",{type:"button",onclick:()=>{ const n = document.getElementById(id); if (n) { n.scrollIntoView({block:"start"}); const h = n.querySelector("h2"); if (h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); } } }}, l)));
+  const content = el("div",{style:"min-width:0"});
+  // header
+  const cmpBtn = el("button",{class:"btn secondary",type:"button","aria-pressed":String(CMP.includes(org)),onclick:e=>{ toggleCmp(org); e.currentTarget.setAttribute("aria-pressed", String(CMP.includes(org))); e.currentTarget.textContent = CMP.includes(org) ? "✓ " + t("in_compare") : "+ " + t("to_compare"); }}, CMP.includes(org) ? "✓ " + t("in_compare") : "+ " + t("to_compare"));
+  content.append(el("section",{class:"panel"},
+    el("div",{class:"cohead"},
+      el("div",null, el("div",{class:"eyebrow"}, (first(env,"legal_form")||{}).value || ""),
+        el("h1",null, env.name || org),
+        brand ? el("div",{class:"muted"}, t("brand") + ": " + brand.value) : null,
+        el("div",{class:"meta"},
+          el("button",{class:"src",type:"button",onclick:()=>copy(org),"aria-label":t("copy_org")}, el("span",{class:"mono"}, t("org") + " " + fmtOrg(org)), " ⧉"),
+          status ? chip(status.value === "active" ? "available" : "blocked", status.value === "active" ? t("active") : t("inactive")) : null,
+          muni ? el("span",{class:"tag"}, muni.value + (idx.co ? ", " + idx.co : "")) : null,
+          site ? ext(site.value, host(site.value) + " ↗") : null)),
+      el("div",{class:"actions"}, cmpBtn,
+        el("button",{class:"btn secondary",type:"button",onclick:()=>copy(location.href)}, t("copy_link")),
+        el("button",{class:"btn secondary",type:"button",onclick:()=>window.print()}, t("print")),
+        el("a",{class:"btn quiet",href:"data/"+org+".js",download:org+".js"}, t("raw")))),
+    el("div",{class:"facts"},
+      fact(env, fin.revenue, fin.revenue ? money(fin.revenue.value, fin.revenue.unit) : "—", t("f_revenue", fin.revenue ? fin.revenue.period.to.slice(0,4) : "")),
+      fact(env, fin.net_result, fin.net_result ? money(fin.net_result.value, fin.net_result.unit) : "—", t("f_result", fin.net_result ? fin.net_result.period.to.slice(0,4) : "")),
+      fact(env, emp, emp ? num(emp.value) : "—", t("f_emp")),
+      fact(env, claimsOf(env,"locations")[0], claimsOf(env,"locations").length ? nf(claimsOf(env,"locations").length) : "—", t("f_work")),
+      fact(env, claimsOf(env,"jobs")[0], claimsOf(env,"jobs").length ? nf(claimsOf(env,"jobs").length) : "—", t("f_jobsn")))));
+  // summary
+  const sum = el("section",{class:"panel brief"});
   (brief.sentences||[]).forEach(s => {
     const p = el("p",null, s.text);
-    (s.claim_ids||[]).slice(0,6).forEach((id,i) => p.append(el("button",{class:"cite",title:"Show source",onclick:()=>openEvidence(env,[id],"Source for this sentence")}, String(i+1))));
-    if (s.derived) p.append(el("span",{class:"pill",style:"margin-left:6px"},"derived"));
-    bc.append(p);
+    (s.claim_ids||[]).slice(0,6).forEach((id,i) => p.append(cite(env, [id], i+1, t("sentence_src"))));
+    if (s.derived) p.append(" ", el("span",{class:"tag"}, t("derived")));
+    sum.append(p);
   });
-  if (!(brief.sentences||[]).length) bc.append(el("p",{class:"muted"},"Not enough verified facts for a summary."));
-  bc.append(el("div",{class:"small muted"},"Each numbered button opens the evidence behind that sentence."));
-  app.append(bc);
-  const sig = (brief.signals || []).concat((brief.checks || []).map(c => ({kind: c.result === "warn" ? "risk" : "info", label: "Data check: " + c.check.replace(/_/g, " ") + " — " + c.result, text: c.text, claim_ids: c.claim_ids})));
-  if (sig.length){
-    const KIND = {risk:"blocked", growth:"available", info:"not_applicable"};
-    app.append(el("div",{class:"card section"}, el("h2",null,"Signals"), el("div",{class:"list"}, sig.map(s => el("div",{class:"item"},
-      el("div",null, el("div",{class:"t"}, s.label, s.derived ? el("span",{class:"pill",style:"margin-left:6px"},"derived") : null), el("div",{class:"small muted"}, s.text)),
-      el("div",{style:"display:flex;gap:6px;align-items:center"}, chip(KIND[s.kind]||"not_applicable", s.kind), el("button",{class:"src",onclick:()=>openEvidence(env, s.claim_ids, s.label)},"Evidence")))))));
-  }
-  // availability strip
-  app.append(el("div",{class:"card section"}, el("h2",null,"What we found"), el("div",{class:"statusstrip"}, FAM.map(([f,l]) => { const st=(env.availability[f]||{}).state||"failed"; return el("span",{class:"chip st-"+st,title:(env.availability[f]||{}).reason||""}, STI[st]+" "+l); }))));
-  // sections
-  app.append(el("div",{class:"section"}, el("h2",null,"1 · Legal identity and public brand")));
-  app.append(el("div",{class:"two"}, famCard(env,"identity","Legal identity", cs => kvClaims(env, cs.filter(c=>c.field!=="former_name").concat(cs.filter(c=>c.field==="former_name").slice(0,5)))),
-    el("div",{class:"grid"}, famCard(env,"status","Registry status", cs => kvClaims(env, cs)), famCard(env,"industry","Industry (NACE)", cs => kvClaims(env, cs)), famCard(env,"group","Group structure", cs => kvClaims(env, cs.slice(0,12))))));
-  app.append(el("div",{class:"section"}, el("h2",null,"2 · Annual accounts")), el("div",{class:"card"}, finTable(env)));
-  app.append(el("div",{class:"section"}, el("h2",null,"3 · Leadership and registered workplaces")));
-  app.append(el("div",{class:"two"}, famCard(env,"leadership","Leadership & roles", cs => kvClaims(env, cs)),
-    famCard(env,"locations","Registered workplaces", cs => el("div",{class:"list"}, cs.slice(0,30).map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.value.name || "Workplace"), el("div",{class:"small muted"}, [c.value.address, c.value.employees!=null ? c.value.employees+" employees" : null, c.value.industry].filter(Boolean).join(" · "))), srcBtn(env,c)))))));
-  app.append(el("div",{class:"section"}, el("h2",null,"4 · Verified website and company-owned profiles")));
-  app.append(el("div",{class:"two"}, famCard(env,"website","Official website", cs => kvClaims(env, cs)),
-    el("div",{class:"grid"}, famCard(env,"social_profiles","Company-owned profiles", cs => kvClaims(env, cs)), famCard(env,"contact","Contact", cs => kvClaims(env, cs)))));
-  app.append(el("div",{class:"section"}, famCard(env,"description","Company's own description (promotional, company-owned)", cs => el("div",null, cs.map(c => el("div",{class:"item"}, el("div",null, c.value), srcBtn(env,c)))))));
-  app.append(el("div",{class:"section"}, el("h2",null,"5 · Hiring and dated public activity")));
-  app.append(el("div",{class:"two"},
-    famCard(env,"jobs","Active job postings (NAV)", cs => el("div",{class:"list"}, cs.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.value.url ? ext(c.value.url, c.value.title) : c.value.title), el("div",{class:"small muted"}, [c.value.location, c.value.published ? "published "+c.value.published : null, c.value.expires ? "expires "+c.value.expires : null].filter(Boolean).join(" · "))), srcBtn(env,c))))),
-    famCard(env,"activity","Dated activity", cs => el("div",{class:"timeline"}, cs.slice().sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).slice(0,15).map(c => el("div",{class:"tl"}, el("div",{class:"small muted"}, c.effective_date || ""), el("div",{style:"display:flex;justify-content:space-between;gap:8px"}, el("span",null, typeof c.value === "object" ? (c.value.url ? ext(c.value.url, c.value.title) : c.value.title) : c.value), srcBtn(env,c))))))));
-  // changes + unknowns + audit
-  app.append(el("div",{class:"section"}, el("h2",null,"6 · Changes since previous run")));
+  if (!(brief.sentences||[]).length) sum.append(el("p",{class:"muted"}, t("summary_none")));
+  sum.append(el("p",{class:"small faint",style:"margin:6px 0 0"}, t("summary_note")));
+  content.append(sectHead("sum", 0, t("summary")), sum);
+  // signals + checks
+  const sigs = brief.signals || [], checks = brief.checks || [];
+  const KIND = {risk:["var(--blk-soft)","var(--blk)","!"], growth:["var(--ok-soft)","var(--ok)","↗"], info:["var(--surface-2)","var(--ink-2)","i"]};
+  const RES = {pass:["var(--ok-soft)","var(--ok)","✓"], warn:["var(--amb-soft)","var(--amb)","!"], fail:["var(--fail-soft)","var(--fail)","✕"]};
+  const sigRow = (style, label, tagText, text, ids, derived) => el("div",{class:"signal"},
+    el("span",{class:"sig-ico",style:"background:"+style[0]+";color:"+style[1],"aria-hidden":"true"}, style[2]),
+    el("div",null, el("div",{style:"font-weight:550"}, label, " ", el("span",{class:"tag"}, tagText), derived ? [" ", el("span",{class:"tag"}, t("derived"))] : null), el("div",{class:"small muted"}, text)),
+    (ids||[]).length ? el("button",{class:"src",type:"button",onclick:()=>openEvidence(env, ids, label)}, ico(ICO_DOC), t("evidence")) : el("span"));
+  content.append(sectHead("sig", 0, t("toc_signals")), el("div",{class:"grid2"},
+    el("section",{class:"panel"}, el("h3",{style:"margin-bottom:6px"}, t("signals")), sigs.length ? sigs.map(s => sigRow(KIND[s.kind] || KIND.info, s.label, D["kind."+s.kind] ? t("kind."+s.kind) : s.kind, s.text, s.claim_ids, s.derived)) : el("p",{class:"reason"}, t("no_signals"))),
+    el("section",{class:"panel"}, el("h3",{style:"margin-bottom:6px"}, t("checks")), checks.length ? checks.map(c => sigRow(RES[c.result] || RES.warn, String(c.check||"").replace(/_/g," "), D["res."+c.result] ? t("res."+c.result) : c.result, c.text, c.claim_ids)) : el("p",{class:"reason"}, t("no_signals")))));
+  // what we found
+  content.append(sectHead("found", 0, t("toc_found")), el("section",{class:"panel"}, el("div",{class:"strip"}, FAMS.map(f => { const st = (env.availability[f]||{}); return el("span",{class:"chip st-"+(st.state||"failed"),title:st.reason||"",onmousemove:e=>showTip(e, famL(f)+": "+(st.reason||stL(st.state||"failed"))),onmouseleave:hideTip}, el("span",{class:"g","aria-hidden":"true"}, GLYPH[st.state||"failed"]), famL(f), el("span",{class:"sr"}, " — " + stL(st.state||"failed") + (st.reason ? ": " + st.reason : ""))); }))));
+  // 1 identity
+  content.append(sectHead("s1", 1, t("s1")),
+    famPanel(env,"identity",famL("identity"), cs => kvClaims(env, cs.filter(c => c.field !== "former_name").concat(cs.filter(c => c.field === "former_name").slice(0,5)))),
+    el("div",{class:"grid3",style:"margin-top:16px"}, famPanel(env,"status",famL("status"), cs => kvClaims(env, cs)), famPanel(env,"industry",famL("industry"), cs => kvClaims(env, cs)), famPanel(env,"group",famL("group"), cs => kvClaims(env, cs.slice(0,12)))));
+  // 2 accounts
+  content.append(sectHead("s2", 2, t("s2")), el("section",{class:"panel"}, el("div",{class:"famhead"}, el("h3",null, famL("financials")), chip(((env.availability||{}).financials||{}).state || "failed")), finBlock(env)));
+  // 3 leadership + workplaces
+  content.append(sectHead("s3", 3, t("s3")), el("div",{class:"grid2"},
+    famPanel(env,"leadership",t("leaders"), cs => leadersBody(env, cs)),
+    famPanel(env,"locations",t("workplaces"), cs => workplacesBody(env, cs))));
+  // 4 website
+  content.append(sectHead("s4", 4, t("s4")), el("div",{class:"grid2"},
+    famPanel(env,"website",t("site"), cs => kvClaims(env, cs)),
+    el("div",{class:"stack"}, famPanel(env,"social_profiles",t("social"), cs => kvClaims(env, cs)), famPanel(env,"contact",t("contact"), cs => kvClaims(env, cs)))),
+    el("div",{style:"margin-top:16px"}, famPanel(env,"description",t("description"), cs => el("div",{class:"rows"}, cs.map(c => el("div",{class:"row"}, el("div",{style:"max-width:72ch"}, c.value), srcBtn(env, c)))))));
+  // 5 jobs + activity
+  content.append(sectHead("s5", 5, t("s5")), el("div",{class:"grid2"},
+    famPanel(env,"jobs",t("jobs"), cs => el("div",{class:"rows"}, cs.map(c => el("div",{class:"row"}, el("div",null, el("div",{class:"t"}, c.value.url ? ext(c.value.url, c.value.title) : c.value.title), el("div",{class:"small faint"}, [c.value.location, c.value.extent, c.value.published ? t("published", c.value.published) : null, c.value.expires ? t("expires", c.value.expires) : null].filter(Boolean).join(" · "))), srcBtn(env, c))))),
+    famPanel(env,"activity",t("activity"), cs => el("div",{class:"vtl"}, cs.slice().sort((a,b) => String(b.effective_date||(b.value||{}).date||"").localeCompare(String(a.effective_date||(a.value||{}).date||""))).slice(0,15).map(c => el("div",{class:"ev"},
+      el("div",{class:"mono faint",style:"font-size:12px"}, c.effective_date || (c.value && c.value.date) || ""),
+      el("div",{style:"display:flex;justify-content:space-between;gap:10px;align-items:flex-start"}, el("span",{style:"min-width:0;overflow-wrap:anywhere"}, typeof c.value === "object" && c.value ? (c.value.url ? ext(c.value.url, c.value.title) : c.value.title) : c.value), srcBtn(env, c))))))));
+  // 6 changes
   const ch = env.changes || [];
-  app.append(el("div",{class:"card"}, ch.length ? el("div",{class:"list"}, ch.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, c.type.replace(/_/g," ")+" · "+(c.label||c.field)), el("div",{class:"small muted"}, (c.previous!=null ? valueText(c.previous)+" → " : "")+(c.current!=null ? valueText(c.current) : "removed"))), c.evidence_ids && c.evidence_ids.length ? el("button",{class:"src",onclick:()=>openEvidence(env, env.claims.filter(x=>x.evidence_ids.some(e=>c.evidence_ids.includes(e))).map(x=>x.id),"Change evidence")},"Evidence") : null)))
-    : el("p",{class:"small muted",style:"margin:0"}, env.refresh && env.refresh.mode === "refresh" ? "No material changes since the previous run ("+(env.refresh.previous_completed_at||"")+")." : "Baseline run — re-run with --previous to see what changed.")));
-  const unk = (brief.unknowns||[]);
-  app.append(el("div",{class:"section two"},
-    el("div",{class:"card"}, el("h2",null,"What we could not establish"), unk.length ? unk.map(u => el("div",{class:"unknown"}, chip(u.state), el("div",null, el("div",{style:"font-weight:600"}, u.label), el("div",{class:"small muted"}, u.reason||"")))) : el("p",{class:"muted"},"Every field family has published facts.")),
-    el("div",{class:"card"}, el("h2",null,"Identity audit"), el("p",{class:"small muted",style:"margin-top:-6px"},"Candidates we checked but did not publish, with the reason. These are never shown as facts."),
-      (env.unpublished_candidates||[]).length ? el("div",{class:"list"}, env.unpublished_candidates.map(c => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, String(c.candidate||"")), el("div",{class:"small muted"}, (c.source? c.source+" · " : "")+(c.reason||""))), chip(c.decision==="related_site"?"not_applicable":c.decision==="rejected"?"blocked":"ambiguous", c.decision.replace("_"," ")))))
-        : el("p",{class:"small muted"},"No rejected candidates."))));
+  const seen = {}; env.claims.forEach(c => { if (c.first_seen){ const d = c.first_seen.slice(0,16).replace("T"," "); seen[d] = (seen[d]||0) + 1; } });
+  const findIds = c => env.claims.filter(x => (x.evidence_ids||[]).some(e => (c.evidence_ids||[]).includes(e))).map(x => x.id);
+  content.append(sectHead("s6", 6, t("s6")), el("section",{class:"panel"},
+    ch.length ? el("div",{class:"rows"}, ch.map(c => el("div",{class:"chg",style:"grid-template-columns:1fr auto"},
+      el("div",null, el("div",{style:"font-weight:550"}, ctL(c.type), " ", el("span",{class:"tag " + (c.material === false ? "" : "accent")}, c.material === false ? t("minor") : t("material")), el("span",{class:"faint small"}, " · " + famL(c.family) + " · " + fmtDate(c.detected_at))),
+        el("div",{class:"delta"}, (c.label || c.field) + ": ", c.previous != null ? [el("s",null, valueText(c.previous)), " → "] : null, c.current != null ? valueText(c.current) : t("removed"))),
+      (c.evidence_ids||[]).length && findIds(c).length ? el("button",{class:"src",type:"button",onclick:()=>openEvidence(env, findIds(c), t("change_ev"))}, ico(ICO_DOC), t("evidence")) : el("span"))))
+      : el("p",{class:"reason"}, env.refresh && env.refresh.mode === "refresh" ? t("ch_none_ref", fmtDate(env.refresh.previous_completed_at)) : t("ch_none_base")),
+    Object.keys(seen).length ? el("div",{style:"margin-top:14px"}, el("h3",{style:"margin-bottom:4px"}, t("first_seen_title")), el("ul",{class:"trust-list"}, Object.entries(seen).sort().reverse().map(([d,c]) => el("li",null, el("span",null, t("first_seen_n", nf(c), d)), el("span")))) ) : null));
+  // 7 unknowns + audit
+  const unk = brief.unknowns || [];
+  const cands = env.unpublished_candidates || [];
+  content.append(sectHead("s7", 7, t("s7")), el("div",{class:"grid2"},
+    el("section",{class:"panel"}, el("h3",{style:"margin-bottom:6px"}, t("unknowns")), unk.length ? el("div",{class:"rows"}, unk.map(u => el("div",{class:"row",style:"justify-content:flex-start"}, chip(u.state), el("div",null, el("div",{style:"font-weight:550"}, D["fam."+u.family] ? famL(u.family) : u.label), el("div",{class:"small muted"}, u.reason||""))))) : el("p",{class:"reason"}, t("unknowns_none"))),
+    el("section",{class:"panel"}, el("h3",{style:"margin-bottom:2px"}, t("audit")), el("p",{class:"small faint",style:"margin:0 0 8px"}, t("audit_d")),
+      cands.length ? el("div",{class:"rows"}, cands.map(c => el("div",{class:"row"}, el("div",null, el("div",{class:"t mono",style:"font-size:13px"}, String(c.candidate||"")), el("div",{class:"small muted"}, [c.family ? famL(c.family) : null, c.source, c.reason].filter(Boolean).join(" · "))),
+        chip(c.decision === "related_site" ? "not_applicable" : c.decision === "rejected" ? "failed" : c.decision === "blocked" ? "blocked" : "ambiguous", D["gate."+c.decision] ? t("gate."+c.decision) : String(c.decision||"").replace(/_/g," "))))) : el("p",{class:"reason"}, t("audit_none")))));
   const ops = env.operations || {};
-  app.append(el("p",{class:"small muted section"}, "Run "+((env.run||{}).run_id||"")+" · completed "+((env.run||{}).completed_at||"")+" · "+(ops.requests||0)+" requests · "+((ops.runtime_ms||0)/1000).toFixed(1)+" s · $"+(ops.third_party_cost_usd||0).toFixed(2)));
+  content.append(el("p",{class:"foot"}, t("ops_line", (env.run||{}).run_id || "", (env.run||{}).completed_at || "", nf(ops.requests||0), ((ops.runtime_ms||0)/1000).toFixed(1), (ops.third_party_cost_usd||0).toFixed(2))));
+  app.append(el("div",{class:"profile"}, tocNav, content));
+  if (typeof IntersectionObserver === "function"){
+    const btns = [...tocNav.querySelectorAll("button")];
+    const io = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting){ const i = toc.findIndex(x => x[0] === en.target.id); btns.forEach((b,j) => b.setAttribute("aria-current", String(i === j))); } }), {rootMargin:"-80px 0px -70% 0px"});
+    toc.forEach(([id]) => { const n = document.getElementById(id); if (n) io.observe(n); });
+  }
 }
-function fact(v, l, claim, env){ return el("div",{class:"fact"}, el("div",{class:"v"}, v), el("div",{class:"l"}, l, claim ? el("button",{class:"cite",title:"Show evidence",onclick:()=>openEvidence(env,[claim.id],l)},"i") : null)); }
-// ---------------------------------------------------------------- compare
+function fact(env, claim, v, l){ return el("div",{class:"fact"}, el("div",{class:"v"}, claim && typeof claim.value === "number" && claim.unit ? el("span",{title:exactMoney(claim.value, claim.unit)}, v) : v), el("div",{class:"l"}, l, claim ? el("button",{class:"cite",type:"button","aria-label":t("ev_title")+": "+l,onclick:()=>openEvidence(env,[claim.id], l)}, "i") : null)); }
+
+// ================================================================ compare
 async function viewCompare(arg){
   if (arg) setCmp(arg.split(",").filter(o => BYORG[o]));
-  app.append(el("h1",null,"Compare companies"));
-  if (!CMP.length){ app.append(el("div",{class:"card empty"},"Add up to four companies with “Add” in the company list or “+ Compare” on a profile.")); return; }
-  const envs = await Promise.all(CMP.map(o => load(o).catch(()=>null)));
+  const pickIn = el("input",{class:"input",type:"search",autocomplete:"off",placeholder:t("search_ph"),"aria-label":t("cmp_add"),disabled:CMP.length >= 4 || null});
+  app.append(el("div",{class:"page-head"}, el("div",null, el("h1",null, t("cmp_title")), el("p",{class:"muted"}, t("cmp_sub"))),
+    CMP.length ? el("button",{class:"btn secondary",type:"button",onclick:()=>copy(location.href.split("#")[0] + "#/compare/" + CMP.join(","))}, t("cmp_share")) : null),
+    el("div",{class:"panel",style:"margin-bottom:16px"}, el("label",{class:"field rel",style:"max-width:420px"}, el("span",null, t("cmp_add")), pickIn)));
+  typeahead(pickIn, r => { toggleCmp(r.o); location.hash = "#/compare/" + CMP.join(","); }, null);
+  if (!CMP.length){ app.append(el("div",{class:"panel empty"}, el("h3",null, t("cmp_empty_t")), el("p",null, t("cmp_empty_d")), el("a",{class:"btn secondary",href:"#/companies"}, t("nav_companies")))); return; }
+  if (!arg || arg !== CMP.join(",")) replaceHash("#/compare/" + CMP.join(","));
+  const holder = el("div",{class:"panel"}, el("div",{class:"skel",style:"height:200px"}));
+  app.append(holder);
+  const envs = await Promise.all(CMP.map(o => load(o).catch(() => null)));
+  if (parseHash().r !== "compare") return;
+  const fin = (f) => e => latestFin(e)[f] || null;
   const rows = [
-    ["Legal form", e => (first(e,"legal_form")||{}).value], ["Municipality", e => (first(e,"municipality")||{}).value], ["Founded", e => (first(e,"founded_date")||{}).value],
-    ["Industry", e => (first(e,"industry_code")||{}).value], ["Employees", e => first(e,"employees") ? num(first(e,"employees").value) : null],
-    ["Revenue", e => { const f=latestFin(e).revenue; return f ? money(f.value,f.unit)+" ("+f.period.to.slice(0,4)+")" : null; }],
-    ["Operating result", e => { const f=latestFin(e).operating_result; return f ? money(f.value,f.unit) : null; }],
-    ["Net result", e => { const f=latestFin(e).net_result; return f ? money(f.value,f.unit) : null; }],
-    ["Equity", e => { const f=latestFin(e).equity; return f ? money(f.value,f.unit) : null; }],
-    ["Total assets", e => { const f=latestFin(e).total_assets; return f ? money(f.value,f.unit) : null; }],
-    ["CEO", e => (first(e,"ceo")||{}).value], ["Board chair", e => (first(e,"board_chair")||{}).value],
-    ["Workplaces", e => String(claimsOf(e,"locations").length)], ["Website", e => (first(e,"official_website")||{}).value],
-    ["Active jobs", e => String(claimsOf(e,"jobs").length)], ["Facts published", e => String(e.claims.length)],
+    ["r_form", e => first(e,"legal_form")], ["r_muni", e => first(e,"municipality")], ["r_founded", e => first(e,"founded_date")], ["r_industry", e => first(e,"industry_code")],
+    ["r_emp", e => first(e,"employees")], ["r_rev", fin("revenue"), true], ["r_op", fin("operating_result"), true], ["r_net", fin("net_result"), true], ["r_eq", fin("equity"), true], ["r_assets", fin("total_assets"), true],
+    ["r_ceo", e => first(e,"ceo")], ["r_chair", e => first(e,"board_chair")], ["r_site", e => first(e,"official_website")],
+    ["r_work", e => ({count: claimsOf(e,"locations").length, c: claimsOf(e,"locations")[0]})], ["r_jobs", e => ({count: claimsOf(e,"jobs").length, c: claimsOf(e,"jobs")[0]})], ["r_facts", e => ({count: e.claims.length})],
   ];
-  const t = el("table",{class:"cmp"}, el("thead",null, el("tr",null, el("th",null,""), envs.map((e,i) => el("th",null, e ? el("a",{href:"#/c/"+CMP[i]}, e.name) : CMP[i], " ", el("button",{class:"src",onclick:()=>{toggleCmp(CMP[i]); route();},"aria-label":"Remove"},"✕"))))));
+  const cell = (e, val, isFin) => {
+    if (!e) return el("td",null,"—");
+    if (val && val.count !== undefined) return el("td",{class:"tnum"}, val.c ? valBtn(e, val.c, nf(val.count)) : nf(val.count));
+    if (!val) return el("td",{class:"faint"},"—");
+    const text = val.field === "official_website" ? host(val.value) : claimText(val);
+    return el("td",{class:isFin ? "tnum" : null}, valBtn(e, val, text), isFin && val.period ? el("div",{class:"sub"}, val.period.to.slice(0,4) + (acctType(val) === "KONSERN" ? " · " + t("group_acc") : "")) : null);
+  };
+  const keyOf = v => v == null ? "" : v.count !== undefined ? String(v.count) : JSON.stringify(v.value);
   const tb = el("tbody");
-  rows.forEach(([l,f]) => tb.append(el("tr",null, el("td",{class:"muted"},l), envs.map(e => el("td",null, e ? (f(e) || "—") : "—")))));
-  FAM.forEach(([fam,l]) => tb.append(el("tr",null, el("td",{class:"muted"}, l), envs.map(e => el("td",null, e ? chip((e.availability[fam]||{}).state||"failed") : "—")))));
-  t.append(tb);
-  app.append(el("div",{class:"card fin-wrap"}, t), el("p",{class:"small muted"},"Share this comparison: ", el("a",{href:"#/compare/"+CMP.join(",")}, location.href.split("#")[0]+"#/compare/"+CMP.join(","))));
+  rows.forEach(([k, f, isFin]) => {
+    const vals = envs.map(e => e ? f(e) : null);
+    const diff = envs.length > 1 && new Set(vals.map(keyOf)).size > 1;
+    tb.append(el("tr",{class:diff ? "diff" : null}, el("td",{scope:"row"}, t(k)), envs.map((e,i) => cell(e, vals[i], isFin))));
+  });
+  FAMS.forEach(fam => {
+    const sts = envs.map(e => e ? ((e.availability||{})[fam]||{}).state || "failed" : null);
+    tb.append(el("tr",{class:new Set(sts).size > 1 ? "diff" : null}, el("td",{scope:"row"}, famL(fam)), sts.map(s => el("td",null, s ? chip(s) : "—"))));
+  });
+  holder.replaceChildren(el("div",{class:"tablewrap",style:"border:0"}, el("table",{class:"cmp"},
+    el("thead",null, el("tr",null, el("th",{scope:"col"}, el("span",{class:"sr"}, t("line"))), envs.map((e,i) => el("th",{scope:"col"}, el("div",{class:"chead"},
+      el("div",null, el("a",{href:"#/c/"+CMP[i],class:"coname"}, e ? e.name : CMP[i]), el("div",{class:"sub mono"}, fmtOrg(CMP[i]))),
+      el("button",{class:"iconbtn",type:"button","aria-label":t("remove", e ? e.name : CMP[i]),onclick:()=>{ toggleCmp(CMP[i]); location.hash = "#/compare/" + CMP.join(","); if (!CMP.length) route(); }}, el("span",{"aria-hidden":"true"},"✕"))))))),
+    tb)));
 }
-// ---------------------------------------------------------------- changes
-function viewChanges(){
-  app.append(el("h1",null,"Changes since the previous run"));
-  const rows = INDEX.flatMap(r => (r.ch||[]).map(c => ({...c, o:r.o, n:r.n})));
-  if (!rows.length){ app.append(el("div",{class:"card"}, el("p",null, REPORT.mode === "refresh" ? "The refresh found no material changes. Re-running on the same sources is idempotent: zero false changes." : "This is a baseline run. Run again with --previous <this run> to detect new filings, role changes, new or closed jobs, address changes and more. Prior evidence is preserved and sources that cannot be read are carried forward, never reported as removed."))); return; }
-  const types = {}; rows.forEach(r => types[r.t] = (types[r.t]||0)+1);
-  app.append(el("div",{class:"legend",style:"margin-bottom:12px"}, Object.entries(types).map(([t,n]) => el("span",{class:"pill"}, t.replace(/_/g," ")+" · "+n))));
-  app.append(el("div",{class:"list"}, rows.map(r => el("div",{class:"item"}, el("div",null, el("div",{class:"t"}, el("a",{href:"#/c/"+r.o}, r.n), " — ", r.t.replace(/_/g," ")), el("div",{class:"small muted"}, (r.l||"")+": "+(r.p!=null ? valueText(r.p)+" → " : "")+(r.v!=null ? valueText(r.v) : "removed"))), el("span",{class:"small muted"}, (r.d||"").slice(0,10))))));
+
+// ================================================================ changes
+function viewChanges(params){
+  const all = INDEX.flatMap(r => (r.ch||[]).map(c => ({...c, o:r.o, n:r.n}))).sort((a,b) => String(b.d||"").localeCompare(String(a.d||"")) || a.n.localeCompare(b.n));
+  app.append(el("div",{class:"page-head"}, el("div",null, el("h1",null, t("chg_title")), el("p",{class:"muted"}, t("chg_sub")))));
+  if (!all.length){ app.append(el("div",{class:"panel empty"}, el("p",null, REPORT.mode === "refresh" ? t("changed_none_ref") : t("changed_none_base")))); return; }
+  const P = {mat: params.get("mat") || "all", types: new Set((params.get("type") || "").split(",").filter(Boolean)), q: params.get("q") || "", p: 1};
+  const counts = {}; all.forEach(r => { counts[r.t] = (counts[r.t]||0) + 1; });
+  const list = el("div"), count = el("div",{class:"small muted",role:"status","aria-live":"polite"});
+  function save(){ const s = new URLSearchParams(); if (P.mat !== "all") s.set("mat", P.mat); if (P.types.size) s.set("type", [...P.types].join(",")); if (P.q) s.set("q", P.q); setQuery("changes", s); }
+  function render(){
+    save();
+    const q = P.q.toLowerCase();
+    const rows = all.filter(r => (P.mat === "all" || (P.mat === "material" ? r.m !== false : r.m === false)) && (!P.types.size || P.types.has(r.t)) && (!q || (r.n + " " + deltaText(r)).toLowerCase().includes(q)));
+    const shown = rows.slice(0, P.p * 100);
+    count.textContent = t("chg_n", nf(rows.length));
+    list.replaceChildren(el("section",{class:"panel"}, rows.length ? el("div",{class:"rows"}, shown.map(r => el("div",{class:"chg"},
+      el("span",{class:"d"}, fmtDate(r.d)),
+      el("div",null, el("a",{href:"#/c/"+r.o,style:"font-weight:600"}, r.n), el("span",{class:"faint"}, " · "), el("span",null, ctL(r.t)),
+        el("div",{class:"delta"}, r.l ? r.l + ": " : "", r.p != null ? [el("s",null, valueText(r.p)), " → "] : null, r.v != null ? valueText(r.v) : t("removed"))),
+      el("span",{class:"tag " + (r.m === false ? "" : "accent")}, r.m === false ? t("minor") : t("material"))))) : el("div",{class:"empty"}, el("p",null, t("none_match_d")))),
+      rows.length > shown.length ? el("div",{class:"pager"}, el("span"), el("button",{class:"btn secondary",type:"button",onclick:()=>{P.p++; render();}}, t("more", nf(rows.length - shown.length)))) : null);
+  }
+  const seg = el("div",{class:"seg",role:"group","aria-label":t("chg_mat")}, [["all","chg_all"],["material","chg_mat"],["minor","chg_minor"]].map(([v,k]) => el("button",{type:"button","aria-pressed":String(P.mat===v),onclick:e=>{ P.mat = v; seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === e.currentTarget))); P.p = 1; render(); }}, t(k))));
+  const typeBtns = el("div",{class:"toggles"}, Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([tp,c]) => el("button",{class:"btn secondary",type:"button",style:"min-height:32px;font-size:13px","aria-pressed":String(P.types.has(tp)),onclick:e=>{ P.types.has(tp) ? P.types.delete(tp) : P.types.add(tp); e.currentTarget.setAttribute("aria-pressed", String(P.types.has(tp))); P.p = 1; render(); }}, ctL(tp), el("span",{class:"faint tnum"}, " " + c))));
+  const qi = el("input",{class:"input",type:"search",value:P.q,placeholder:t("chg_filter"),"aria-label":t("chg_filter"),style:"max-width:320px"});
+  let deb; qi.oninput = () => { clearTimeout(deb); deb = setTimeout(() => { P.q = qi.value; P.p = 1; render(); }, 120); };
+  app.append(el("div",{class:"panel",style:"margin-bottom:12px"}, el("div",{class:"toolbar-row",style:"margin-top:0"}, seg, qi), typeBtns), el("div",{class:"toolbar-row"}, count), list);
+  render();
 }
-// ---------------------------------------------------------------- method
+
+// ================================================================ method
 function viewMethod(){
-  const plan = REPORT.budget_plan || {};
-  app.append(el("h1",null,"How Signalpost works"),
-    el("div",{class:"two"},
-      el("div",{class:"card"}, el("h2",null,"Pipeline"), el("ol",null,
-        el("li",null,"Anchor on the organisation number: live Enhetsregisteret record (100 companies per request)."),
-        el("li",null,"Official facts by exact key: annual accounts (Regnskapsregisteret), roles, registered workplaces, group structure, and the registry's own dated change log."),
-        el("li",null,"Website discovery from registry-declared site, registry e-mail domain and name-based .no domains — then the identity gate."),
-        el("li",null,"From a verified site only: company-owned social profiles, role mailboxes, self-description and dated news."),
-        el("li",null,"Hiring: NAV's public vacancy feed; a posting is published only when the ad's employer org. number equals the company or one of its workplaces."),
-        el("li",null,"Refresh: diff against the previous run on stable claim keys; unreadable sources are carried forward, never reported as removed."),
-        el("li",null,"Summary: deterministic sentences, each citing the claims it rests on."))),
-      el("div",{class:"card"}, el("h2",null,"Identity gate"), el("p",{class:"small"},"A website is published as the company's own only if:"), el("ul",{class:"small"},
-        el("li",null,"the exact organisation number is printed on the site (and not merely among several companies' numbers), or"),
-        el("li",null,"the legal name is in the site's identity fields and the registry phone or street address is on the site, or"),
-        el("li",null,"the registry itself declares the site and its identity fields carry the legal name.")),
-        el("p",{class:"small"},"Parked pages, cross-domain redirects without proof, address-like names and sites showing another company's number are held back as ambiguous or labelled as a related group site."))),
-    el("div",{class:"card section"}, el("h2",null,"Availability states"), el("dl",{class:"kv"}, STATES.map(s => [el("dt",null, chip(s)), el("dd",null, el("span",null, {available:"Found and published with evidence.",not_available:"Checked; the source has nothing for this company.",ambiguous:"A candidate exists but identity could not be proven — not published.",blocked:"The source refused access (robots.txt or HTTP 401/403/429).",failed:"The run could not complete this check (error or budget).",not_applicable:"The question does not apply to this entity."}[s]))]))),
-    el("div",{class:"card section"}, el("h2",null,"Sources and licences"), el("dl",{class:"kv"},
-      kv("Brønnøysundregistrene (Enhetsregisteret, Regnskapsregisteret, roles, sub-units, group, change log)","NLOD 2.0 — data.brreg.no open APIs"),
-      kv("NAV pam-stilling-feed","Free public API (arbeidsplassen.nav.no API terms); only active ads, no contact persons"),
-      kv("Company websites","Company-owned; robots.txt honoured; identifying User-Agent; bounded pages per site"))),
-    el("div",{class:"card section"}, el("h2",null,"Budget plan for this run"), el("dl",{class:"kv"}, Object.entries(plan).map(([k,v]) => kv(k, v)))));
+  const plan = REPORT.budget_plan || {}, ops = REPORT.operations || {}, gate = REPORT.identity_gate || {};
+  const pmax = Math.max(1, ...Object.values(plan));
+  const hosts = Object.entries(ops.requests_by_host || {}).sort((a,b)=>b[1]-a[1]).slice(0,8), hmax = Math.max(1, ...hosts.map(h=>h[1]));
+  const gtotal = Object.values(gate).reduce((a,b)=>a+b,0) || 1;
+  app.append(el("div",{class:"page-head"}, el("div",null, el("h1",null, t("m_title")), el("p",{class:"muted"}, t("m_sub")))));
+  app.append(el("div",{class:"split"},
+    el("section",{class:"panel"}, el("h2",null, t("m_pipeline")), el("ol",{class:"steps"}, [1,2,3,4,5,6,7].map(i => el("li",null, el("div",null, el("b",null, t("p"+i)), el("span",null, t("p"+i+"d"))))))),
+    el("section",{class:"panel"}, el("h2",null, t("m_gate")), el("p",{class:"small"}, t("g_intro")), el("ol",{class:"small",style:"padding-left:18px;margin:0 0 10px"}, ["g1","g2","g3","g4"].map(k => el("li",{style:"margin-bottom:6px"}, t(k)))),
+      el("p",{class:"small muted"}, t("g_out")),
+      Object.keys(gate).length ? [el("h3",{style:"margin:14px 0 6px"}, t("gate_title")), el("div",{class:"cbar",role:"img","aria-label":Object.entries(gate).map(([g,c]) => (D["gate."+g] ? t("gate."+g) : g) + ": " + c).join(", ")},
+        ["accepted","related_site","ambiguous","rejected","blocked","unreachable"].filter(g => gate[g]).map(g => el("span",{class:"f-" + ({accepted:"available",related_site:"not_applicable",ambiguous:"ambiguous",rejected:"failed",blocked:"blocked",unreachable:"not_available"}[g]),style:"flex:"+gate[g]+" 1 0",onmousemove:e=>showTip(e, t("gate."+g)+": "+gate[g]+" ("+pct(gate[g]/gtotal)+")"),onmouseleave:hideTip}))),
+        el("div",{class:"legend"}, ["accepted","related_site","ambiguous","rejected","blocked","unreachable"].filter(g => gate[g]).map(g => el("span",null, el("i",{class:"f-" + ({accepted:"available",related_site:"not_applicable",ambiguous:"ambiguous",rejected:"failed",blocked:"blocked",unreachable:"not_available"}[g])}), t("gate."+g) + " " + gate[g])))] : null)));
+  app.append(el("section",{class:"panel section"}, el("h2",null, t("m_states")), el("dl",{class:"kv"}, STATES.map(s => [el("dt",null, chip(s)), el("dd",null, el("span",null, t("std."+s)))]))));
+  app.append(el("section",{class:"panel section"}, el("h2",null, t("m_sources")), el("dl",{class:"kv"}, kv(t("lic_brreg"), t("lic_brreg_v")), kv(t("lic_nav"), t("lic_nav_v")), kv(t("lic_web"), t("lic_web_v")), kv(t("lic_kv"), t("lic_kv_v")))));
+  app.append(el("div",{class:"section grid2"},
+    el("section",{class:"panel"}, el("h2",null, t("m_budget")), Object.keys(plan).length ? Object.entries(plan).map(([k,v]) => el("div",{class:"hbar"}, el("span",{class:"mono small"}, k), el("div",{class:"t"}, el("span",{style:"width:"+(v/pmax*100)+"%"})), el("span",{class:"n"}, nf(v)))) : el("p",{class:"reason"}, "—")),
+    el("section",{class:"panel"}, el("h2",null, t("m_hosts")), hosts.length ? hosts.map(([h,v]) => el("div",{class:"hbar"}, el("span",{class:"mono small",style:"overflow:hidden;text-overflow:ellipsis;white-space:nowrap"}, h), el("div",{class:"t"}, el("span",{style:"width:"+(v/hmax*100)+"%"})), el("span",{class:"n"}, nf(v)))) : el("p",{class:"reason"}, "—"))));
+  app.append(el("section",{class:"panel section"}, el("h2",null, t("m_keys")), shortcutsNodes()));
 }
+
+// ================================================================ boot
+applyTheme();
+renderChrome();
 route();
 })();
 </script>
