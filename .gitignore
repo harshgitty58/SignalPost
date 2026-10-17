@@ -44,3 +44,5 @@ desktop.ini
 .agents/
 .claude/skills/
 skills-lock.json
+node_modules/
+package-lock.json
