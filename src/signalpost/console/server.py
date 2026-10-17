@@ -4,9 +4,11 @@
 
 Safety: binds to 127.0.0.1 only; runs a fixed whitelist of project actions (never arbitrary shell);
 organisation numbers are validated to 9 digits; static files are served only from out-*/ and reports/.
+Read-only helper: /api/diff compares two runs (or a run and one of its archived history snapshots) in memory.
 """
 from __future__ import annotations
 
+import copy
 import json
 import mimetypes
 import os
@@ -22,6 +24,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).parent
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
+HISTORY_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,96}\.jsonl(\.gz)?$")
+ORG = re.compile(r"\d{9}")
 
 
 class Job:
@@ -45,6 +49,14 @@ class Job:
                 self.lines.append(line.rstrip("\n"))
                 self.cond.notify_all()
         self.code = self.proc.wait()
+        if self.action == "verify" and self.code == 0 and self.out:
+            # keep the re-verification result next to the run so the showcase can report it
+            result = next((ln for ln in reversed(self.lines) if ln.startswith("{") and '"sampled"' in ln), None)
+            if result:
+                try:
+                    (ROOT / self.out / "evidence-verification.json").write_text(json.dumps(json.loads(result), indent=1), encoding="utf-8")
+                except (OSError, json.JSONDecodeError):
+                    pass
         with self.cond:
             self.done = True
             self.lines.append(f"@exit {self.code}")
@@ -77,8 +89,19 @@ def runs() -> list[dict]:
                     "valid": r.get("validation", {}).get("passed"), "requests": r.get("operations", {}).get("requests"),
                     "seconds": r.get("operations", {}).get("elapsed_seconds"), "coverage": r.get("family_coverage"),
                     "states": r.get("family_states"), "gate": r.get("identity_gate"), "mode": r.get("mode"),
-                    "has_site": (d / "site" / "index.html").exists(), "has_audit": (d / "identity-audit.md").exists()})
+                    "has_site": (d / "site" / "index.html").exists(), "has_audit": (d / "identity-audit.md").exists(),
+                    "ops": r.get("operations", {}), "cost": r.get("third_party_cost_usd"), "changes": r.get("changes_detected"),
+                    "history": sorted((h.name for h in (d / "history").glob("*.jsonl*") if HISTORY_NAME.match(h.name)), reverse=True)
+                    if (d / "history").is_dir() else [],
+                    "verification": _read_json(d / "evidence-verification.json")})
     return out[:30]
+
+
+def _read_json(path: Path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
 def build_cmd(body: dict) -> tuple[list[str], str | None]:
@@ -109,6 +132,18 @@ def build_cmd(body: dict) -> tuple[list[str], str | None]:
         if body.get("no_web"):
             cmd.append("--no-web")
         return cmd, out
+    if action == "rerun":
+        # re-run one company live and diff it against the run it came from (output: out-rerun-<org>)
+        target, org = body.get("target") or "", (body.get("org") or "").strip()
+        if not (SAFE_NAME.match(target) and target.startswith("out-") and (ROOT / target / "envelopes.jsonl").exists()):
+            raise ValueError("choose a finished run")
+        if not ORG.fullmatch(org):
+            raise ValueError("organisation number must be 9 digits")
+        out = f"out-rerun-{org}"
+        (ROOT / out).mkdir(exist_ok=True)
+        (ROOT / out / "console-batch.jsonl").write_text(json.dumps({"organisation_number": org}) + "\n", encoding="utf-8")
+        return [py, "-m", "signalpost.cli", "run", "--organisations", f"{out}/console-batch.jsonl", "--out", out, "--events",
+                "--previous", target, "--job-days", str(max(1, min(60, int(body.get("job_days") or 7))))], out
     if action == "tests":
         return [py, "-m", "pytest", "-q"], None
     target = body.get("target") or ""
@@ -120,7 +155,53 @@ def build_cmd(body: dict) -> tuple[list[str], str | None]:
         return [py, "eval/verify_evidence.py", f"{target}/envelopes.jsonl", "--sample", "30"], target
     if action == "replay":
         return [py, "eval/refresh_replay.py", f"{target}/envelopes.jsonl", f"{target}/refresh-replay.json"], target
+    if action == "showcase":
+        return [py, "-m", "signalpost.cli", "showcase", "--envelopes", f"{target}/envelopes.jsonl", "--report", f"{target}/run-report.json",
+                "--output", f"{target}/site"], target
     raise ValueError("unknown action")
+
+
+def _snapshot(ref: str) -> Path:
+    """Resolve 'out-x' or 'out-x/history/<file>.jsonl.gz' to an envelopes file inside the project."""
+    parts = ref.split("/")
+    if not (parts and SAFE_NAME.match(parts[0]) and parts[0].startswith("out-")):
+        raise ValueError("unknown run")
+    if len(parts) == 1:
+        path = ROOT / parts[0] / "envelopes.jsonl"
+    elif len(parts) == 3 and parts[1] == "history" and HISTORY_NAME.match(parts[2]):
+        path = ROOT / parts[0] / "history" / parts[2]
+    else:
+        raise ValueError("unknown run")
+    if not path.is_file():
+        raise ValueError("run not found")
+    return path
+
+
+def diff_runs(a_ref: str, b_ref: str) -> dict:
+    """Typed changes from run A (older) to run B (newer), computed in memory with the agent's own diff."""
+    from ..refresh import diff, load_previous
+    a, b = load_previous(_snapshot(a_ref)), load_previous(_snapshot(b_ref))
+    meta = lambda envs: next(({"run_id": e.get("run", {}).get("run_id"), "completed_at": e.get("run", {}).get("completed_at")}  # noqa: E731
+                              for e in envs.values()), {})
+    companies, by_type, fam_a, fam_b = [], {}, {}, {}
+    for org in sorted(set(a) & set(b)):
+        changes, _ = diff(a[org], copy.deepcopy(b[org]), detected_at=b[org].get("run", {}).get("completed_at") or "")
+        states = []
+        for fam, st in b[org].get("availability", {}).items():
+            old = a[org].get("availability", {}).get(fam, {}).get("state")
+            fam_a[fam] = fam_a.get(fam, 0) + (old == "available")
+            fam_b[fam] = fam_b.get(fam, 0) + (st.get("state") == "available")
+            if old and old != st.get("state"):
+                states.append({"family": fam, "a": old, "b": st.get("state"), "reason": st.get("reason")})
+        for ch in changes:
+            by_type[ch["type"]] = by_type.get(ch["type"], 0) + 1
+        if changes or states:
+            companies.append({"org": org, "name": b[org].get("name"), "states": states,
+                              "changes": [{k: ch.get(k) for k in ("type", "material", "family", "label", "previous", "current")} for ch in changes]})
+    return {"a": {"ref": a_ref, "n": len(a), **meta(a)}, "b": {"ref": b_ref, "n": len(b), **meta(b)}, "common": len(set(a) & set(b)),
+            "only_a": sorted(set(a) - set(b))[:200], "only_b": sorted(set(b) - set(a))[:200], "by_type": by_type,
+            "coverage": {f: {"a": fam_a.get(f, 0), "b": fam_b.get(f, 0)} for f in sorted(set(fam_a) | set(fam_b))},
+            "companies": companies[:500], "companies_total": len(companies)}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -151,6 +232,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"batches": batches(), "runs": runs(),
                                "job": None if not job else {"id": job.id, "action": job.action, "out": job.out, "done": job.done,
                                                             "code": job.code, "cmd": " ".join(Path(c).name if i == 0 else c for i, c in enumerate(job.cmd))}})
+        if path == "/api/diff":
+            qs = urllib.parse.parse_qs(url.query)
+            try:
+                return self._json(diff_runs((qs.get("a") or [""])[0], (qs.get("b") or [""])[0]))
+            except (ValueError, OSError, json.JSONDecodeError) as exc:
+                return self._json({"error": str(exc)}, 400)
         if path == "/api/stream":
             return self._stream(urllib.parse.parse_qs(url.query))
         if path.startswith("/files/"):
