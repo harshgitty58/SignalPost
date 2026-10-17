@@ -80,3 +80,20 @@ Severity: **A** = can cost qualification · **B** = costs points or evidence acc
 | 5 | **you** | A1 push · open the commit on GitHub · send hash | — |
 | 6 | separate branch, only if time | B4 tail pass | full benchmark + hand audit before it may enter a revision |
 | — | **you** | D1 question to Builderr · D6 manual checks | — |
+
+---
+
+## 4. Execution log (17 Oct)
+
+| Step | Commit | Result |
+|---|---|---|
+| 1 · UI hardening (C1, C3, C4, D5) | `050afd9` on `ui-upgrade` | Site build can't fail a run; console refuses foreign `Host` (403) and cross-origin POSTs incl. `/api/stop`; count facts open all their claims (Posten: 133 workplaces); "Show all" on every truncated list (68 → 171 rows). ui_check + console_check `errors: []` |
+| 2–3 · Agent fixes + docs (B1, B2, B3, B5, C2, C5, C6, D3, D4) | `7389f13` on `rev-18oct` | Names keep their casing ("Petter-Børre Furberg is CEO"); Wikidata-sourced sites say so; known-15 group 50% → 92% (all 11 members); Wikidata + Kartverket declared; `-dirty` version flag; eval scripts work on cp1252 consoles; 3 new tests |
+| New finding · empty evidence excerpt | `5dd7bbe` | The name+contact proof quoted nothing when the token was folded ("rorservice" vs "Rørservice"); 1 of 4 sites in the 1,000 run. Now quotes the identity fields. 0 empty excerpts after the fix |
+| 6 · Tail pass (B4) | `7fc1331` (branch `tail-pass`), merged `7be8eaa`, test `0fdf60a` | Benchmarked on the 1,000 batch before merging: 124 stranded requests → leadership 320 → 368, workplaces 223 → 275, group +1; all exact-key, no new website acceptances; 1,000/1,000 valid. Smoke-100: idle (no lane runs out) |
+| 4 · Reports regenerated | `b9a1779` | Fresh clone of `7be8eaa` → smoke-100 baseline + refresh (100/100, 899 req, 4.0 min, coverage unchanged) and 1,000 (1,000/1,000, 1,920 req = usable cap, 2.9 min, leadership 37%, workplaces 28%). Refresh replay PASS · evidence re-verification 30/30 · 0 empty website excerpts · README/SUBMISSION regenerated · ui_check `errors: []` on both sites |
+| Hand audit of new acceptances | — | `norskrorservice.no` (913529979): exact legal name in `<title>`/`og:site_name`, registry phone 22 12 00 01 and address on the site → correct. `dbbil.no` (997783999): JSON-LD name "DB Bil AS", registry phone 38 13 97 00, postcode 4715 → correct. Smoke-100 website set unchanged (17) |
+
+**Candidate for the revision:** branch `rev-18oct` (contains `ui-upgrade`). Tests: 14 passed.
+
+**Still open (yours):** A1 push + confirm the commit on GitHub + send the hash · D1 ask Builderr rows vs distinct org numbers · D6 manual checks (Kartverket map online, CSV/copy in a browser, a real phone).

@@ -3,6 +3,7 @@
 > State on 17 Oct 2026, after the upgrade_2 P0 pass (`252a312` on `main`) and the dashboard upgrade (branch `ui-upgrade`, `80411b9` → `c86f4af`).
 > **Deadlines:** revised commit hashes until **18 Oct**, round closes **21 Oct**.
 > Statuses here come from the code (grep), not from earlier plans. ✅ done · 🟡 partly done · ⬜ not started.
+> **Update (later on 17 Oct):** see `audit_3.md` §4. Branch `rev-18oct` now holds the UI, the agent fixes, the tail pass and regenerated reports; I1–I3 are fixed, and the B4 tail pass lifted 1,000-company leadership 32% → 37% and workplaces 22% → 28%.
 
 ---
 
@@ -40,9 +41,9 @@ If any step fails and can't be fixed quickly, don't merge. `main` stays the scor
 
 | ID | Issue | Type | Suggested fix |
 |---|---|---|---|
-| I1 | Brief lowercases names: "Petter-børre furberg is ceo (daglig leder); pål wibe chairs the board" | synthesis (agent) | Keep the registry casing, or title-case each name part including after hyphens. Add a test. |
-| I2 | Posten Bring: `group` ended `failed` with "phase budget exhausted: group" in the known-15 run | budget (agent) | Check the group lane's per-phase budget for large groups. A failed family costs coverage. |
-| I3 | `eval/benchmark.py` crashes on Windows consoles (cp1252, `≥` character) | eval | `sys.stdout.reconfigure(encoding="utf-8")` at the top of the eval scripts |
+| I1 ✅ `7389f13` | Brief lowercases names: "Petter-børre furberg is ceo (daglig leder); pål wibe chairs the board" | synthesis (agent) | Keep the registry casing, or title-case each name part including after hyphens. Add a test. |
+| I2 ✅ `7389f13` | Posten Bring: `group` ended `failed` with "phase budget exhausted: group" in the known-15 run | budget (agent) | Check the group lane's per-phase budget for large groups. A failed family costs coverage. |
+| I3 ✅ `7389f13` | `eval/benchmark.py` crashes on Windows consoles (cp1252, `≥` character) | eval | `sys.stdout.reconfigure(encoding="utf-8")` at the top of the eval scripts |
 | I4 | Kartverket workplace map never tested live (only the offline fallback) | UI | Open a profile with workplaces online, press "Show on map", and check that the CORS response draws points |
 | I5 | CSV export and clipboard copy only tested in jsdom | UI | One manual click test in Chrome/Edge/Firefox from `file://` |
 | I6 | No check on a real phone (only Chrome at 375 px in an iframe) | UI | Test on one iOS and one Android device: bottom sheet, tap targets, sticky header |
