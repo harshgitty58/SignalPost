@@ -560,6 +560,8 @@ def extract_company_owned(pb: ProfileBuilder, fetcher: Fetcher, visit: SiteVisit
         pb.add(Claim("contact", "email", mail, [ev], label="Contact e-mail (company domain)", key=f"email:{mail}"))
     if mails:
         pb.set_state("contact", "available", "company role mailbox on verified site", origin)
+    else:
+        pb.set_state("contact", "not_available", "no company role mailbox on the verified site", origin)
 
     # self-description (company-owned promotional copy, labelled as such)
     desc = home.meta.get("description") or home.meta.get("og:description")
@@ -572,8 +574,30 @@ def extract_company_owned(pb: ProfileBuilder, fetcher: Fetcher, visit: SiteVisit
     else:
         pb.set_state("description", "not_available", "verified site has no usable description", origin)
 
+    _site_jobs(pb, visit)
     if want_news:
         _news(pb, fetcher, visit, origin)
+
+
+def _site_jobs(pb: ProfileBuilder, visit: SiteVisit) -> None:
+    """schema.org JobPosting published on the verified site (pages already fetched; no extra requests)."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    for page in visit.pages:
+        for node in page.jsonld:
+            if "JobPosting" not in str(node.get("@type", "")):
+                continue
+            title = node.get("title") or node.get("name")
+            valid = _parse_date(node.get("validThrough"))
+            posted = _parse_date(node.get("datePosted"))
+            if not title or (valid and valid < today):
+                continue
+            value = {k: v for k, v in {"title": str(title)[:160], "published": posted, "expires": valid, "url": node.get("url") or page.url,
+                                       "source": "company website (schema.org JobPosting)"}.items() if v}
+            ev = pb.add_evidence(Evidence(page.url, "company_owned", page.snap.retrieved_at, page.snap.sha256, f'JobPosting: "{value["title"]}"',
+                                          "jsonld:JobPosting", identity_reason="published on the verified official website"))
+            pb.add(Claim("jobs", "job_posting", value, [ev], label="Job posting (company website)", key=f"sitejob:{fold(value['title'])[:80]}",
+                         effective_date=posted))
+            pb.set_state("jobs", "available", "job posting on the verified official website", page.url)
 
 
 def _parse_date(value: str | None) -> str | None:
@@ -671,7 +695,7 @@ def research_website(pb: ProfileBuilder, fetcher: Fetcher, entity: dict, bulk_ro
     cands = domain_candidates(entity, bulk_row, pb.extra.get("site_candidates"))
     if not cands:
         pb.set_state("website", "not_available", "registry lists no website or company e-mail domain, and no name-based domain resolves")
-        for fam in ("social_profiles", "description"):
+        for fam in ("social_profiles", "description", "contact"):
             pb.set_state(fam, "not_available", "no verified official website to read from")
         return
     decisions = []
@@ -709,5 +733,5 @@ def research_website(pb: ProfileBuilder, fetcher: Fetcher, entity: dict, bulk_ro
         pb.set_state("website", "blocked", "robots.txt disallows access to the candidate site")
     else:
         pb.set_state("website", "not_available", "candidate domains were unreachable")
-    for fam in ("social_profiles", "description"):
+    for fam in ("social_profiles", "description", "contact"):
         pb.set_state(fam, "not_available", "no verified official website to read from")

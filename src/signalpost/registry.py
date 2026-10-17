@@ -24,6 +24,20 @@ ROLES_URL = API + "/enheter/{org}/roller"
 SUBUNITS_URL = API + "/underenheter?overordnetEnhet={org}&size=200"
 GROUP_URL = API + "/konsernstruktur/{org}"
 ACCOUNTS_URL = "https://data.brreg.no/regnskapsregisteret/regnskap/{org}"
+HISTORY_URL = "https://data.brreg.no/regnskapsregisteret/regnskap/aarsregnskap/kopi/{org}/aar"
+HISTORY_PDF = "https://data.brreg.no/regnskapsregisteret/regnskap/aarsregnskap/kopi/{org}/{year}"
+_history_lock = __import__("threading").Lock()
+_history_last = [0.0]
+
+
+def pace_history(interval: float = 2.1) -> None:
+    """The filing-copy endpoint allows ~30 request starts per minute; keep starts >= 2.1 s apart (global)."""
+    import time
+    with _history_lock:
+        wait = _history_last[0] + interval - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        _history_last[0] = time.monotonic()
 ENTITY_UPDATES_URL = API + "/oppdateringer/enheter?organisasjonsnummer={orgs}&dato={since}&size={size}&includeChanges=true"
 ROLE_UPDATES_URL = API + "/oppdateringer/roller?organisasjonsnummer={orgs}&afterTime={since}&size={size}"
 NLOD = "NLOD-2.0"
@@ -242,7 +256,7 @@ def entity_claims(pb: ProfileBuilder, entity: dict[str, Any], *, retrieved_at: s
     if entity.get("hjemmeside"):
         add("identity", "registry_declared_website", "Website declared in registry", entity["hjemmeside"], "hjemmeside")
     if entity.get("erIKonsern") is not None:
-        add("group", "part_of_group", "Part of a corporate group", "yes" if entity.get("erIKonsern") else "no", "erIKonsern", entity.get("erIKonsern"))
+        add("identity", "part_of_group", "Part of a corporate group (registry flag)", "yes" if entity.get("erIKonsern") else "no", "erIKonsern", entity.get("erIKonsern"))
     if entity.get("telefon") and form.get("kode") not in ("ENK",):
         add("contact", "registry_phone", "Phone (registry)", entity["telefon"], "telefon")
 
@@ -264,7 +278,7 @@ def entity_claims(pb: ProfileBuilder, entity: dict[str, Any], *, retrieved_at: s
         add("status", "registry_status", "Registry status", "active" if active else "inactive/winding up",
             "konkurs", {k: entity.get(k) for k in flags})
     if entity.get("sisteInnsendteAarsregnskap"):
-        add("financials", "latest_filed_year", "Latest submitted annual accounts (year)", str(entity["sisteInnsendteAarsregnskap"]), "sisteInnsendteAarsregnskap")
+        add("identity", "latest_filed_year", "Latest submitted annual accounts (year)", str(entity["sisteInnsendteAarsregnskap"]), "sisteInnsendteAarsregnskap")
 
     # industry
     for idx in (1, 2, 3):
@@ -338,6 +352,17 @@ def accounts_claims(pb: ProfileBuilder, snap: Snapshot) -> None:
                                           "regnskapsregisteret_api:regnkapsprinsipper", NLOD, reporting_period=p))
             pb.add(Claim("financials", "accounting_rules", rules, [ev], label=f"Accounting rules ({scope})", period=p, key=f"rules:{account_type}:{p['to']}"))
     pb.set_state("financials", "available", "official annual accounts", url)
+
+
+def history_claims(pb: ProfileBuilder, snap: Snapshot) -> None:
+    """Official filing history: every year with a filed annual-account copy, linked to the official copy (PDF)."""
+    years = sorted({str(y) for y in (snap.json() if snap.ok else []) if str(y).isdigit()}, reverse=True)
+    for year in years[:20]:
+        ev = pb.add_evidence(Evidence(snap.url, "official_registry", snap.retrieved_at, snap.sha256, snap.text()[:600],
+                                      "regnskapsregisteret_kopi_api:aar", NLOD, identity_reason="exact organisation-number key",
+                                      reporting_period={"from": f"{year}-01-01", "to": f"{year}-12-31"}))
+        pb.add(Claim("financials", "filed_annual_accounts", {"year": year, "official_copy": HISTORY_PDF.format(org=pb.org, year=year)}, [ev],
+                     label="Annual accounts filed (official copy)", key=f"filing:{year}", period={"from": f"{year}-01-01", "to": f"{year}-12-31"}))
 
 
 # ---------------------------------------------------------------------------------------------
@@ -569,7 +594,10 @@ def activity_claims(pb: ProfileBuilder, entity_events: list[tuple[dict, Snapshot
         rows.append((item.get("time", ""), "Roles (board/management) updated in registry", {"type": item.get("type"), "id": item.get("id")}, snap, "role:" + str(item.get("id"))))
     rows.sort(key=lambda r: r[0], reverse=True)
     for when, label, detail, snap, uid in rows[:max_events]:
-        ev = pb.add_evidence(Evidence(snap.url.split("?")[0] + f"?organisasjonsnummer={pb.org}", "official_registry", snap.retrieved_at,
+        day = str(when)[:10]
+        link = snap.url.split("?")[0] + f"?organisasjonsnummer={pb.org}" + (f"&dato={day}T00:00:00.000Z&includeChanges=true&size=100" if "oppdateringer/enheter" in snap.url
+                                                                           else f"&afterTime={day}T00:00:00.000Z&size=100")
+        ev = pb.add_evidence(Evidence(link, "official_registry", snap.retrieved_at,
                                       canonical_hash({"id": uid, "detail": detail}), json.dumps({"dato": when, **detail}, ensure_ascii=False)[:600],
                                       "brreg_oppdateringer_api", NLOD, identity_reason="exact organisation-number key"))
         pb.add(Claim("activity", "registry_event", label, [ev], label="Official registry event", effective_date=str(when)[:10], key=f"event:{uid}",

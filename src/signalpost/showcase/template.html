@@ -403,8 +403,10 @@ function finTable(env){
   }
   const seg = types.length > 1 ? el("div",{class:"seg",role:"group","aria-label":"Account type"}, types.map(tp => el("button",{class: tp===type?"on":"", onclick:e=>{type=tp; seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b===e.target)); render();}}, tp==="SELSKAP"?"Company":"Group"))) : null;
   render();
-  const other = claimsOf(env,"financials").filter(c => !(typeof c.value === "number" && c.period));
+  const filings = claimsOf(env,"financials").filter(c => c.field === "filed_annual_accounts").sort((a,b)=>b.value.year.localeCompare(a.value.year));
+  const other = claimsOf(env,"financials").filter(c => !(typeof c.value === "number" && c.period) && c.field !== "filed_annual_accounts");
   return el("div",null, seg ? el("div",{style:"margin-bottom:8px"}, seg) : null, holder, other.length ? el("div",{style:"margin-top:10px"}, kvClaims(env, other.slice(0,4))) : null,
+    filings.length ? el("div",{style:"margin-top:12px"}, el("div",{class:"small muted"},"Filing history — official annual-account copies (PDF): "), el("div",{class:"legend"}, filings.map(c => ext(c.value.official_copy, c.value.year)), srcBtn(env, filings[0]))) : null,
     el("p",{class:"small muted",style:"margin:8px 0 0"},"Values are copied verbatim from Regnskapsregisteret; missing values stay missing. Tap a value for its evidence."));
 }
 async function viewCompany(org){

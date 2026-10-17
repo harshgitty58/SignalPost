@@ -101,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--max-minutes", type=float, default=45.0)
     run.add_argument("--max-cost", type=float, default=10.0)
     run.add_argument("--workers", type=int, default=24)
-    run.add_argument("--job-days", type=int, default=35, help="NAV feed look-back window in days")
+    run.add_argument("--job-days", type=int, default=60, help="NAV feed look-back window in days")
     run.add_argument("--bulk-files", action="store_true", help="experimental: roles/workplaces from Brreg bulk files for large batches")
     run.add_argument("--no-web", action="store_true", help="skip website discovery (registry-only run)")
     run.add_argument("--showcase", help="where to write the static showcase site (default: <out>/site)")

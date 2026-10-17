@@ -29,7 +29,7 @@ from .http import Fetcher, utc_now
 from .jobs import JobFeed, job_claims
 from .model import FAMILIES, STATES, ProfileBuilder
 from .refresh import diff, load_previous
-from .registry import (ACCOUNTS_URL, GROUP_URL, ROLES_URL, SUBUNITS_URL, accounts_claims, activity_claims, entity_claims,
+from .registry import (ACCOUNTS_URL, GROUP_URL, HISTORY_URL, ROLES_URL, SUBUNITS_URL, accounts_claims, history_claims, pace_history, activity_claims, entity_claims,
                        fetch_activity, fetch_entities, group_claims, load_bulk, roles_claims, subunit_claims)
 from .synthesis import build_brief
 from .web import research_website, valid_orgnr
@@ -118,6 +118,7 @@ class Runner:
             "locations": n + n // 20 + 2,
             "group": int(n * 0.35) + 2,
             "jobs_verify": max(10, int(n * 0.6)),
+            "history": n + 2 if n <= 200 else 0,  # paced endpoint (~30/min): only for small batches
         }
         self.bulk_mode = self.bulk_files and n * 3 > usable * 0.6
         self.bulk: dict[str, dict | None] = {"roles": None, "locations": None}
@@ -159,6 +160,8 @@ class Runner:
                 ("leadership", "roles", ROLES_URL, roles_claims),
                 ("locations", "locations", SUBUNITS_URL, subunit_claims),
             ]
+            if self.plan.get("history"):
+                steps.insert(1, ("financials", "history", HISTORY_URL, history_claims))
             if entity.get("erIKonsern"):
                 steps.append(("group", "group", GROUP_URL, group_claims))
             elif entity:
@@ -175,6 +178,8 @@ class Runner:
                         pb.set_state(family, "not_available", "no record for this organisation number in Brreg's bulk file")
                     continue
                 try:
+                    if phase == "history":
+                        pace_history()
                     snap = self.fetcher.get_json(url.format(org=org), phase=phase, retries=1)
                 except BudgetExhausted as exc:
                     pb.set_state(family, "failed", f"request budget: {exc}")
