@@ -582,8 +582,8 @@ def activity_claims(pb: ProfileBuilder, entity_events: list[tuple[dict, Snapshot
             continue
         described = _describe(item.get("endringer") or [])
         if described:
-            label, detail = described
-            rows.append((item.get("dato", ""), label, {"endringstype": kind, "endringer": detail}, snap, str(item.get("oppdateringsid"))))
+            label, field_changes = described
+            rows.append((item.get("dato", ""), label, {"endringstype": kind, "endringer": field_changes}, snap, str(item.get("oppdateringsid"))))
     seen_role_days: set[str] = set()
     for item, snap in role_events:
         day = str(item.get("time", ""))[:10]

@@ -72,9 +72,9 @@ def read_inputs(path: str | Path) -> list[str]:
 def git_version() -> str:
     try:
         root = Path(__file__).resolve().parents[2]
-        sha = subprocess.run(["git", "rev-parse", "--short=12", "HEAD"], capture_output=True, text=True, timeout=5, cwd=root).stdout.strip()
+        sha = subprocess.run(["git", "rev-parse", "--short=12", "HEAD"], capture_output=True, text=True, timeout=5, cwd=root, check=False).stdout.strip()
         # mark runs made from uncommitted agent code, so published numbers can be traced to exact code
-        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src"], capture_output=True, text=True, timeout=5, cwd=root).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src"], capture_output=True, text=True, timeout=5, cwd=root, check=False).stdout.strip()
         return (sha + ("-dirty" if dirty else "")) if sha else __version__
     except (OSError, subprocess.SubprocessError):
         return __version__

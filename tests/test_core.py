@@ -175,3 +175,12 @@ def test_malformed_inputs_still_get_one_envelope_per_distinct_number(tmp_path):
     orgs = read_inputs(str(f))
     assert orgs == ["923609016", "92360901", "9236090160", "923609017", "984661185"]
 
+
+def test_brief_survives_job_ads_without_title():
+    from signalpost.synthesis import build_brief
+    jobs = [{"id": f"j{i}", "family": "jobs", "field": "job_posting", "value": v, "availability": "available", "evidence_ids": ["e"]}
+            for i, v in enumerate([{"title": None, "location": "Oslo"}, {"title": "Elektriker"}])]
+    env = {"organisation_number": "923609016", "availability": {}, "claims": jobs}
+    text = " ".join(s["text"] for s in build_brief(env)["sentences"])
+    assert "2 active job postings" in text and "e.g. Elektriker" in text
+

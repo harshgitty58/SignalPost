@@ -195,11 +195,11 @@ def build_brief(envelope: dict[str, Any]) -> dict[str, Any]:
     socials = by("social_profiles")
     jobs = by("jobs")
     if site:
-        kinds = ", ".join(c['field'].replace('_', '/') for c in socials)
-        say(f"Its verified official website is {site['value']}" + (f", which links to {len(socials)} company-owned profile{'s' if len(socials) != 1 else ''} ({kinds})" if socials else "") + ".", site, *socials,
-            no=f"Bekreftet offisielt nettsted er {site['value']}" + (f", som lenker til {len(socials)} {'egne profiler' if len(socials) != 1 else 'egen profil'} ({kinds})" if socials else "") + ".")
+        profile_kinds = ", ".join(c['field'].replace('_', '/') for c in socials)
+        say(f"Its verified official website is {site['value']}" + (f", which links to {len(socials)} company-owned profile{'s' if len(socials) != 1 else ''} ({profile_kinds})" if socials else "") + ".", site, *socials,
+            no=f"Bekreftet offisielt nettsted er {site['value']}" + (f", som lenker til {len(socials)} {'egne profiler' if len(socials) != 1 else 'egen profil'} ({profile_kinds})" if socials else "") + ".")
     if jobs:
-        titles = [c["value"].get("title") for c in jobs if isinstance(c["value"], dict)][:3]
+        titles = [str(c["value"]["title"]) for c in jobs if isinstance(c["value"], dict) and c["value"].get("title")][:3]  # an ad without a title must not break the brief
         say(f"It currently advertises {len(jobs)} active job posting{'s' if len(jobs) != 1 else ''} on NAV" + (f", e.g. {', '.join(titles)}" if titles else "") + ".", *jobs,
             no=f"Selskapet har nå {len(jobs)} aktive stillingsannonse{'r' if len(jobs) != 1 else ''} hos NAV" + (f", for eksempel {', '.join(titles)}" if titles else "") + ".")
     acts = sorted(by("activity"), key=lambda c: c.get("effective_date") or "", reverse=True)
