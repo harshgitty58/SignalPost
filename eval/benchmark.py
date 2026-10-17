@@ -60,6 +60,8 @@ def report(run: Path) -> str:
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to cp1252
     print("# Benchmark report\n")
     for arg in sys.argv[1:]:
         print(report(Path(arg)))

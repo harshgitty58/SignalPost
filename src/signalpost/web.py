@@ -28,6 +28,12 @@ from .budget import BudgetExhausted
 from .http import Fetcher, Snapshot, host_is_public
 from .model import Claim, Evidence, ProfileBuilder
 
+# Who declared a candidate website, worded exactly (the identity reason must name the real source).
+DECLARED_BY = {
+    "registry_declared": "the registry (Enhetsregisteret) declares this website",
+    "subunit_declared": "the registry declares this website for one of the company's registered workplaces",
+    "wikidata_p856": "the Wikidata item carrying this organisation number (P2333) lists this website (P856)",
+}
 FREE_MAIL = {
     "gmail.com", "hotmail.com", "hotmail.no", "outlook.com", "outlook.no", "live.com", "live.no", "yahoo.com", "yahoo.no",
     "online.no", "icloud.com", "me.com", "msn.com", "start.no", "frisurf.no", "broadpark.no", "getmail.no", "c2i.net",
@@ -436,11 +442,11 @@ def visit_site(fetcher: Fetcher, candidate: str, source: str, org: str, entity: 
         visit.reason += "legal name in the site's identity fields and registry phone/address on the site"
         return visit
     identity_text = visit.pages[0].identity_fields(strict=True)
-    if source in ("registry_declared", "subunit_declared", "wikidata_p856") and _tokens_present(name_tokens(legal_name), identity_text):
+    if source in DECLARED_BY and _tokens_present(name_tokens(legal_name), identity_text):
         visit.decision = "accepted"
         visit.proof_page = home
-        visit.proof_span = "registry declares this website; site identity fields: " + identity_text[:200]
-        visit.reason += "registry declares this website and the site's identity fields carry the legal name"
+        visit.proof_span = DECLARED_BY[source] + "; site identity fields: " + identity_text[:200]
+        visit.reason += DECLARED_BY[source] + " and the site's identity fields carry the legal name"
         return visit
     visit.decision = "ambiguous"
     visit.reason += "no organisation number and insufficient name/contact evidence"

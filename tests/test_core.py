@@ -95,3 +95,29 @@ def test_balance_sheet_check():
     mk = lambda f, v: {"id": f, "family": "financials", "field": f, "value": v, "period": p, "note": "account_type=SELSKAP"}  # noqa: E731
     assert build_checks([mk("total_assets", 100_000), mk("equity", 40_000), mk("total_debt", 60_000)])[0]["result"] == "pass"
     assert build_checks([mk("total_assets", 100_000), mk("equity", 10_000), mk("total_debt", 60_000)])[0]["result"] == "warn"
+
+
+def test_brief_keeps_sourced_name_casing():
+    from signalpost.synthesis import build_brief
+    mk = lambda fam, f, v: {"id": f, "family": fam, "field": f, "value": v, "availability": "available", "evidence_ids": ["e"]}  # noqa: E731
+    env = {"organisation_number": "984661185", "availability": {}, "claims": [
+        mk("identity", "legal_name", "POSTEN BRING AS"), mk("identity", "legal_form", "Aksjeselskap (AS)"),
+        mk("leadership", "ceo", "Petter-Børre Furberg"), mk("leadership", "board_chair", "Pål Wibe")]}
+    text = " ".join(s["text"] for s in build_brief(env)["sentences"])
+    assert "Petter-Børre Furberg is CEO" in text and "Pål Wibe chairs the board" in text
+    assert "is an aksjeselskap" in text
+
+
+def test_declared_website_reason_names_the_real_source():
+    from signalpost.web import DECLARED_BY
+    assert "Wikidata" in DECLARED_BY["wikidata_p856"] and "P2333" in DECLARED_BY["wikidata_p856"]
+    assert "registry" in DECLARED_BY["registry_declared"] and "Wikidata" not in DECLARED_BY["registry_declared"]
+
+
+def test_small_batch_budgets_group_for_every_company(tmp_path):
+    from signalpost.pipeline import Runner
+    orgs = ["923609016", "984661185", "947942638", "984851006", "982463718", "910747711",
+            "911382296", "975959171", "984024290", "965920358", "996756246", "881932792"]
+    r = Runner(orgs, out_dir=tmp_path, run_id="t", bulk=None, previous=None, max_requests=2000, max_minutes=45.0,
+               max_cost=10.0, workers=4, job_days=7)
+    assert r.plan["group"] >= len(orgs)

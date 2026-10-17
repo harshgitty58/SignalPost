@@ -70,9 +70,11 @@ def read_inputs(path: str | Path) -> list[str]:
 
 def git_version() -> str:
     try:
-        sha = subprocess.run(["git", "rev-parse", "--short=12", "HEAD"], capture_output=True, text=True, timeout=5,
-                             cwd=Path(__file__).resolve().parents[2]).stdout.strip()
-        return sha or __version__
+        root = Path(__file__).resolve().parents[2]
+        sha = subprocess.run(["git", "rev-parse", "--short=12", "HEAD"], capture_output=True, text=True, timeout=5, cwd=root).stdout.strip()
+        # mark runs made from uncommitted agent code, so published numbers can be traced to exact code
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src"], capture_output=True, text=True, timeout=5, cwd=root).stdout.strip()
+        return (sha + ("-dirty" if dirty else "")) if sha else __version__
     except (OSError, subprocess.SubprocessError):
         return __version__
 
@@ -120,7 +122,8 @@ class Runner:
             "accounts": n + n // 20 + 2,
             "roles": n + n // 20 + 2,
             "locations": n + n // 20 + 2,
-            "group": int(n * 0.35) + 2,
+            # ~5% of random companies are in a group; small batches can be group-heavy, so cover all of them there
+            "group": max(int(n * 0.35) + 2, min(n, 30) + 2),
             "jobs_verify": max(10, int(n * 0.6)),
             "history": n + 2 if n <= 200 else 0,  # paced endpoint (~30/min): only for small batches
         }

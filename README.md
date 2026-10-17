@@ -76,14 +76,16 @@ console running, `node eval/console_check.cjs http://127.0.0.1:8765`. Both must 
 | registered workplaces | Brreg sub-units (`overordnetEnhet`) | org.nr key |
 | group structure (labelled, never merged) | Brreg konsernstruktur | org.nr key |
 | dated activity | Brreg change log (`oppdateringer`, field-level, dated) + verified-site news/RSS | org.nr key / verified site |
-| official website | registry site, registry e-mail domain, `<name>.no` → **identity gate** | see below |
+| official website | registry site (company or workplace), registry e-mail domain, Wikidata P856 matched by org.nr (P2333), `<name>.no` → **identity gate** | see below |
 | social profiles, role e-mail, self-description | outbound links / text on the verified site only | verified site |
 | active job postings | NAV pam-stilling-feed | ad `employer.orgnr` ∈ {company, its sub-units} |
 
 ### Identity gate (website)
 Published only with: (1) the exact org.nr printed on the site (not merely among several companies'
-numbers), or (2) legal name in the site's identity fields **and** registry phone/street address on the
-site (.no), or (3) the registry declares the site **and** its title/site-name carries the full legal name.
+numbers), or (2) the company's registered e-mail domain is the site's domain **and** the legal name is in
+its identity fields, or (3) legal name in the site's identity fields **and** registry phone/street address on
+the site (.no), or (4) the registry (or the Wikidata item carrying the org.nr) declares the site **and** its
+title/site-name carries the full legal name. The evidence names which rule and which source proved it.
 Held back: parked pages, cross-domain redirects without org.nr, address-like names, holding/investment
 company names without org.nr, names that are only a role holder's surname, and sites showing another
 org.nr (labelled as `related_website` when it is a group entity).

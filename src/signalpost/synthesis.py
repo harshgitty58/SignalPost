@@ -71,7 +71,8 @@ def build_brief(envelope: dict[str, Any]) -> dict[str, Any]:
     muni = _first(ident, "municipality")
     brand = _first(ident, "public_brand")
     if name:
-        parts = [f"{name['value']} is a {form['value'].split(' (')[0].lower() if form else 'registered entity'}"]
+        kind = form["value"].split(" (")[0].lower() if form else "registered entity"
+        parts = [f"{name['value']} is {'an' if kind[:1] in 'aeiouæøå' else 'a'} {kind}"]
         if muni:
             parts.append(f"based in {muni['value']}")
         if founded:
@@ -129,7 +130,8 @@ def build_brief(envelope: dict[str, Any]) -> dict[str, Any]:
             bits.append(f"{ceo['value']} is CEO (daglig leder)")
         if chair:
             bits.append(f"{chair['value']} chairs the board")
-        say("; ".join(bits).capitalize() + ".", ceo, chair)
+        text = "; ".join(bits)
+        say(text[:1].upper() + text[1:] + ".", ceo, chair)  # never re-case sourced names
     locs = by("locations")
     if locs:
         munis = sorted({(c["value"].get("municipality") or "") for c in locs if isinstance(c["value"], dict)} - {""})

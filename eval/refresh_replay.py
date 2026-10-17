@@ -77,4 +77,6 @@ def main(src: str, out: str) -> None:
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to cp1252
     main(sys.argv[1], sys.argv[2])
