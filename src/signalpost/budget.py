@@ -46,12 +46,6 @@ class Budget:
     def time_left(self) -> float:
         return self.deadline_seconds - self.elapsed()
 
-    def requests_left(self) -> int:
-        return self.usable_requests - self.requests
-
-    def out_of_time(self, reserve: float = 0.0) -> bool:
-        return self.time_left() <= reserve
-
     def set_phase_cap(self, phase: str, cap: int) -> None:
         with self._lock:
             self.phase_caps[phase] = max(0, int(cap))
@@ -79,12 +73,6 @@ class Budget:
             if cap is None:
                 return global_left
             return max(0, min(global_left, cap - self.per_phase[phase]))
-
-    def add_cost(self, usd: float) -> None:
-        with self._lock:
-            if self.cost_usd + usd > self.max_cost_usd:
-                raise BudgetExhausted("cost budget exhausted")
-            self.cost_usd += usd
 
     def report(self) -> dict:
         with self._lock:

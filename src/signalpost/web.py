@@ -20,7 +20,6 @@ import unicodedata
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
-from typing import Any
 
 from lxml import etree, html as lhtml
 

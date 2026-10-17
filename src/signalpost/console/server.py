@@ -240,7 +240,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, (HERE / "console.html").read_bytes(), "text/html; charset=utf-8")
         if path == "/api/state":
             job = STATE["job"]
-            return self._json({"batches": batches(), "runs": runs(),
+            return self._json({"root": str(ROOT), "batches": batches(), "runs": runs(),
                                "job": None if not job else {"id": job.id, "action": job.action, "out": job.out, "done": job.done,
                                                             "code": job.code, "cmd": " ".join(Path(c).name if i == 0 else c for i, c in enumerate(job.cmd))}})
         if path == "/api/diff":

@@ -1,13 +1,15 @@
 # Submission pack
 
-## 1. Push (one time)
-Create an **empty public** GitHub repo (e.g. `signalpost`), then:
-```bash
-git remote add origin https://github.com/<you>/signalpost.git
-git push -u origin master
-git rev-parse HEAD        # full 40-char commit hash for the form + email
+## 1. Commit to submit
+Repository: https://github.com/harshgitty58/SignalPost (branch `main`).
+```powershell
+git checkout main
+git merge --ff-only <candidate-branch>   # only if a revision branch is ready
+git push origin main
+git rev-parse HEAD                       # full 40-char commit hash for the form + email
 ```
-Form field: `https://github.com/<you>/signalpost/commit/<40-char-sha>`
+Check that `https://github.com/harshgitty58/SignalPost/commit/<sha>` opens and the `clean-machine` workflow is green.
+Form field: `https://github.com/harshgitty58/SignalPost/commit/<40-char-sha>`
 
 ## 2. Email to submit@builderr.ai
 ```
@@ -15,11 +17,11 @@ Subject: Signalpost entry — Signalpost Agent — v1 — <short sha>
 
 Agent name: Signalpost Agent
 Builder & contact: <name>, harshvdn.2@gmail.com
-Repository: https://github.com/<you>/signalpost
-Exact commit: <40-char sha>   (https://github.com/<you>/signalpost/commit/<sha>)
+Repository: https://github.com/harshgitty58/SignalPost
+Exact commit: <40-char sha>   (https://github.com/harshgitty58/SignalPost/commit/<sha>)
 
 Install:  uv sync --frozen
-Run:      uv run signalpost run --organisations <batch.jsonl> --out out/ [--previous <previous_out>/]
+Run:      uv run signalpost run --organisations <batch.jsonl> --out out/   (re-run into the same out/ = refresh)
           (one envelope per input in out/envelopes.jsonl; run report out/run-report.json; showcase out/site/index.html)
 
 Models / APIs / licences:

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .budget import BudgetExhausted
-from .http import Fetcher, Snapshot, utc_now
+from .http import Fetcher, Snapshot
 from .model import Claim, Evidence, ProfileBuilder
 
 API = "https://data.brreg.no/enhetsregisteret/api"
@@ -41,7 +41,6 @@ def pace_history(interval: float = 2.1) -> None:
 ENTITY_UPDATES_URL = API + "/oppdateringer/enheter?organisasjonsnummer={orgs}&dato={since}&size={size}&includeChanges=true"
 ROLE_UPDATES_URL = API + "/oppdateringer/roller?organisasjonsnummer={orgs}&afterTime={since}&size={size}"
 NLOD = "NLOD-2.0"
-REGISTRY_SEARCH_PAGE = "https://virksomhet.brreg.no/nb/oppslag/enheter/{org}"
 
 
 def canonical_hash(obj: Any) -> str:
@@ -284,7 +283,7 @@ def entity_claims(pb: ProfileBuilder, entity: dict[str, Any], *, retrieved_at: s
     for idx in (1, 2, 3):
         code = entity.get(f"naeringskode{idx}") or {}
         if code.get("kode"):
-            pb.add(Claim("industry", "industry_code" if idx == 1 else f"secondary_industry_code", f"{code['kode']} {code.get('beskrivelse') or ''}".strip(),
+            pb.add(Claim("industry", "industry_code" if idx == 1 else "secondary_industry_code", f"{code['kode']} {code.get('beskrivelse') or ''}".strip(),
                          [ev(f"naeringskode{idx}", code)], label="Primary industry (NACE)" if idx == 1 else "Secondary industry (NACE)",
                          key=f"naeringskode{idx}"))
 

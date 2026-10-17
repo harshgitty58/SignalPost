@@ -100,7 +100,6 @@ class Runner:
         self.fetcher = Fetcher(self.budget, api_concurrency=8, web_concurrency=2)
         self.fetcher.set_min_interval("pam-stilling-feed.nav.no", 0.05)
         self.started_at = utc_now()
-        self.t0 = time.monotonic()
         self.builders: dict[str, ProfileBuilder] = {o: ProfileBuilder(o) for o in orgs}
         self.entities: dict[str, dict] = {}
         self.bulk_rows: dict[str, dict] = {}

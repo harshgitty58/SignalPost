@@ -367,7 +367,6 @@ thead th{background:color-mix(in srgb,var(--surface) 88%,transparent)}
 @media (prefers-reduced-transparency:reduce){.panel,.kpis,.specimen,.tablewrap,.chart,.bezel,.top,#drawer,.ta{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 /* charts */
 .viz-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
-.viz-grid .wide{grid-column:1/-1}
 .donut-wrap{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center}
 .donut{display:block;width:180px;height:180px}
 .donut circle.track{fill:none;stroke:var(--surface-2);stroke-width:22}
@@ -556,7 +555,7 @@ const cache = {}, waiters = {}, MEM = {};
 const D = {
   nav_overview:["Overview","Oversikt"], nav_companies:["Companies","Selskaper"], nav_changes:["Changes","Endringer"], nav_compare:["Compare","Sammenlign"], nav_method:["Method","Metode"],
   search_ph:["Org. number or company name","Org.nr. eller selskapsnavn"], search_label:["Search companies","Søk etter selskap"], search:["Search","Søk"], no_match:["No company matches","Ingen treff"],
-  theme_system:["Theme: system","Tema: system"], theme_light:["Theme: light","Tema: lyst"], theme_dark:["Theme: dark","Tema: mørkt"], shortcuts:["Keyboard shortcuts","Hurtigtaster"], close:["Close","Lukk"], lang_label:["Interface language","Språk i grensesnittet"],
+  theme_light:["Theme: light","Tema: lyst"], theme_dark:["Theme: dark","Tema: mørkt"], shortcuts:["Keyboard shortcuts","Hurtigtaster"], close:["Close","Lukk"], lang_label:["Interface language","Språk i grensesnittet"],
   skip:["Skip to content","Gå til innhold"], copied:["Copied","Kopiert"], copy_fail:["Copy is not available here","Kopiering er ikke tilgjengelig her"],
   // families
   "fam.identity":["Legal identity","Juridisk identitet"], "fam.status":["Registry status","Registerstatus"], "fam.industry":["Industry","Bransje"], "fam.financials":["Annual accounts","Årsregnskap"],
@@ -651,7 +650,7 @@ const D = {
   audit:["Identity audit","Identitetskontroll"], audit_d:["Candidates we checked but did not publish, with the reason. These are never shown as facts.","Kandidater vi sjekket, men ikke publiserte, med begrunnelse. De vises aldri som fakta."], audit_none:["No rejected candidates.","Ingen avviste kandidater."],
   ops_line:["Run {0} · completed {1} · {2} requests · {3} s · ${4}","Kjøring {0} · fullført {1} · {2} forespørsler · {3} s · ${4}"],
   // evidence drawer
-  ev_title:["Evidence","Kildebevis"], ev_source:["Source","Kilde"], ev_retrieved:["Retrieved","Hentet"], ev_period:["Period","Periode"], ev_method:["Method","Metode"], ev_identity:["Identity","Identitet"], ev_licence:["Licence","Lisens"],
+  ev_title:["Evidence","Kildebevis"], ev_source:["Source","Kilde"], ev_retrieved:["Retrieved","Hentet"], ev_period:["Period","Periode"], ev_method:["Method","Metode"], ev_identity:["Identity","Identitet"],
   ev_hash:["SHA-256","SHA-256"], ev_copy:["Copy","Kopier"], ev_none:["No claims referenced.","Ingen fakta referert."], ev_period_c:["Reporting period {0} → {1}","Rapportperiode {0} → {1}"], ev_effective:["Effective {0}","Gjelder fra {0}"],
   ev_first:["First seen {0}","Først sett {0}"], ev_stale:["Carried forward (source unreadable since {0})","Videreført (kilden uleselig siden {0})"], ev_derived:["Derived value","Avledet verdi"], ev_span_none:["(no span)","(intet utdrag)"],
   ev_exact:["Exact value","Eksakt verdi"], sentence_src:["Source for this sentence","Kilde for setningen"], change_ev:["Change evidence","Kildebevis for endringen"],
@@ -734,7 +733,7 @@ function compact(v){
   return nf(v);
 }
 function money(v, unit){ if (typeof v !== "number") return v == null ? "—" : String(v); return LANG === "no" ? compact(v) + (unit ? " " + unit : "") : (unit ? unit + " " : "") + compact(v); }
-function pct(x, d){ return nf(x*100,{maximumFractionDigits:d||0}) + " %".replace(" ", LANG === "no" ? " " : ""); }
+function pct(x, d){ return nf(x*100,{maximumFractionDigits:d||0}) + (LANG === "no" ? " %" : "%"); }
 function fmtOrg(o){ return o ? String(o).replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3") : ""; }
 function fmtDate(s){ return s ? String(s).slice(0,10) : ""; }
 function toast(msg){ const n = document.getElementById("toast"); n.textContent = msg; n.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>n.classList.remove("on"), 1600); }
@@ -1109,7 +1108,7 @@ function psTerminal(live){
   const out = el("div",{class:"ps-out",role:"log","aria-live":"polite",tabindex:"0"});
   const dot = el("span",{class:"dot" + (live ? " live" : "")}), state = el("span",null, live ? t("ps_live") : t("ps_off"));
   const input = el("input",{type:"text",spellcheck:"false",autocomplete:"off","aria-label":"PowerShell command",disabled:live ? null : true});
-  const PROMPT = "PS E:\\Harsh\\Self coding\\Hackathons\\SignalPost> ";
+  let PROMPT = "PS …\\SignalPost> ";
   let es = null, busy = false;
   const line = (text, cls) => { const n = el("div",{class:cls || null}, text); out.append(n); out.scrollTop = out.scrollHeight; return n; };
   const promptLine = cmd => { out.append(el("div",{class:"p"}, el("b",null, PROMPT), cmd)); out.scrollTop = out.scrollHeight; };
@@ -1162,11 +1161,12 @@ function psTerminal(live){
   const box = el("div",{class:"ps"},
     el("div",{class:"ps-head"}, dot, el("span",null, t("ps_title")), el("span",{class:"grow"}), state, live ? stopBtn : null, el("button",{type:"button",onclick:()=>out.replaceChildren()}, t("ps_clear"))),
     out, el("div",{class:"ps-in"}, el("label",null, PROMPT), input));
+  const promptLabel = box.querySelector(".ps-in label");
   if (live){
     line("Windows PowerShell (Signalpost)", "dim"); line(t("ps_hello"), "dim");
-    fetch("/api/state").then(r => r.json()).then(st => { if (st.job && !st.job.done){ line("Attaching to the running job: " + st.job.cmd, "warn"); setBusy(true); stream(); } }).catch(() => {});
+    fetch("/api/state").then(r => r.json()).then(st => { if (st.root){ PROMPT = "PS " + st.root + "> "; promptLabel.textContent = PROMPT; } if (st.job && !st.job.done){ line("Attaching to the running job: " + st.job.cmd, "warn"); setBusy(true); stream(); } }).catch(() => {});
   } else {
-    line(t("ps_offline"), "warn"); line("  cd \"E:\\Harsh\\Self coding\\Hackathons\\SignalPost\"", "dim"); line("  uv run --group dev signalpost serve", "dim");
+    line(t("ps_offline"), "warn"); line("  cd <path to>\\SignalPost", "dim"); line("  uv run --group dev signalpost serve", "dim");
   }
   box.exec = exec;
   return box;
