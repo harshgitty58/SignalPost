@@ -44,7 +44,7 @@ If any step fails and can't be fixed quickly, don't merge. `main` stays the scor
 | I1 ✅ `7389f13` | Brief lowercases names: "Petter-børre furberg is ceo (daglig leder); pål wibe chairs the board" | synthesis (agent) | Keep the registry casing, or title-case each name part including after hyphens. Add a test. |
 | I2 ✅ `7389f13` | Posten Bring: `group` ended `failed` with "phase budget exhausted: group" in the known-15 run | budget (agent) | Check the group lane's per-phase budget for large groups. A failed family costs coverage. |
 | I3 ✅ `7389f13` | `eval/benchmark.py` crashes on Windows consoles (cp1252, `≥` character) | eval | `sys.stdout.reconfigure(encoding="utf-8")` at the top of the eval scripts |
-| I4 | Kartverket workplace map never tested live (only the offline fallback) | UI | Open a profile with workplaces online, press "Show on map", and check that the CORS response draws points |
+| I4 ✅ | Kartverket workplace map never tested live (17 Oct: API answers 200 with `access-control-allow-origin: *`; response fields match the map code) (only the offline fallback) | UI | Open a profile with workplaces online, press "Show on map", and check that the CORS response draws points |
 | I5 | CSV export and clipboard copy only tested in jsdom | UI | One manual click test in Chrome/Edge/Firefox from `file://` |
 | I6 | No check on a real phone (only Chrome at 375 px in an iframe) | UI | Test on one iOS and one Android device: bottom sheet, tap targets, sticky header |
 | I7 | `/design-taste-frontend` not applied to the overview hero (its loop needs a real browser inspector) | UI polish | Optional, only if time allows |
@@ -85,7 +85,7 @@ If any step fails and can't be fixed quickly, don't merge. `main` stays the scor
 ### Presentation and outreach
 | Item | Left to do |
 |---|---|
-| **U10 hosting** ⬜ | Publish `out-1000/site` (from `reports/run-1000-envelopes.jsonl.gz`) on GitHub Pages and link it in the README and the email. The site is static and needs no server. |
+| **U10 hosting** 🟡 `0b82c74` | `pages.yml` builds and deploys the 1,000-profile showcase; **you** enable Settings → Pages → Source: GitHub Actions. | Publish `out-1000/site` (from `reports/run-1000-envelopes.jsonl.gz`) on GitHub Pages and link it in the README and the email. The site is static and needs no server. |
 | **U10 demo video** ⬜ | 2–3 min: run → console → profile → evidence drawer → compare → changes |
 | **U8 reviews/sentiment** ⬜ | Ask Builderr whether they will supply a key for a licensed reviews API. Until then the family stays "no permitted source". |
 
