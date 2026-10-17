@@ -18,6 +18,7 @@ import sys
 import threading
 import time
 import traceback
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from typing import Any
@@ -181,40 +182,9 @@ class Runner:
             for family, phase, url, handler in steps:
                 if self.stop.is_set():
                     break
-                pre = self.bulk.get(phase) if self.bulk_mode else None
-                if pre is not None:
-                    if org in pre:
-                        handler(pb, pre[org])
-                    else:
-                        pb.set_state(family, "not_available", "no record for this organisation number in Brreg's bulk file")
-                    continue
-                try:
-                    if phase == "history":
-                        pace_history()
-                    snap = self.fetcher.get_json(url.format(org=org), phase=phase, retries=1)
-                except BudgetExhausted as exc:
-                    pb.set_state(family, "failed", f"request budget: {exc}")
-                    continue
-                if snap.status in (404, 410) or (snap.ok and snap.body.strip() in (b"", b"[]", b"{}")):
-                    pb.set_state(family, "not_available", f"source returned no record (HTTP {snap.status})", snap.url)
-                elif snap.status in (401, 403, 429):
-                    pb.set_state(family, "blocked", f"source refused the request (HTTP {snap.status})", snap.url)
-                elif not snap.ok:
-                    pb.set_state(family, "failed", f"source error ({snap.status} {snap.error or ''})".strip(), snap.url)
-                    pb.error(family, f"HTTP {snap.status} {snap.error or ''}", snap.url)
-                else:
-                    try:
-                        handler(pb, snap)
-                    except (ValueError, KeyError, TypeError) as exc:
-                        pb.set_state(family, "failed", f"could not parse source response: {type(exc).__name__}", snap.url)
-                        pb.error(family, f"parse: {exc}", snap.url)
+                self._official_step(pb, org, family, phase, url, handler)
             if self.web_enabled and not self.stop.is_set() and entity:
-                related = {c.value.get("organisation_number") for c in pb.family_claims("group") if isinstance(c.value, dict)}
-                related |= {c.value.split("org. ")[-1].rstrip(")") for c in pb.family_claims("leadership") if "org. " in str(c.value)}
-                if self.budget.phase_remaining("web") < 4:
-                    pb.set_state("website", "failed", "request budget: website phase exhausted")
-                else:
-                    research_website(pb, self.fetcher, entity, self.bulk_rows.get(org), {r for r in related if r})
+                self._website_step(pb, org, entity)
         except BudgetExhausted as exc:
             pb.error("run", f"budget: {exc}")
         except Exception as exc:  # one company must never take down the batch
@@ -224,6 +194,117 @@ class Runner:
             pb.requests += self.fetcher.take_count()
             self.company_ms[org] = int((time.monotonic() - t) * 1000)
             self.event("company", org)
+
+    def _official_step(self, pb: ProfileBuilder, org: str, family: str, phase: str, url: str, handler) -> None:
+        """One exact-key official lookup for one family; every outcome ends in an explicit state."""
+        pre = self.bulk.get(phase) if self.bulk_mode else None
+        if pre is not None:
+            if org in pre:
+                handler(pb, pre[org])
+            else:
+                pb.set_state(family, "not_available", "no record for this organisation number in Brreg's bulk file")
+            return
+        try:
+            if phase == "history":
+                pace_history()
+            snap = self.fetcher.get_json(url.format(org=org), phase=phase, retries=1)
+        except BudgetExhausted as exc:
+            pb.set_state(family, "failed", f"request budget: {exc}")
+            return
+        if snap.status in (404, 410) or (snap.ok and snap.body.strip() in (b"", b"[]", b"{}")):
+            pb.set_state(family, "not_available", f"source returned no record (HTTP {snap.status})", snap.url)
+        elif snap.status in (401, 403, 429):
+            pb.set_state(family, "blocked", f"source refused the request (HTTP {snap.status})", snap.url)
+        elif not snap.ok:
+            pb.set_state(family, "failed", f"source error ({snap.status} {snap.error or ''})".strip(), snap.url)
+            pb.error(family, f"HTTP {snap.status} {snap.error or ''}", snap.url)
+        else:
+            try:
+                handler(pb, snap)
+            except (ValueError, KeyError, TypeError) as exc:
+                pb.set_state(family, "failed", f"could not parse source response: {type(exc).__name__}", snap.url)
+                pb.error(family, f"parse: {exc}", snap.url)
+
+    def _website_step(self, pb: ProfileBuilder, org: str, entity: dict) -> None:
+        related = {c.value.get("organisation_number") for c in pb.family_claims("group") if isinstance(c.value, dict)}
+        related |= {c.value.split("org. ")[-1].rstrip(")") for c in pb.family_claims("leadership") if "org. " in str(c.value)}
+        if self.budget.phase_remaining("web") < 4:
+            pb.set_state("website", "failed", "request budget: website phase exhausted")
+        else:
+            research_website(pb, self.fetcher, entity, self.bulk_rows.get(org), {r for r in related if r})
+
+    def tail_pass(self, known: list[str]) -> None:
+        """Spend requests the fixed per-phase caps left unused on families that failed *only* for budget.
+
+        Large batches reserve caps per phase up front; some lanes finish under their cap while others run out.
+        After all other work is done, the leftover (still within the global request cap and the time limit) goes
+        first to exact-key official lookups (1 request each), then to websites (same identity gate as always).
+        """
+        spare = self.budget.usable_requests - self.budget.requests
+        if spare < 20 or self.stop.is_set() or self.budget.time_left() < 180:
+            return
+        steps = {"financials": ("accounts", ACCOUNTS_URL, accounts_claims), "leadership": ("roles", ROLES_URL, roles_claims),
+                 "locations": ("locations", SUBUNITS_URL, subunit_claims), "group": ("group", GROUP_URL, group_claims)}
+
+        def budget_failed(pb: ProfileBuilder, fam: str) -> bool:
+            st = pb.families.get(fam)
+            return bool(st) and st.state == "failed" and (st.reason or "").startswith("request budget")
+
+        official = [(org, fam) for org in known for fam in ("financials", "leadership", "locations", "group")
+                    if budget_failed(self.builders[org], fam)]
+        sites = [org for org in known if self.web_enabled and budget_failed(self.builders[org], "website")]
+        if not official and not sites:
+            return
+
+        def left() -> int:
+            return self.budget.usable_requests - self.budget.requests
+
+        for phase in ("accounts", "roles", "locations", "group", "web"):  # lift the per-phase caps; the global cap still holds
+            self.budget.set_phase_cap(phase, self.budget.per_phase[phase] + left())
+        hard_stop = self.budget.deadline_seconds - 60
+        before, filled, lock = self.budget.requests, Counter(), threading.Lock()
+
+        def mark(fam: str, ok: bool) -> None:
+            with lock:
+                filled[fam] += ok
+
+        def run_official(job: tuple[str, str]) -> None:
+            org, fam = job
+            pb = self.builders[org]
+            self.fetcher.take_count()
+            try:
+                if left() > 0 and not self.stop.is_set() and self.budget.elapsed() < hard_stop:
+                    self._official_step(pb, org, fam, *steps[fam])
+                    mark(fam, pb.families[fam].state != "failed")
+            except Exception as exc:  # noqa: BLE001  one company must never take down the batch
+                pb.error(fam, f"tail pass: {type(exc).__name__}: {exc}")
+            finally:
+                pb.requests += self.fetcher.take_count()
+
+        def run_site(org: str) -> None:
+            pb = self.builders[org]
+            self.fetcher.take_count()
+            try:
+                entity = self.entities.get(org) or self.bulk_rows.get(org) or {}
+                if entity and left() >= 8 and not self.stop.is_set() and self.budget.elapsed() < hard_stop:
+                    self._website_step(pb, org, entity)
+                    mark("website", pb.families["website"].state != "failed")
+            except BudgetExhausted:
+                pb.set_state("website", "failed", "request budget: website phase exhausted")
+            except Exception as exc:  # noqa: BLE001
+                pb.error("website", f"tail pass: {type(exc).__name__}: {exc}")
+            finally:
+                pb.requests += self.fetcher.take_count()
+                self.event("company", org)
+
+        with ThreadPoolExecutor(max_workers=self.workers, thread_name_prefix="tail") as pool:
+            list(pool.map(run_official, official))
+            if sites and left() >= 8 and self.budget.elapsed() < hard_stop:
+                list(pool.map(run_site, sites))
+        note = (f"tail pass: {self.budget.requests - before} requests left unused by the per-phase caps were spent on "
+                f"families that had failed only for budget; filled: {dict(filled)}")
+        self.notes.append(note)
+        self.log("[tail] " + note)
 
     def event(self, kind: str, org: str) -> None:
         """Machine-readable progress line for the live console (only with --events)."""
@@ -383,6 +464,11 @@ class Runner:
             with ThreadPoolExecutor(max_workers=8) as pool:
                 list(pool.map(self.jobs_for, known))
         self.phase("jobs", t)
+
+        t = time.monotonic()
+        if not self.stop.is_set():
+            self.tail_pass(known)
+        self.phase("tail", t)
 
         t = time.monotonic()
         previous = load_previous(self.previous_path)
