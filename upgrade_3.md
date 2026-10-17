@@ -85,7 +85,7 @@ If any step fails and can't be fixed quickly, don't merge. `main` stays the scor
 ### Presentation and outreach
 | Item | Left to do |
 |---|---|
-| **U10 hosting** 🟡 `0b82c74` | `pages.yml` builds and deploys the 1,000-profile showcase; **you** enable Settings → Pages → Source: GitHub Actions. | Publish `out-1000/site` (from `reports/run-1000-envelopes.jsonl.gz`) on GitHub Pages and link it in the README and the email. The site is static and needs no server. |
+| **U10 hosting** 🟡 | `.github/workflows/pages.yml` (`0b82c74`) builds and deploys the 1,000-profile showcase from `reports/`; **you** enable Settings → Pages → Source: GitHub Actions. |
 | **U10 demo video** ⬜ | 2–3 min: run → console → profile → evidence drawer → compare → changes |
 | **U8 reviews/sentiment** ⬜ | Ask Builderr whether they will supply a key for a licensed reviews API. Until then the family stays "no permitted source". |
 
