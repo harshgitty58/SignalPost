@@ -584,7 +584,7 @@ const D = {
   toc_summary:["Summary","Sammendrag"], toc_signals:["Signals and checks","Signaler og sjekker"], toc_found:["What we found","Hva vi fant"],
   s1:["Legal identity and public brand","Juridisk identitet og merkenavn"], s2:["Annual accounts","Årsregnskap"], s3:["Leadership and workplaces","Ledelse og arbeidssteder"], s4:["Website and company-owned profiles","Nettsted og egne profiler"],
   s5:["Hiring and dated activity","Rekruttering og datert aktivitet"], s6:["Changes since the previous run","Endringer siden forrige kjøring"], s7:["Unknowns and identity audit","Ukjent og identitetskontroll"],
-  summary:["Summary","Sammendrag"], summary_note:["Each numbered button opens the evidence behind that sentence. Sentences are generated deterministically from the facts, in English.","Hver nummerknapp åpner kildebeviset bak setningen. Setningene lages deterministisk fra faktaene, på engelsk."], summary_none:["Not enough verified facts for a summary.","For få bekreftede fakta til et sammendrag."],
+  summary:["Summary","Sammendrag"], summary_note:["Each numbered button opens the evidence behind that sentence. Sentences are generated deterministically from the facts (English and Norwegian, same citations).","Hver nummerknapp åpner kildebeviset bak setningen. Setningene lages deterministisk fra faktaene (norsk og engelsk, samme kilder)."], summary_none:["Not enough verified facts for a summary.","For få bekreftede fakta til et sammendrag."],
   signals:["Signals","Signaler"], checks:["Data checks","Datasjekker"], derived:["derived","avledet"], evidence:["Evidence","Kildebevis"], "kind.risk":["Risk","Risiko"], "kind.growth":["Growth","Vekst"], "kind.info":["Info","Info"],
   "res.pass":["Pass","Bestått"], "res.warn":["Warning","Advarsel"], "res.fail":["Fail","Ikke bestått"], no_signals:["No signals or checks for this company.","Ingen signaler eller sjekker for selskapet."],
   no_data:["No data","Ingen data"], company_acc:["Company","Selskap"], group_acc:["Group","Konsern"], acc_type:["Account type","Regnskapstype"],
@@ -1432,7 +1432,7 @@ async function viewCompany(org){
   // summary
   const sum = el("section",{class:"panel brief"});
   (brief.sentences||[]).forEach(s => {
-    const p = el("p",null, s.text);
+    const p = el("p",{lang: LANG === "no" && s.text_no ? "nb" : "en"}, LANG === "no" && s.text_no ? s.text_no : s.text);
     (s.claim_ids||[]).forEach((id,i) => p.append(cite(env, [id], i+1, t("sentence_src"))));
     if (s.derived) p.append(" ", el("span",{class:"tag"}, t("derived")));
     sum.append(p);

@@ -57,7 +57,8 @@ def diff(previous: dict[str, Any] | None, current: dict[str, Any], *, detected_a
     """Return (changes, refresh_meta) and mutate `current` to carry forward unreadable families."""
     if not previous:
         for claim in current.get("claims", []):
-            claim["first_seen"] = detected_at
+            claim["first_seen"] = claim["last_seen"] = detected_at
+            claim["times_seen"] = 1
         return [], {"mode": "baseline", "previous_run_id": None, "compared_families": [], "not_compared": []}
     prev_claims = _index(previous)
     cur_claims = _index(current)
@@ -67,6 +68,13 @@ def diff(previous: dict[str, Any] | None, current: dict[str, Any], *, detected_a
     for key, claim in cur_claims.items():
         old = prev_claims.get(key)
         claim["first_seen"] = (old.get("first_seen") or prev_started) if old else detected_at
+        claim["last_seen"] = detected_at  # carried-forward (stale) claims keep their own last_seen
+        claim["times_seen"] = (int(old.get("times_seen") or 1) + 1) if old else 1
+    for claim in current.get("claims", []):  # claims sharing a key with an indexed claim inherit its history
+        if claim.get("availability", "available") == "available" and "times_seen" not in claim:
+            twin = cur_claims.get((claim["family"], claim.get("key") or claim["field"])) or {}
+            for f in ("first_seen", "last_seen", "times_seen"):
+                claim[f] = twin.get(f, detected_at if f != "times_seen" else 1)
     changes: list[dict] = []
     not_compared: list[str] = []
     compared: list[str] = []

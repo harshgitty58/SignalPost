@@ -588,6 +588,18 @@ class Runner:
                     gate[cand["decision"]] = gate.get(cand["decision"], 0) + 1
             if any(c["field"] == "official_website" for c in env["claims"]):
                 gate["accepted"] = gate.get("accepted", 0) + 1
+        # N9: website candidate yield per discovery source (which sources are worth their requests)
+        by_source: dict[str, dict[str, int]] = {}
+        for env in envelopes:
+            for cand in env.get("unpublished_candidates", []):
+                if cand.get("family") == "website":
+                    row = by_source.setdefault(cand.get("source") or "unknown", {})
+                    row[cand["decision"]] = row.get(cand["decision"], 0) + 1
+            for c in env["claims"]:
+                if c["field"] == "official_website" and c.get("availability", "available") == "available":
+                    src = (c.get("note") or "").replace("discovered via ", "") or "unknown"
+                    row = by_source.setdefault(src, {})
+                    row["accepted"] = row.get("accepted", 0) + 1
         ms = sorted(self.company_ms.values())
         report = {
             "run_id": self.run_id,
@@ -603,6 +615,7 @@ class Runner:
             "family_coverage": coverage,
             "claims_total": sum(len(e["claims"]) for e in envelopes),
             "identity_gate": gate,
+            "identity_gate_by_source": dict(sorted(by_source.items())),
             "jobs_feed": {"pages": self.job_feed.pages, "ads_indexed": len(self.job_feed.ads), "window_days": self.job_feed.days, "error": self.job_feed.error},
             "operations": {**self.budget.report(), "p50_company_ms": ms[len(ms) // 2] if ms else None,
                            "p95_company_ms": ms[min(len(ms) - 1, int(len(ms) * 0.95))] if ms else None},

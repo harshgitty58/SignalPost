@@ -141,3 +141,37 @@ def test_tail_pass_retries_only_budget_failures(tmp_path):
     assert calls == [(calls[0][0], "roles")] and "923609016" in calls[0][0]
     assert a.families["leadership"].state == "not_available"
     assert b.families["locations"].state == "failed"
+
+
+def test_norwegian_brief_cites_the_same_claims():
+    from signalpost.synthesis import build_brief, money_no
+    mk = lambda fam, f, v, **kw: {"id": f, "family": fam, "field": f, "value": v, "availability": "available", "evidence_ids": ["e"], **kw}  # noqa: E731
+    p = {"from": "2025-01-01", "to": "2025-12-31"}
+    env = {"organisation_number": "984661185", "availability": {}, "claims": [
+        mk("identity", "legal_name", "POSTEN BRING AS"), mk("identity", "legal_form", "Aksjeselskap (AS)"), mk("identity", "municipality", "Oslo"),
+        mk("financials", "revenue", 14354000000, unit="NOK", period=p, note="account_type=SELSKAP")]}
+    sents = build_brief(env)["sentences"]
+    assert all(s.get("text_no") for s in sents)
+    assert sents[0]["text_no"] == "POSTEN BRING AS er registrert som aksjeselskap i Oslo."
+    assert "14,4 mrd. NOK" in sents[1]["text_no"] and "NOK 14.4 bn" in sents[1]["text"]
+    assert money_no(-498000, "NOK") == "-498 tusen NOK"
+
+
+def test_times_seen_and_last_seen_across_runs():
+    c1, e1 = _claim("jobs", "job:1", {"title": "Elektriker"})
+    first = _env([dict(c1)], [e1])
+    diff(None, first, detected_at="2026-10-01T00:00:00Z")
+    assert first["claims"][0]["times_seen"] == 1 and first["claims"][0]["last_seen"] == "2026-10-01T00:00:00Z"
+    second = _env([dict(c1)], [e1])
+    diff(first, second, detected_at="2026-10-17T00:00:00Z")
+    c = second["claims"][0]
+    assert (c["first_seen"], c["last_seen"], c["times_seen"]) == ("2026-10-01T00:00:00Z", "2026-10-17T00:00:00Z", 2)
+
+
+def test_malformed_inputs_still_get_one_envelope_per_distinct_number(tmp_path):
+    from signalpost.pipeline import read_inputs
+    f = tmp_path / "batch.txt"
+    f.write_text("organisation_number\n923609016\n\n923 609 016\n92360901\n9236090160\n923609017\nabc\n984661185\n", encoding="utf-8")
+    orgs = read_inputs(str(f))
+    assert orgs == ["923609016", "92360901", "9236090160", "923609017", "984661185"]
+
