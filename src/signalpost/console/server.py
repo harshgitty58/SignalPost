@@ -222,7 +222,18 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self, obj, code: int = 200) -> None:
         self._send(code, json.dumps(obj, ensure_ascii=False, default=str).encode("utf-8"))
 
+    def _local_host(self) -> bool:
+        """Refuse DNS-rebinding: only answer requests addressed to this machine by name or loopback IP."""
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0].strip("[]").lower()
+        return host in ("127.0.0.1", "localhost", "::1")
+
+    def _same_origin(self) -> bool:
+        port = self.server.server_port
+        return self.headers.get("Origin") in (None, f"http://127.0.0.1:{port}", f"http://localhost:{port}")
+
     def do_GET(self) -> None:  # noqa: N802
+        if not self._local_host():
+            return self._send(403, b'{"error":"unexpected host"}')
         url = urllib.parse.urlsplit(self.path)
         path = urllib.parse.unquote(url.path)
         if path == "/":
@@ -285,6 +296,10 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, target.read_bytes(), ctype + ("; charset=utf-8" if ctype.startswith(("text/", "application/javascript")) else ""))
 
     def do_POST(self) -> None:  # noqa: N802
+        if not self._local_host():
+            return self._send(403, b'{"error":"unexpected host"}')
+        if not self._same_origin():
+            return self._json({"error": "cross-origin request refused"}, 403)
         if self.path == "/api/stop":
             job = STATE["job"]
             if job and not job.done:
@@ -292,8 +307,6 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": True})
         if self.path != "/api/run":
             return self._send(404, b'{"error":"not found"}')
-        if self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
-            return self._json({"error": "cross-origin request refused"}, 403)
         length = min(int(self.headers.get("Content-Length") or 0), 100_000)
         try:
             body = json.loads(self.rfile.read(length) or b"{}")

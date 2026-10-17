@@ -64,8 +64,11 @@ def cmd_run(args: argparse.Namespace) -> int:
     if not args.no_showcase:
         from .showcase.build import build_site
         site = Path(args.showcase) if args.showcase else out / "site"
-        build_site(out / "envelopes.jsonl", out / "run-report.json", site)
-        _log(f"[showcase] {site / 'index.html'}")
+        try:  # the site is a viewer; it must never fail a run whose envelopes are already written
+            build_site(out / "envelopes.jsonl", out / "run-report.json", site)
+            _log(f"[showcase] {site / 'index.html'}")
+        except Exception as exc:  # noqa: BLE001
+            _log(f"[showcase] skipped: {type(exc).__name__}: {exc}")
     ops = report["operations"]
     _log(f"[done] envelopes={report['emitted_envelopes']}/{report['input_count']} valid={report['validation']['passed']} "
          f"requests={ops['requests']} time={ops['elapsed_seconds']}s cost=${report['third_party_cost_usd']}")

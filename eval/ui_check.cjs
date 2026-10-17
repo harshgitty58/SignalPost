@@ -56,6 +56,10 @@ async function go(hash, label) {
   const seg = doc.querySelectorAll(".seg[role=group] button");
   const grp = [...seg].find(b => /Group|Konsern/.test(b.textContent));
   if (grp) { grp.click(); await wait(50); console.log("account toggle -> group charts:", doc.querySelectorAll(".chart").length); }
+  const showAll = [...doc.querySelectorAll("#app button")].find(b => /^(Show all|Vis alle) /.test(b.textContent));
+  if (showAll) { const before = doc.querySelectorAll("#app .row, #app .vtl .ev").length; showAll.click(); console.log("show all:", before, "->", doc.querySelectorAll("#app .row, #app .vtl .ev").length); }
+  const countFact = [...doc.querySelectorAll(".fact")].find(f => /workplaces|arbeidssteder/i.test(f.textContent) && f.querySelector(".cite"));
+  if (countFact) { countFact.querySelector(".cite").click(); console.log("count fact opens claims:", doc.querySelectorAll("#dbody .evclaim").length); key("Escape"); }
   const src = doc.querySelector("dl.kv .src");
   if (src) { src.click(); console.log("drawer via source button:", drawerOpen()); key("Escape"); }
   for (const o of orgs) await go("#/c/" + o, "profile " + o);
