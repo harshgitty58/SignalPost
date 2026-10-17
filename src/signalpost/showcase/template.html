@@ -404,6 +404,26 @@ thead th{background:color-mix(in srgb,var(--surface) 88%,transparent)}
 .ckey{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
 .k1{background:var(--s1)}.k2{background:var(--s2)}.k3{background:var(--s3)}.k4{background:var(--s4)}
 
+/* integrated terminal (home page: run it locally) */
+.term-panel{margin-top:16px;border-radius:14px;overflow:hidden;background:rgba(17,24,31,.90);border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 18px 40px -18px rgba(17,24,31,.55),inset 0 1px 0 rgba(255,255,255,.06);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);color:#E6EDF3}
+.term-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
+.term-bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.term-bar i:nth-child(1){background:#FF5F57}.term-bar i:nth-child(2){background:#FEBC2E}.term-bar i:nth-child(3){background:#28C840}
+.term-bar strong{font:600 12.5px var(--mono);color:#9FB0C0;margin-left:6px}
+.term-bar .grow{flex:1}
+.term-bar button,.term-bar a{font:600 12px var(--sans);color:#E6EDF3;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:5px 10px;min-height:28px;text-decoration:none}
+.term-bar button:hover,.term-bar a:hover{background:rgba(255,255,255,.16)}
+.term-body{padding:12px 0 14px;font:13px/1.65 var(--mono);overflow-x:auto}
+.term-step{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;padding:3px 14px}
+.term-step:hover{background:rgba(255,255,255,.04)}
+.term-step .k{color:#5C6B7A;text-align:right;user-select:none}
+.term-step .c{color:#7EE787}.term-step .c:before{content:"$ ";color:#58A6FF}
+.term-step .note{display:block;color:#8B9AAA;font-size:12px}
+.term-step button{opacity:0;font:600 11px var(--sans);color:#C9D6E2;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:2px 8px;min-height:24px;transition:opacity .15s var(--ease)}
+.term-step:hover button,.term-step button:focus-visible{opacity:1}
+@media (pointer:coarse){.term-step button{opacity:1;min-height:36px}}
+
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:1100px){
   .profile{grid-template-columns:1fr}.toc{display:none}
@@ -563,6 +583,12 @@ const D = {
   meter_warn:["warning","advarsel"], meter_bad:["near limit","nær grensen"],
   "chk.one_envelope_per_input":["One envelope per input","Én konvolutt per input"], "chk.unique_organisation_numbers":["Unique organisation numbers","Unike organisasjonsnumre"], "chk.all_family_states_valid":["All family states valid","Alle tilstander gyldige"],
   "chk.every_claim_has_evidence":["Every claim has evidence","Alle fakta har kildebevis"], "chk.no_null_values_published":["No null values published","Ingen tomme verdier publisert"], "chk.all_families_present":["All families present","Alle familier til stede"],
+  rl_title:["Run it locally","Kjør lokalt"], rl_copy_all:["Copy all","Kopier alle"], rl_copy:["Copy","Kopier"], rl_console:["Open live console","Åpne konsollen"],
+  rl1:["Get the code","Hent koden"], rl2:["Install pinned dependencies (Python 3.12 + uv)","Installer låste avhengigheter (Python 3.12 + uv)"],
+  rl3:["Research a batch (known-15 ≈ 1 min; any JSONL/TXT of org. numbers works)","Undersøk en batch (known-15 ≈ 1 min; hvilken som helst JSONL/TXT med org.nr. fungerer)"],
+  rl4:["Open this showcase for your run (Windows: start · macOS: open · Linux: xdg-open)","Åpne visningen for kjøringen (Windows: start · macOS: open · Linux: xdg-open)"],
+  rl5:["Live console: run, watch and explain the agent at http://127.0.0.1:8765","Konsoll: kjør, følg og forklar agenten på http://127.0.0.1:8765"],
+  rl6:["Re-run into the same folder = refresh with typed changes","Kjør igjen i samme mappe = oppdatering med typede endringer"], rl7:["Tests","Tester"],
   pf_title:["Portfolio","Porteføljen"], pf_sub:["What this run's companies look like, counted from the published profiles. Tap a county to filter the company list.","Slik ser selskapene i kjøringen ut, telt fra de publiserte profilene. Trykk på et fylke for å filtrere selskapslisten."],
   pf_states:["Results across all field families","Resultater på tvers av alle felt-familier"], pf_states_c:["available","funnet"], pf_states_d:["{0} company × family results","{0} selskap × familie-resultater"],
   pf_rev:["Latest revenue (NOK)","Siste driftsinntekter (NOK)"], pf_rev_d:["{0} companies with revenue in NOK; {1} without reported revenue or in another currency are not shown","{0} selskaper med driftsinntekter i NOK; {1} uten rapporterte inntekter eller i annen valuta vises ikke"],
@@ -1048,6 +1074,28 @@ function hbarChart(rows, title, unit){ // rows [{label, value, cls, onClick, tex
   return el("div",{class:"hb"}, g);
 }
 
+// ================================================================ integrated terminal: local setup steps
+const LOCAL_STEPS = [
+  ["rl1", "git clone https://github.com/harshgitty58/SignalPost.git && cd SignalPost"],
+  ["rl2", "uv sync --frozen"],
+  ["rl3", "uv run signalpost run --organisations eval/known-15.jsonl --out out-ui --job-days 7"],
+  ["rl4", "start out-ui/site/index.html"],
+  ["rl6", "uv run signalpost run --organisations eval/known-15.jsonl --out out-ui --job-days 7"],
+  ["rl5", "uv run --group dev signalpost serve"],
+  ["rl7", "uv run --group dev pytest -q"],
+];
+function terminalPanel(){
+  const live = /^https?:$/.test(location.protocol) && /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  return el("section",{class:"term-panel","aria-labelledby":"rlh"},
+    el("div",{class:"term-bar"}, el("i"), el("i"), el("i"), el("strong",{id:"rlh"}, t("rl_title")), el("span",{class:"grow"}),
+      live ? el("a",{href:"/"}, t("rl_console") + " ↗") : null,
+      el("button",{type:"button",onclick:()=>copy(LOCAL_STEPS.map(x => x[1]).join("\n"))}, t("rl_copy_all"))),
+    el("div",{class:"term-body",role:"list"}, LOCAL_STEPS.map(([k, cmd], i) => el("div",{class:"term-step",role:"listitem"},
+      el("span",{class:"k"}, String(i + 1)),
+      el("span",null, el("span",{class:"note"}, "# " + t(k)), el("span",{class:"c"}, cmd)),
+      el("button",{type:"button","aria-label":t("rl_copy") + ": " + cmd,onclick:()=>copy(cmd)}, t("rl_copy"))))));
+}
+
 // ================================================================ overview
 function meterRow(label, value, max, text){
   const frac = max ? value / max : 0, cls = frac >= .9 ? "bad" : frac >= .7 ? "warn" : "";
@@ -1162,6 +1210,7 @@ function viewOverview(){
   }).catch(() => spec.remove());
   app.append(el("div",{class:"kpis"},
     kpiCell(nf(n), t("kpi_companies")), kpiCell(nf(claims), t("kpi_facts")), kpiCell(nf(sites), t("kpi_sites")), kpiCell(nf(held), t("kpi_held"))));
+  app.append(terminalPanel());
   app.append(portfolioSection());
   app.append(el("div",{class:"section"}, trustPanel()));
   app.append(el("div",{class:"section split"}, coveragePanel(), el("div",{class:"stack"}, changesDigest(), runPanel())));
