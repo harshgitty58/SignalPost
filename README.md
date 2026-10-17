@@ -197,6 +197,7 @@ reports/             committed evidence for the published numbers
 tests/               unit tests
 docs/dev/            planning, audits and benchmark policy (development history)
 ```
+Challenge requirements and how each is met: [SUBMISSION.md](SUBMISSION.md) · email draft: [SUBMISSION_EMAIL.md](SUBMISSION_EMAIL.md).
 Policies: [SOURCES.md](SOURCES.md) (source rights, licences) · [SECURITY.md](SECURITY.md) (outbound URL policy,
-console) · [SUBMISSION.md](SUBMISSION.md) (submission pack) · [docs/dev/benchmark_plan.md](docs/dev/benchmark_plan.md)
+console) · [docs/dev/benchmark_plan.md](docs/dev/benchmark_plan.md)
 (honest-benchmark rules) · [LICENSE](LICENSE) (MIT).

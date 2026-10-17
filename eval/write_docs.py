@@ -1,4 +1,4 @@
-"""Write measured numbers into README.md and SUBMISSION.md from the committed reports (no hand-typed metrics).
+"""Write measured numbers into README.md, SUBMISSION.md and SUBMISSION_EMAIL.md from the committed reports (no hand-typed metrics).
 
     uv run python eval/write_docs.py
 Replaces the text between <!-- metrics:start --> and <!-- metrics:end -->.
@@ -28,12 +28,17 @@ def main() -> None:
     rows = [x for x in (line("100 random companies (smoke test)", ROOT / "reports/smoke-100-run-report.json"),
                         line("1,000 random companies (official limits)", ROOT / "reports/run-1000-run-report.json")) if x]
     block = "<!-- metrics:start -->\n" + "\n".join(rows) + "\n<!-- metrics:end -->"
-    for doc in ("README.md", "SUBMISSION.md"):
+    for doc in ("README.md", "SUBMISSION.md", "SUBMISSION_EMAIL.md"):
         p = ROOT / doc
+        if not p.exists():
+            continue
         text = p.read_text(encoding="utf-8")
+        if "<!-- metrics:start -->" not in text:
+            print(doc, "skipped (no metrics markers)")
+            continue
         new = re.sub(r"<!-- metrics:start -->.*?<!-- metrics:end -->", block, text, flags=re.S)
         p.write_text(new, encoding="utf-8")
-        print(doc, "updated" if new != text else "unchanged (add the metrics markers)")
+        print(doc, "updated" if new != text else "already up to date")
 
 
 if __name__ == "__main__":
