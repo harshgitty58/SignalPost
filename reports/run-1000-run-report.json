@@ -1,8 +1,8 @@
 {
-  "run_id": "run-1000-v4",
-  "agent_version": "0a787f5fd3f0",
-  "started_at": "2026-10-17T04:54:01Z",
-  "completed_at": "2026-10-17T04:55:35Z",
+  "run_id": "run-1000-rev18",
+  "agent_version": "7be8eaa46f8e",
+  "started_at": "2026-10-17T06:46:41Z",
+  "completed_at": "2026-10-17T06:48:33Z",
   "input_count": 1000,
   "emitted_envelopes": 1000,
   "validation": {
@@ -37,14 +37,14 @@
       "not_available": 3
     },
     "leadership": {
-      "available": 320,
-      "failed": 678,
-      "not_available": 2
+      "available": 369,
+      "not_available": 2,
+      "failed": 629
     },
     "locations": {
-      "available": 225,
-      "not_available": 69,
-      "failed": 706
+      "available": 275,
+      "not_available": 95,
+      "failed": 630
     },
     "group": {
       "available": 48,
@@ -53,25 +53,25 @@
       "failed": 18
     },
     "website": {
-      "available": 3,
+      "available": 4,
       "not_available": 30,
-      "ambiguous": 5,
-      "failed": 962
+      "failed": 963,
+      "ambiguous": 3
     },
     "social_profiles": {
       "not_available": 46,
-      "available": 1,
-      "failed": 953
+      "available": 2,
+      "failed": 952
     },
     "contact": {
-      "available": 170,
-      "not_available": 36,
+      "available": 169,
+      "not_available": 37,
       "failed": 794
     },
     "description": {
       "available": 3,
-      "not_available": 44,
-      "failed": 953
+      "not_available": 45,
+      "failed": 952
     },
     "jobs": {
       "not_available": 997,
@@ -87,71 +87,72 @@
     "status": 0.998,
     "industry": 0.998,
     "financials": 0.997,
-    "leadership": 0.32,
-    "locations": 0.225,
+    "leadership": 0.369,
+    "locations": 0.275,
     "group": 0.048,
-    "website": 0.003,
-    "social_profiles": 0.001,
-    "contact": 0.17,
+    "website": 0.004,
+    "social_profiles": 0.002,
+    "contact": 0.169,
     "description": 0.003,
     "jobs": 0.0,
     "activity": 0.997
   },
-  "claims_total": 72137,
+  "claims_total": 72271,
   "identity_gate": {
-    "accepted": 3,
-    "ambiguous": 4,
-    "rejected": 1
+    "accepted": 4,
+    "rejected": 1,
+    "ambiguous": 3
   },
   "jobs_feed": {
     "pages": 37,
-    "ads_indexed": 15528,
+    "ads_indexed": 15526,
     "window_days": 60,
     "error": null
   },
   "operations": {
-    "requests": 1795,
+    "requests": 1920,
     "max_requests": 2000,
-    "elapsed_seconds": 125.2,
+    "elapsed_seconds": 174.7,
     "max_seconds": 2700.0,
     "third_party_cost_usd": 0.0,
     "max_cost_usd": 10.0,
     "requests_by_host": {
-      "data.brreg.no": 1688,
+      "data.brreg.no": 1813,
       "pam-stilling-feed.nav.no": 42,
       "query.wikidata.org": 10,
       "sjekkpunkt.no": 5,
-      "bate.no": 4,
       "www.talenttovalue.no": 4,
-      "lettstyrt.no": 4,
       "www.weblance.no": 4,
+      "lettstyrt.no": 4,
       "www.furst.no": 4,
-      "godmatlokalt.no": 3,
+      "norskrorservice.no": 3,
+      "www.bate.no": 3,
+      "bate.no": 3,
       "mossavis.no": 2,
-      "www.bate.no": 2,
       "karosseri.no": 2,
       "moss-avis.no": 2,
-      "talenttovalue.no": 2,
       "www.lettstyrt.no": 2,
-      "www.moss-avis.no": 2,
-      "permafrost.no": 2,
+      "talenttovalue.no": 2,
       "heiane.no": 2,
+      "permafrost.no": 2,
       "dbbil.no": 2,
-      "norskrorservice.no": 1,
-      "nflas.no": 1,
-      "holmfoss.no": 1,
+      "godmatlokalt.no": 1,
       "helgelandholding.no": 1,
+      "www.moss-avis.no": 1,
+      "holmfoss.no": 1,
+      "nflas.no": 1,
+      "digiprohelse.no": 1,
       "boligifredrikstad.no": 1,
-      "styrerommet.no": 1,
-      "digiprohelse.no": 1
+      "www.dbbil.no": 1,
+      "styrerommet.no": 1
     },
     "requests_by_phase": {
       "jobs": 39,
       "registry": 20,
       "activity": 20,
       "accounts": 998,
-      "roles": 320,
-      "locations": 292,
+      "roles": 369,
+      "locations": 368,
       "group": 48,
       "web": 51,
       "web_news": 4,
@@ -161,31 +162,32 @@
       "registry": 32,
       "activity": 42,
       "jobs": 40,
-      "accounts": 1052,
-      "roles": 320,
-      "locations": 292,
-      "group": 48,
+      "accounts": 1123,
+      "roles": 445,
+      "locations": 417,
+      "group": 173,
       "jobs_verify": 34,
       "history": 0,
-      "web": 51,
+      "web": 176,
       "web_news": 9
     },
     "refused_by_budget": {
-      "web": 15,
+      "web": 16,
       "locations": 706,
       "roles": 678,
       "group": 18
     },
-    "p50_company_ms": 218,
-    "p95_company_ms": 1391
+    "p50_company_ms": 219,
+    "p95_company_ms": 1907
   },
   "phase_seconds": {
     "bulk_snapshot": 0.0,
-    "registry": 6.6,
-    "activity": 7.0,
-    "companies": 44.0,
-    "jobs": 30.5,
-    "finalise": 29.5
+    "registry": 5.4,
+    "activity": 6.5,
+    "companies": 46.3,
+    "jobs": 42.5,
+    "tail": 4.0,
+    "finalise": 62.0
   },
   "budget_plan": {
     "registry": 32,
@@ -204,7 +206,8 @@
     "note": "no bulk snapshot supplied; live registry API only"
   },
   "notes": [
-    "large batch (1000); per-company official sources scaled to fit 1920 requests"
+    "large batch (1000); per-company official sources scaled to fit 1920 requests",
+    "tail pass: 125 requests left unused by the per-phase caps were spent on families that had failed only for budget; filled: {'leadership': 49, 'locations': 76}"
   ],
   "third_party_cost_usd": 0.0,
   "models": []

@@ -1,8 +1,8 @@
 {
-  "run_id": "dev-v4b",
-  "agent_version": "0a787f5fd3f0",
-  "started_at": "2026-10-17T05:00:21Z",
-  "completed_at": "2026-10-17T05:04:12Z",
+  "run_id": "dev-rev18d",
+  "agent_version": "7be8eaa46f8e",
+  "started_at": "2026-10-17T06:42:38Z",
+  "completed_at": "2026-10-17T06:46:33Z",
   "input_count": 100,
   "emitted_envelopes": 100,
   "validation": {
@@ -95,14 +95,14 @@
   },
   "jobs_feed": {
     "pages": 125,
-    "ads_indexed": 36352,
+    "ads_indexed": 36353,
     "window_days": 60,
     "error": null
   },
   "operations": {
     "requests": 899,
     "max_requests": 2000,
-    "elapsed_seconds": 234.0,
+    "elapsed_seconds": 241.8,
     "max_seconds": 2700.0,
     "third_party_cost_usd": 0.0,
     "max_cost_usd": 10.0,
@@ -150,8 +150,8 @@
       "norse-group.no": 4,
       "parkhotel.no": 4,
       "www.sea-tex.no": 4,
-      "gunnarsson.no": 4,
       "www.km.kongsberg.com": 4,
+      "gunnarsson.no": 4,
       "113forstehjelp.no": 4,
       "113hjelp.no": 4,
       "bunnpris.no": 4,
@@ -233,16 +233,17 @@
       "web_news": 188
     },
     "refused_by_budget": {},
-    "p50_company_ms": 47875,
-    "p95_company_ms": 65859
+    "p50_company_ms": 47766,
+    "p95_company_ms": 65703
   },
   "phase_seconds": {
     "bulk_snapshot": 0.0,
-    "registry": 2.2,
-    "activity": 0.9,
-    "companies": 223.2,
+    "registry": 2.0,
+    "activity": 1.1,
+    "companies": 227.2,
     "jobs": 4.4,
-    "finalise": 2.8
+    "tail": 0.0,
+    "finalise": 6.4
   },
   "budget_plan": {
     "registry": 5,

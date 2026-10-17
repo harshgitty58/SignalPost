@@ -96,8 +96,8 @@ org.nr (labelled as `related_website` when it is a group entity).
 
 ## Measured results (generated from `reports/` by `eval/write_docs.py`)
 <!-- metrics:start -->
-- **100 random companies (smoke test)** (dev-v4b @ `0a787f5fd3f0`): 100/100 valid envelopes (validation passed), 899 requests, 3.9 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 100%, locations 78%, group 5%, website 17%, social_profiles 8%, contact 31%, description 9%, jobs 0%, activity 100%.
-- **1,000 random companies (official limits)** (run-1000-v4 @ `0a787f5fd3f0`): 1000/1000 valid envelopes (validation passed), 1795 requests, 2.1 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 32%, locations 22%, group 5%, website 0%, social_profiles 0%, contact 17%, description 0%, jobs 0%, activity 100%.
+- **100 random companies (smoke test)** (dev-rev18d @ `7be8eaa46f8e`): 100/100 valid envelopes (validation passed), 899 requests, 4.0 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 100%, locations 78%, group 5%, website 17%, social_profiles 8%, contact 31%, description 9%, jobs 0%, activity 100%.
+- **1,000 random companies (official limits)** (run-1000-rev18 @ `7be8eaa46f8e`): 1000/1000 valid envelopes (validation passed), 1920 requests, 2.9 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 37%, locations 28%, group 5%, website 0%, social_profiles 0%, contact 17%, description 0%, jobs 0%, activity 100%.
 <!-- metrics:end -->
 
 See [SOURCES.md](SOURCES.md) for source rights and [SECURITY.md](SECURITY.md) for the outbound URL policy.
