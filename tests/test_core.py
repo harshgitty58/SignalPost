@@ -121,3 +121,23 @@ def test_small_batch_budgets_group_for_every_company(tmp_path):
     r = Runner(orgs, out_dir=tmp_path, run_id="t", bulk=None, previous=None, max_requests=2000, max_minutes=45.0,
                max_cost=10.0, workers=4, job_days=7)
     assert r.plan["group"] >= len(orgs)
+
+
+def test_tail_pass_retries_only_budget_failures(tmp_path):
+    from signalpost.pipeline import Runner
+    r = Runner(["923609016", "984661185"], out_dir=tmp_path, run_id="t", bulk=None, previous=None, max_requests=2000,
+               max_minutes=45.0, max_cost=10.0, workers=2, job_days=7, web=False, log=lambda *_: None)
+    a, b = r.builders["923609016"], r.builders["984661185"]
+    a.set_state("leadership", "failed", "request budget: phase budget exhausted: roles")
+    b.set_state("locations", "failed", "source error (500)")  # a real failure must not be retried
+    calls = []
+
+    def fake_get_json(url, phase, retries=1):
+        calls.append((url, phase))
+        return Snapshot(url, url, 404, "2026-10-17T00:00:00Z")
+
+    r.fetcher.get_json = fake_get_json
+    r.tail_pass(r.orgs)
+    assert calls == [(calls[0][0], "roles")] and "923609016" in calls[0][0]
+    assert a.families["leadership"].state == "not_available"
+    assert b.families["locations"].state == "failed"
