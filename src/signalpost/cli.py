@@ -27,9 +27,24 @@ def cmd_run(args: argparse.Namespace) -> int:
     if args.expected_count is not None and len(orgs) != args.expected_count:
         _log(f"warning: expected {args.expected_count} organisations, received {len(orgs)} distinct; continuing (one envelope per input)")
     out = Path(args.out)
+    previous = args.previous
+    if not previous and not args.fresh and (out / "envelopes.jsonl").exists():
+        # automatic refresh: archive the last run in <out>/history/ and diff against it
+        import gzip
+        prior = out / "envelopes.jsonl"
+        first = prior.open(encoding="utf-8").readline()
+        prior_id = (json.loads(first).get("run", {}).get("run_id") if first.strip() else None) or "previous"
+        hist = out / "history"
+        hist.mkdir(exist_ok=True)
+        archived = hist / f"{prior_id}.jsonl.gz"
+        if not archived.exists():
+            with prior.open("rb") as src, gzip.open(archived, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+        previous = str(archived)
+        _log(f"[refresh] previous run {prior_id} found in {out}; archived to {archived} and used for change detection (use --fresh to skip)")
     run_id = args.run_id or datetime.now(timezone.utc).strftime("run-%Y%m%dT%H%M%SZ")
     _log(f"[signalpost] run {run_id}: {len(orgs)} organisations -> {out}")
-    runner = Runner(orgs, out_dir=out, run_id=run_id, bulk=args.bulk, previous=args.previous, max_requests=args.max_requests,
+    runner = Runner(orgs, out_dir=out, run_id=run_id, bulk=args.bulk, previous=previous, max_requests=args.max_requests,
                     max_minutes=args.max_minutes, max_cost=args.max_cost, workers=args.workers, job_days=args.job_days,
                     web=not args.no_web, bulk_files=args.bulk_files, events=args.events, log=_log)
     try:
@@ -93,7 +108,8 @@ def main(argv: list[str] | None = None) -> int:
     run = sub.add_parser("run", help="research a batch of organisation numbers")
     run.add_argument("--organisations", "--input", required=True, help="JSONL/JSON/TXT list of organisation numbers")
     run.add_argument("--out", default="out", help="output directory (envelopes.jsonl, run-report.json, site/)")
-    run.add_argument("--previous", help="previous output directory or envelopes.jsonl for refresh diffs")
+    run.add_argument("--previous", help="previous output directory or envelopes.jsonl(.gz) for refresh diffs (default: the last run in --out)")
+    run.add_argument("--fresh", action="store_true", help="baseline run: ignore any previous run in --out")
     run.add_argument("--bulk", help="optional frozen Brreg entity snapshot (CSV/JSON, gz ok); adds e-mail domains + fallback identity")
     run.add_argument("--run-id")
     run.add_argument("--expected-count", type=int)

@@ -52,7 +52,10 @@ def read_inputs(path: str | Path) -> list[str]:
             line = line.strip()
             if not line:
                 continue
-            values.append(json.loads(line) if line.startswith("{") else line)
+            if line.startswith("{"):
+                values.append(json.loads(line))
+            elif any(ch.isdigit() for ch in line):
+                values.append(line)  # lines without any digit (e.g. a CSV header) are not inputs
     orgs: list[str] = []
     seen: set[str] = set()
     for value in values:
@@ -131,10 +134,14 @@ class Runner:
         if fixed > usable * 0.75:
             # large batch: keep identity + accounts first, scale the rest down proportionally
             self.notes.append(f"large batch ({n}); per-company official sources scaled to fit {usable} requests")
+            # exact-key official sources yield ~1 fact per request; website attempts ~0.03 accepted sites per request,
+            # so in a large batch the remaining budget goes to roles/workplaces first and websites get what is left
+            plan["jobs"] = min(plan["jobs"], 40)
+            self.job_feed.max_pages = plan["jobs"] - 3
             core = plan["registry"] + plan["activity"] + plan["jobs"] + plan["accounts"]
-            rest = max(0, int(usable * 0.85) - core)
+            rest = max(0, int(usable * 0.97) - core)
             for key in (("group", "jobs_verify") if self.bulk_mode else ("roles", "locations", "group", "jobs_verify")):
-                plan[key] = int(rest * {"roles": 0.4, "locations": 0.35, "group": 0.1, "jobs_verify": 0.15}[key])
+                plan[key] = int(rest * {"roles": 0.46, "locations": 0.42, "group": 0.07, "jobs_verify": 0.05}[key])
             fixed = sum(plan.values())
         plan["web"] = max(0, usable - fixed) if self.web_enabled else 0
         plan["web_news"] = 0  # shares the web cap (see below)

@@ -1,0 +1,211 @@
+{
+  "run_id": "run-1000-v4",
+  "agent_version": "0a787f5fd3f0",
+  "started_at": "2026-10-17T04:54:01Z",
+  "completed_at": "2026-10-17T04:55:35Z",
+  "input_count": 1000,
+  "emitted_envelopes": 1000,
+  "validation": {
+    "passed": true,
+    "checks": {
+      "one_envelope_per_input": true,
+      "unique_organisation_numbers": true,
+      "all_family_states_valid": true,
+      "every_claim_has_evidence": true,
+      "no_null_values_published": true,
+      "all_families_present": true
+    },
+    "invalid_states": []
+  },
+  "mode": "baseline",
+  "changes_detected": 0,
+  "family_states": {
+    "identity": {
+      "available": 998,
+      "not_available": 2
+    },
+    "status": {
+      "available": 998,
+      "not_available": 2
+    },
+    "industry": {
+      "available": 998,
+      "not_available": 2
+    },
+    "financials": {
+      "available": 997,
+      "not_available": 3
+    },
+    "leadership": {
+      "available": 320,
+      "failed": 678,
+      "not_available": 2
+    },
+    "locations": {
+      "available": 225,
+      "not_available": 69,
+      "failed": 706
+    },
+    "group": {
+      "available": 48,
+      "not_applicable": 932,
+      "not_available": 2,
+      "failed": 18
+    },
+    "website": {
+      "available": 3,
+      "not_available": 30,
+      "ambiguous": 5,
+      "failed": 962
+    },
+    "social_profiles": {
+      "not_available": 46,
+      "available": 1,
+      "failed": 953
+    },
+    "contact": {
+      "available": 170,
+      "not_available": 36,
+      "failed": 794
+    },
+    "description": {
+      "available": 3,
+      "not_available": 44,
+      "failed": 953
+    },
+    "jobs": {
+      "not_available": 997,
+      "ambiguous": 3
+    },
+    "activity": {
+      "available": 997,
+      "not_available": 3
+    }
+  },
+  "family_coverage": {
+    "identity": 0.998,
+    "status": 0.998,
+    "industry": 0.998,
+    "financials": 0.997,
+    "leadership": 0.32,
+    "locations": 0.225,
+    "group": 0.048,
+    "website": 0.003,
+    "social_profiles": 0.001,
+    "contact": 0.17,
+    "description": 0.003,
+    "jobs": 0.0,
+    "activity": 0.997
+  },
+  "claims_total": 72137,
+  "identity_gate": {
+    "accepted": 3,
+    "ambiguous": 4,
+    "rejected": 1
+  },
+  "jobs_feed": {
+    "pages": 37,
+    "ads_indexed": 15528,
+    "window_days": 60,
+    "error": null
+  },
+  "operations": {
+    "requests": 1795,
+    "max_requests": 2000,
+    "elapsed_seconds": 125.2,
+    "max_seconds": 2700.0,
+    "third_party_cost_usd": 0.0,
+    "max_cost_usd": 10.0,
+    "requests_by_host": {
+      "data.brreg.no": 1688,
+      "pam-stilling-feed.nav.no": 42,
+      "query.wikidata.org": 10,
+      "sjekkpunkt.no": 5,
+      "bate.no": 4,
+      "www.talenttovalue.no": 4,
+      "lettstyrt.no": 4,
+      "www.weblance.no": 4,
+      "www.furst.no": 4,
+      "godmatlokalt.no": 3,
+      "mossavis.no": 2,
+      "www.bate.no": 2,
+      "karosseri.no": 2,
+      "moss-avis.no": 2,
+      "talenttovalue.no": 2,
+      "www.lettstyrt.no": 2,
+      "www.moss-avis.no": 2,
+      "permafrost.no": 2,
+      "heiane.no": 2,
+      "dbbil.no": 2,
+      "norskrorservice.no": 1,
+      "nflas.no": 1,
+      "holmfoss.no": 1,
+      "helgelandholding.no": 1,
+      "boligifredrikstad.no": 1,
+      "styrerommet.no": 1,
+      "digiprohelse.no": 1
+    },
+    "requests_by_phase": {
+      "jobs": 39,
+      "registry": 20,
+      "activity": 20,
+      "accounts": 998,
+      "roles": 320,
+      "locations": 292,
+      "group": 48,
+      "web": 51,
+      "web_news": 4,
+      "jobs_verify": 3
+    },
+    "phase_caps": {
+      "registry": 32,
+      "activity": 42,
+      "jobs": 40,
+      "accounts": 1052,
+      "roles": 320,
+      "locations": 292,
+      "group": 48,
+      "jobs_verify": 34,
+      "history": 0,
+      "web": 51,
+      "web_news": 9
+    },
+    "refused_by_budget": {
+      "web": 15,
+      "locations": 706,
+      "roles": 678,
+      "group": 18
+    },
+    "p50_company_ms": 218,
+    "p95_company_ms": 1391
+  },
+  "phase_seconds": {
+    "bulk_snapshot": 0.0,
+    "registry": 6.6,
+    "activity": 7.0,
+    "companies": 44.0,
+    "jobs": 30.5,
+    "finalise": 29.5
+  },
+  "budget_plan": {
+    "registry": 32,
+    "activity": 42,
+    "jobs": 40,
+    "accounts": 1052,
+    "roles": 320,
+    "locations": 292,
+    "group": 48,
+    "jobs_verify": 34,
+    "history": 0,
+    "web": 60,
+    "web_news": 0
+  },
+  "bulk_snapshot": {
+    "note": "no bulk snapshot supplied; live registry API only"
+  },
+  "notes": [
+    "large batch (1000); per-company official sources scaled to fit 1920 requests"
+  ],
+  "third_party_cost_usd": 0.0,
+  "models": []
+}

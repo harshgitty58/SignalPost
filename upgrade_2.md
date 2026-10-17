@@ -6,6 +6,18 @@
 
 ---
 
+## 0. Status (17 Oct, after the upgrade_2 P0 pass)
+| Item | Status |
+|---|---|
+| Push + submit | ✅ pushed (form + email by you) |
+| R11 1,000 profiles | ✅ `reports/run-1000-envelopes.jsonl.gz` (1,000/1,000 valid, 1,795 requests, 2.1 min) |
+| B1 stray files, B3 CSV header, B4 LICENSE, B5 README, B2/U12 metrics generated from reports | ✅ |
+| U1 auto-refresh + history archive + `first_seen` | ✅ second run into the same `--out` → refresh mode, 0 false changes |
+| U3 large-batch priorities | ✅ leadership 17% → 32%, workplaces 13% → 22% at 1,000 companies (request cap is the binding limit) |
+| U4 JSON-LD `identifier`/`taxID` as org-number context | ✅ |
+| N1 consistency checks (balance sheet identity, employees vs workplaces) | ✅ in brief + showcase |
+| Next | U5 evidence vault, U6 ATS jobs, U7 sector registers, U9 NO/EN, U10 hosting, U11 gold-set CI |
+
 ## 1. Requirements compliance matrix
 
 | # | Requirement (source) | Status | Evidence / gap |

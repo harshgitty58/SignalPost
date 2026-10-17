@@ -165,12 +165,13 @@ def build_brief(envelope: dict[str, Any]) -> dict[str, Any]:
         sentences.append({"text": text, "claim_ids": [c["id"] for c in claims if any(e in c["evidence_ids"] for e in ids)][:8], "change_ids": [c["id"] for c in changes][:20]})
 
     signals = build_signals(claims)
+    checks = build_checks(claims)
     unknowns = []
     for fam, meta in FAMILIES.items():
         st = (envelope.get("availability") or {}).get(fam) or {}
         if st.get("state") and st["state"] != "available":
             unknowns.append({"family": fam, "label": meta["label"], "state": st["state"], "reason": st.get("reason")})
-    return {"sentences": sentences, "signals": signals, "unknowns": unknowns,
+    return {"sentences": sentences, "signals": signals, "checks": checks, "unknowns": unknowns,
             "method": "deterministic_template_v1 (every sentence and signal cites claim IDs; derived values are labelled)"}
 
 
@@ -213,4 +214,30 @@ def build_signals(claims: list[dict]) -> list[dict]:
     for c, label in ((moves[0] if moves else None, "Recent address change"), (board[0] if board else None, "Recent board/management update")):
         if c:
             out.append({"kind": "info", "label": label, "text": f"{label} recorded {c['effective_date']}.", "claim_ids": [c["id"]]})
+    return out
+
+
+def build_checks(claims: list[dict]) -> list[dict]:
+    """Cross-source consistency checks. They describe the data; they never change a published value."""
+    out: list[dict] = []
+    fin = [c for c in claims if c["family"] == "financials" and c.get("period") and isinstance(c.get("value"), (int, float))]
+    groups: dict[tuple, dict] = {}
+    for c in fin:
+        groups.setdefault(((c.get("note") or ""), c["period"].get("to")), {})[c["field"]] = c
+    for (note, to), g in sorted(groups.items(), key=lambda kv: kv[0][1] or "", reverse=True)[:2]:
+        a, e, d = g.get("total_assets"), g.get("equity"), g.get("total_debt")
+        if a and e and d:
+            gap = abs(a["value"] - (e["value"] + d["value"]))
+            ok = gap <= max(1000, abs(a["value"]) * 0.01)
+            out.append({"check": "balance_sheet_identity", "result": "pass" if ok else "warn",
+                        "text": f"{to[:4]} {note.split('=')[-1].lower() or 'company'} accounts: total assets {'=' if ok else '≠'} equity + debt"
+                                + ("" if ok else f" (difference {gap:,.0f})"), "claim_ids": [a["id"], e["id"], d["id"]]})
+    emp = next((c for c in claims if c["field"] == "employees"), None)
+    units = [c for c in claims if c["family"] == "locations" and isinstance(c["value"], dict) and isinstance(c["value"].get("employees"), int)]
+    if emp and units and isinstance(emp["value"], int):
+        total = sum(c["value"]["employees"] for c in units)
+        ok = total == emp["value"]
+        out.append({"check": "employees_vs_workplaces", "result": "pass" if ok else "info",
+                    "text": f"Registry employees {emp['value']} vs sum over registered workplaces {total}" + ("" if ok else " (registers update at different times)"),
+                    "claim_ids": [emp["id"], *[c["id"] for c in units[:5]]]})
     return out

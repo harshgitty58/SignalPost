@@ -35,11 +35,13 @@ def load_previous(path: str | Path | None) -> dict[str, dict[str, Any]]:
         return {}
     p = Path(path)
     if p.is_dir():
-        p = p / "profiles.jsonl"
+        p = next((p / n for n in ("envelopes.jsonl", "profiles.jsonl") if (p / n).exists()), p / "envelopes.jsonl")
     if not p.exists():
         return {}
     out = {}
-    with p.open(encoding="utf-8") as handle:
+    import gzip
+    opener = gzip.open if p.suffix == ".gz" else open
+    with opener(p, "rt", encoding="utf-8") as handle:
         for line in handle:
             if line.strip():
                 row = json.loads(line)
@@ -54,11 +56,17 @@ def _index(envelope: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
 def diff(previous: dict[str, Any] | None, current: dict[str, Any], *, detected_at: str) -> tuple[list[dict], dict[str, Any]]:
     """Return (changes, refresh_meta) and mutate `current` to carry forward unreadable families."""
     if not previous:
+        for claim in current.get("claims", []):
+            claim["first_seen"] = detected_at
         return [], {"mode": "baseline", "previous_run_id": None, "compared_families": [], "not_compared": []}
     prev_claims = _index(previous)
     cur_claims = _index(current)
     prev_evidence = {e["id"]: e for e in previous.get("evidence", [])}
     states = current.get("availability", {})
+    prev_started = previous.get("run", {}).get("started_at") or previous.get("run", {}).get("completed_at")
+    for key, claim in cur_claims.items():
+        old = prev_claims.get(key)
+        claim["first_seen"] = (old.get("first_seen") or prev_started) if old else detected_at
     changes: list[dict] = []
     not_compared: list[str] = []
     compared: list[str] = []

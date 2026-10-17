@@ -446,7 +446,7 @@ async function viewCompany(org){
   if (!(brief.sentences||[]).length) bc.append(el("p",{class:"muted"},"Not enough verified facts for a summary."));
   bc.append(el("div",{class:"small muted"},"Each numbered button opens the evidence behind that sentence."));
   app.append(bc);
-  const sig = brief.signals || [];
+  const sig = (brief.signals || []).concat((brief.checks || []).map(c => ({kind: c.result === "warn" ? "risk" : "info", label: "Data check: " + c.check.replace(/_/g, " ") + " — " + c.result, text: c.text, claim_ids: c.claim_ids})));
   if (sig.length){
     const KIND = {risk:"blocked", growth:"available", info:"not_applicable"};
     app.append(el("div",{class:"card section"}, el("h2",null,"Signals"), el("div",{class:"list"}, sig.map(s => el("div",{class:"item"},

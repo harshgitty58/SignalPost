@@ -1,8 +1,8 @@
 {
-  "run_id": "dev-v3b",
-  "agent_version": "ad57ced8bba8",
-  "started_at": "2026-10-17T04:09:30Z",
-  "completed_at": "2026-10-17T04:13:40Z",
+  "run_id": "dev-v4b",
+  "agent_version": "0a787f5fd3f0",
+  "started_at": "2026-10-17T05:00:21Z",
+  "completed_at": "2026-10-17T05:04:12Z",
   "input_count": 100,
   "emitted_envelopes": 100,
   "validation": {
@@ -17,7 +17,7 @@
     },
     "invalid_states": []
   },
-  "mode": "baseline",
+  "mode": "refresh",
   "changes_detected": 0,
   "family_states": {
     "identity": {
@@ -102,7 +102,7 @@
   "operations": {
     "requests": 899,
     "max_requests": 2000,
-    "elapsed_seconds": 252.6,
+    "elapsed_seconds": 234.0,
     "max_seconds": 2700.0,
     "third_party_cost_usd": 0.0,
     "max_cost_usd": 10.0,
@@ -167,8 +167,8 @@
       "enske.no": 2,
       "panorama.as": 2,
       "sintef.no": 2,
-      "proel.no": 2,
       "rgcrane.no": 2,
+      "proel.no": 2,
       "scanvital.no": 2,
       "hellandror.no": 2,
       "aktivveiledning.no": 2,
@@ -182,8 +182,8 @@
       "www.xpartner.as": 2,
       "wulffbergas.no": 2,
       "www.wulffbergas.no": 2,
-      "skøyteshop.com": 2,
       "coop.no": 2,
+      "skøyteshop.com": 2,
       "seatex.no": 2,
       "navn.no": 2,
       "cleannor.no": 2,
@@ -233,16 +233,16 @@
       "web_news": 188
     },
     "refused_by_budget": {},
-    "p50_company_ms": 47578,
-    "p95_company_ms": 63641
+    "p50_company_ms": 47875,
+    "p95_company_ms": 65859
   },
   "phase_seconds": {
     "bulk_snapshot": 0.0,
-    "registry": 1.6,
-    "activity": 1.0,
-    "companies": 230.0,
-    "jobs": 15.4,
-    "finalise": 3.1
+    "registry": 2.2,
+    "activity": 0.9,
+    "companies": 223.2,
+    "jobs": 4.4,
+    "finalise": 2.8
   },
   "budget_plan": {
     "registry": 5,

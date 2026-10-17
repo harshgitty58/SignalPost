@@ -16,7 +16,8 @@ uv run signalpost run --organisations <batch.jsonl> --out out/ [--previous <prev
 ```
 
 * `--organisations`: JSONL (`{"organisation_number": "..."}` per line), JSON list, or plain text.
-* `--previous`: previous output directory → refresh mode (typed changes, carried-forward evidence).
+* **Refresh is automatic:** re-running into the same `--out` archives the last run to `out/history/` and diffs against it
+  (typed, material/minor changes; unreadable sources carried forward; `first_seen` per fact). `--previous` overrides, `--fresh` forces a baseline.
 * `--bulk`: optional frozen Brreg snapshot (CSV/JSON, gz ok) used as identity fallback.
 * Defaults enforce the official limits: `--max-requests 2000 --max-minutes 45 --max-cost 10`.
 
@@ -41,7 +42,7 @@ actions only (no arbitrary shell).
 | Family | Source | Identity |
 |---|---|---|
 | identity, status, industry, group membership | Enhetsregisteret (live, 100 orgs/request) | org.nr key |
-| annual accounts (company + group, up to 3 years, currency, period, audit) | Regnskapsregisteret | org.nr key |
+| annual accounts (company + group, latest years returned by the API, currency, period, audit) + full filing history with links to official copies | Regnskapsregisteret | org.nr key |
 | leadership & roles (no birth dates) | Brreg roles API | org.nr key |
 | registered workplaces | Brreg sub-units (`overordnetEnhet`) | org.nr key |
 | group structure (labelled, never merged) | Brreg konsernstruktur | org.nr key |
@@ -61,6 +62,11 @@ org.nr (labelled as `related_website` when it is a group entity).
 ## Models, APIs, cost
 * No LLM, no paid API, no API keys. **Third-party cost per official run: $0.00.**
 * NAV feed uses NAV's published public token (override with `NAV_FEED_TOKEN`).
-* Typical 100-company run: ~1.5–3 min, ~650 requests (see `reports/`).
+
+## Measured results (generated from `reports/` by `eval/write_docs.py`)
+<!-- metrics:start -->
+- **100 random companies (smoke test)** (dev-v4b @ `0a787f5fd3f0`): 100/100 valid envelopes (validation passed), 899 requests, 3.9 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 100%, locations 78%, group 5%, website 17%, social_profiles 8%, contact 31%, description 9%, jobs 0%, activity 100%.
+- **1,000 random companies (official limits)** (run-1000-v4 @ `0a787f5fd3f0`): 1000/1000 valid envelopes (validation passed), 1795 requests, 2.1 min, $0.00. Coverage: identity 100%, status 100%, industry 100%, financials 100%, leadership 32%, locations 22%, group 5%, website 0%, social_profiles 0%, contact 17%, description 0%, jobs 0%, activity 100%.
+<!-- metrics:end -->
 
 See [SOURCES.md](SOURCES.md) for source rights and [SECURITY.md](SECURITY.md) for the outbound URL policy.

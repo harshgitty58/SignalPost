@@ -72,3 +72,26 @@ def test_blank_registry_fields_are_skipped_not_fatal():
     entity_claims(pb, {"navn": "TEST AS", "vedtektsfestetFormaal": [" "], "hjemmeside": "", "kapital": {}},
                   retrieved_at="t", source_class="official_registry", method="m")
     assert [c.field for c in pb.claims.values()] == ["legal_name"]
+
+
+def test_input_header_and_duplicates(tmp_path):
+    from signalpost.pipeline import read_inputs
+    p = tmp_path / "batch.csv"
+    p.write_text("organisation_number\n923609016\n923609016\n12345\n", encoding="utf-8")
+    assert read_inputs(p) == ["923609016", "12345"]  # header skipped, duplicate folded, malformed kept (gets an envelope)
+
+
+def test_first_seen_is_carried_across_runs():
+    c1, e1 = _claim("jobs", "job:1", {"title": "Elektriker"})
+    prev = _env([dict(c1, first_seen="2026-10-01T00:00:00Z")], [e1])
+    cur = _env([dict(c1)], [e1])
+    diff(prev, cur, detected_at="2026-10-17T00:00:00Z")
+    assert cur["claims"][0]["first_seen"] == "2026-10-01T00:00:00Z"
+
+
+def test_balance_sheet_check():
+    from signalpost.synthesis import build_checks
+    p = {"from": "2025-01-01", "to": "2025-12-31"}
+    mk = lambda f, v: {"id": f, "family": "financials", "field": f, "value": v, "period": p, "note": "account_type=SELSKAP"}  # noqa: E731
+    assert build_checks([mk("total_assets", 100_000), mk("equity", 40_000), mk("total_debt", 60_000)])[0]["result"] == "pass"
+    assert build_checks([mk("total_assets", 100_000), mk("equity", 10_000), mk("total_debt", 60_000)])[0]["result"] == "warn"

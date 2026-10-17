@@ -113,7 +113,7 @@ def find_orgnrs(text: str) -> set[str]:
         if valid_orgnr(candidate):
             # require an org-number context nearby to avoid matching random 9-digit numbers (phones are 8 digits)
             window = fold(text[max(0, match.start() - 40): match.end() + 10])
-            if re.search(r"org|foretaks|mva|vat|reg\.?\s?nr|bedrifts|company", window):
+            if re.search(r"org|foretaks|mva|vat|reg\.?\s?nr|bedrifts|company|identifier|taxid", window):
                 found.add(candidate)
     return found
 

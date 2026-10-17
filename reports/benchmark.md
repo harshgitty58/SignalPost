@@ -1,8 +1,8 @@
 # Benchmark report
 
-### out-dev — dev-v3b @ ad57ced8bba8
+### out-dev — dev-v4b @ 0a787f5fd3f0
 
-100 companies · valid=True · requests=899 · time=252.6s · cost=$0.0 · p50/p95 per company=47578/63641 ms
+100 companies · valid=True · requests=899 · time=234.0s · cost=$0.0 · p50/p95 per company=47875/65859 ms
 
 | Family | Available | 95% CI | Ambiguous (abstained) | Not available | Failed/blocked | Claims |
 |---|---|---|---|---|---|---|
@@ -29,32 +29,32 @@
 
 Published claims: 8054 (80.5/company) · evidence-incomplete references: 0 · identity gate: {'rejected': 14, 'blocked': 6, 'accepted': 17, 'ambiguous': 22, 'unreachable': 8, 'related_site': 1}
 
-### out-val — val-v3 @ 5e1d83d8bf4f
+### out-1000 — run-1000-v4 @ 0a787f5fd3f0
 
-100 companies · valid=True · requests=802 · time=250.0s · cost=$0.0 · p50/p95 per company=45468/66546 ms
+1000 companies · valid=True · requests=1795 · time=125.2s · cost=$0.0 · p50/p95 per company=218/1391 ms
 
 | Family | Available | 95% CI | Ambiguous (abstained) | Not available | Failed/blocked | Claims |
 |---|---|---|---|---|---|---|
-| identity | 99% | 95%–100% | 0% | 1% | 0% | 1357 |
-| status | 99% | 95%–100% | 0% | 1% | 0% | 99 |
-| industry | 99% | 95%–100% | 0% | 1% | 0% | 99 |
-| financials | 99% | 95%–100% | 0% | 1% | 0% | 5373 |
-| leadership | 99% | 95%–100% | 0% | 1% | 0% | 395 |
-| locations | 73% | 64%–81% | 0% | 27% | 0% | 73 |
-| group | 11% | 6%–19% | 0% | 1% | 0% | 27 |
-| website | 13% | 8%–21% | 19% | 67% | 1% | 13 |
-| social_profiles | 5% | 2%–11% | 0% | 95% | 0% | 7 |
-| contact | 26% | 18%–35% | 0% | 1% | 73% | 27 |
-| description | 9% | 5%–16% | 0% | 91% | 0% | 9 |
-| jobs | 1% | 0%–5% | 0% | 99% | 0% | 1 |
-| activity | 99% | 95%–100% | 0% | 1% | 0% | 368 |
+| identity | 100% | 99%–100% | 0% | 0% | 0% | 13568 |
+| status | 100% | 99%–100% | 0% | 0% | 0% | 1003 |
+| industry | 100% | 99%–100% | 0% | 0% | 0% | 1015 |
+| financials | 100% | 99%–100% | 0% | 0% | 0% | 43953 |
+| leadership | 32% | 29%–35% | 0% | 0% | 68% | 1253 |
+| locations | 22% | 20%–25% | 0% | 7% | 71% | 254 |
+| group | 5% | 4%–6% | 0% | 0% | 2% | 60 |
+| website | 0% | 0%–1% | 0% | 3% | 96% | 3 |
+| social_profiles | 0% | 0%–1% | 0% | 5% | 95% | 2 |
+| contact | 17% | 15%–19% | 0% | 4% | 79% | 171 |
+| description | 0% | 0%–1% | 0% | 4% | 95% | 3 |
+| jobs | 0% | 0%–0% | 0% | 100% | 0% | 0 |
+| activity | 100% | 99%–100% | 0% | 0% | 0% | 3610 |
 
 | Derived coverage | Companies | 95% CI |
 |---|---|---|
-| financial history (≥1 filed year) | 99% | 95%–100% |
-| material activity (excl. employee-count updates) | 99% | 95%–100% |
-| real group relations (parent/subsidiary) | 10% | 6%–17% |
-| company-owned news items | 4% | 2%–10% |
+| financial history (≥1 filed year) | 0% | 0%–0% |
+| material activity (excl. employee-count updates) | 100% | 99%–100% |
+| real group relations (parent/subsidiary) | 5% | 4%–6% |
+| company-owned news items | 0% | 0%–1% |
 
-Published claims: 7848 (78.5/company) · evidence-incomplete references: 0 · identity gate: {'unreachable': 11, 'rejected': 9, 'ambiguous': 13, 'accepted': 13, 'blocked': 2, 'related_site': 1}
+Published claims: 64895 (64.9/company) · evidence-incomplete references: 0 · identity gate: {'accepted': 3, 'ambiguous': 4, 'rejected': 1}
 
