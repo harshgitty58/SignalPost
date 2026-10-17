@@ -43,7 +43,7 @@ whitelisted actions only (no arbitrary shell), validated inputs.
 
 ## Showcase site (what to look at)
 
-`out-*/site/index.html` opens straight from disk: no server, no CDN, no web fonts. Light and dark themes,
+`out-*/site/index.html` opens straight from disk: no server, no CDN, no web fonts. Light glass theme by default (dark on the toggle),
 NO/EN interface labels (data stays as sourced), 375 px mobile layout, keyboard shortcuts (`/` search, `Esc`
 close, `g o/c/h/x/m` to switch view, `?` for the list).
 
@@ -61,6 +61,9 @@ close, `g o/c/h/x/m` to switch view, `?` for the list).
   reason, licence, highlighted span and the full SHA-256 with copy.
 * **Compare** (up to four, shareable URL, differing rows tinted), **Changes** (typed, material/minor
   filter) and **Method** (pipeline, identity gate, states, sources and licences, budget plan).
+
+**Hosting:** `.github/workflows/pages.yml` builds the showcase for the committed 1,000-profile run on every push to
+`main` and publishes it to GitHub Pages (one-time: Settings → Pages → Source: GitHub Actions).
 
 Design tokens and rules for both UIs live in [`DESIGN.md`](DESIGN.md). Headless checks (no browser needed):
 `npm install --no-save jsdom@24.1.3`, then `node eval/ui_check.cjs "<abs path to out-x/site>"` and, with the

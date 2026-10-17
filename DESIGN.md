@@ -3,9 +3,8 @@
 Single source of truth for both Signalpost interfaces: the static **showcase**
 (`src/signalpost/showcase/template.html`) and the local **live console**
 (`src/signalpost/console/console.html`). Both declare the tokens below as CSS
-custom properties on `:root`, with a dark set under
-`@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }` and again
-under `:root[data-theme="dark"]` so the in-page toggle wins in both directions.
+custom properties on `:root`. **Light ("Birch") is the default regardless of the OS setting**; the dark set
+lives only under `:root[data-theme="dark"]` and is reached through the in-page toggle (remembered locally).
 
 Influences, blended and not copied: Linear (hairlines instead of shadows, one accent,
 tight display tracking), IBM Carbon (data-dense tables, semantic support colours,
@@ -86,7 +85,27 @@ never colour alone. Chip text/background pairs measure 5.4–7.9:1.
 "nothing to show"); their percentage is always printed as text beside the bar.
 `not_applicable` uses a 45° hatch so it never reads as a second grey.
 
+### 2b. Glass layer
+Panels float as frosted glass over a fixed, very soft ambient background; nothing else moves.
+
+| Token | Light | Dark | Role |
+|---|---|---|---|
+| `--glass` | `rgba(255,255,255,.70)` | `rgba(32,33,31,.62)` | Panel fill |
+| `--glass-strong` | `rgba(255,255,255,.84)` | `rgba(32,33,31,.82)` | Top bar, drawer, popovers, dialogs |
+| `--glass-border` | `rgba(255,255,255,.80)` | `rgba(255,255,255,.09)` | 1px rim light |
+| `--glass-shadow` | inset top highlight + `0 10px 30px -14px rgba(31,74,107,.22)` | inset + `0 14px 34px -14px rgba(0,0,0,.65)` | Lift (tinted with fjord blue, never pure black) |
+| `--blur` | `saturate(170%) blur(18px)` | same | `backdrop-filter` on panels and fixed layers |
+| `--amb-1/2/3` | fjord `rgba(40,90,128,.30)`, teal `rgba(46,140,150,.22)`, sand `rgba(233,190,140,.42)` | dimmed | Four radial blobs on a fixed `body:before`; never on scrolling content |
+
+Rules: text contrast is measured against the *effective* colour (glass over canvas), and every text token still
+clears 4.5:1. `prefers-reduced-transparency: reduce` and print fall back to solid `--surface` with no blur.
+Large figures (KPI values) may use a subtle ink → ink/accent text gradient; nothing else uses gradients.
+
 ### Charts
+- Portfolio overview: availability donut (state colours, legend with counts and %), revenue histogram (NOK only;
+  excluded companies are counted in the caption), NACE sections and counties as bar lists. Profile: completeness
+  ring (families found / 13), workplaces by municipality. Compare: one bar chart per measure, one colour per company
+  (`--s1…--s4`, the validated categorical order), **never two currencies on one scale** (values are listed instead).
 - Single-series charts use `--accent`. Negative values in a magnitude chart use the
   `failed` fill and carry a minus sign in the label (diverging: blue ↔ red, grey zero line).
 - Gridlines `--line`, baseline `--line-strong`, axis text `--ink-3`. Values in ink, never in series colour.
@@ -125,8 +144,8 @@ Rules: every number uses `font-variant-numeric: tabular-nums`; headings use
 - **Radius.** 4px chips and citations, 6px buttons and inputs, 10px panels,
   14px drawer/dialog corners. Never pill-shaped containers or primary buttons; state
   chips may be fully rounded.
-- **Elevation.** Depth comes from the surface ladder and hairlines, not shadows. The only
-  shadow is `--shadow-overlay` for floating layers (drawer, dialog, typeahead, toast):
+- **Elevation.** Depth comes from the glass layer (§2b): translucent fill, rim light and a soft tinted lift.
+  Floating layers (drawer, dialog, typeahead, toast) add `--shadow-overlay`:
   light `0 12px 32px -12px rgba(41,36,28,.22)`, dark `0 12px 32px -12px rgba(0,0,0,.6)`.
 - **Z-index scale.** `--z-sticky: 10`, `--z-pop: 20`, `--z-scrim: 30`, `--z-drawer: 40`, `--z-toast: 50`.
 
@@ -209,7 +228,7 @@ Rules: every number uses `font-variant-numeric: tabular-nums`; headings use
 - Show abstentions and rejections as proudly as published facts.
 
 **Don't**
-- No gradients, glows, glassmorphism beyond the top-bar blur, or decorative imagery.
+- No glows, neon, decorative imagery or gradient fills on marks. Glass only as specified in §2b.
 - No emojis. Glyphs are typographic (`✓ – ? ⊘ ✕ ∅ ↗`).
 - No Inter/Roboto, no serif in the app UI, no pure black or pure white text on dark.
 - No dual-axis charts, no rainbow palettes, no numbers on every bar of a dense chart.

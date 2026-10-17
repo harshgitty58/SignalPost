@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -134,6 +135,11 @@ def build_site(envelopes_path: Path, report_path: Path | None, output: Path) -> 
             trust["verification"] = json.loads(verification.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             pass
+    # the run's identity audit travels with the site, so the trust panel link also works when hosted
+    audit = Path(envelopes_path).parent / "identity-audit.md"
+    if audit.exists():
+        shutil.copyfile(audit, output / "identity-audit.md")
+        trust["audit"] = "identity-audit.md"
     template = (HERE / "template.html").read_text(encoding="utf-8")
     boot = json.dumps({"index": rows, "report": report, "trust": trust}, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     html = template.replace("/*__BOOT__*/null", boot)

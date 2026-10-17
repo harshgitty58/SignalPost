@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Signalpost Console</title>
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23285A80'/%3E%3Cpath d='M9 22c3.5-7 10.5-7 14-13' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='9' cy='22' r='2.6' fill='white'/%3E%3Ccircle cx='23' cy='9' r='2.6' fill='white'/%3E%3C/svg%3E">
 <style>
 /* Tokens: see DESIGN.md §2 (shared with the showcase). Console density: 8. */
@@ -19,19 +19,18 @@
   --sans:"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
   --mono:"SF Mono","Cascadia Mono","JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
   --ease:cubic-bezier(.2,.7,.2,1);color-scheme:light;
+  --glass:rgba(255,255,255,.70);--glass-strong:rgba(255,255,255,.84);--glass-border:rgba(255,255,255,.80);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 10px 30px -14px rgba(31,74,107,.22),0 2px 6px -3px rgba(31,74,107,.10);
+  --blur:saturate(170%) blur(18px);--amb-1:rgba(40,90,128,.30);--amb-2:rgba(46,140,150,.22);--amb-3:rgba(233,190,140,.42);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --canvas:#141412;--surface:#1B1B19;--surface-2:#232320;--surface-3:#2C2C29;--line:#2E2E2B;--line-strong:#3D3D39;
-  --ink:#EDEBE6;--ink-2:#BDB9B0;--ink-3:#9A968D;--accent:#8DB8DC;--accent-hover:#A6C8E5;--accent-soft:#1F2A33;--on-accent:#10161B;
-  --ok:#8CCB95;--ok-soft:#1C2A1E;--ok-fill:#5DAA69;--na:#B5B0A7;--na-soft:#262623;--na-fill:#55534D;--amb:#E3B65C;--amb-soft:#2E2614;--amb-fill:#C99A3E;
-  --blk:#E79A6C;--blk-soft:#2F2119;--blk-fill:#C77748;--fail:#EE8F88;--fail-soft:#321D1B;--fail-fill:#D25A52;--napp:#A29E95;--napp-soft:#232320;--napp-fill:#3D3D39;
-  --term:#111110;--term-line:#242421;--shadow-overlay:0 12px 32px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);color-scheme:dark}}
 :root[data-theme="dark"]{
   --canvas:#141412;--surface:#1B1B19;--surface-2:#232320;--surface-3:#2C2C29;--line:#2E2E2B;--line-strong:#3D3D39;
   --ink:#EDEBE6;--ink-2:#BDB9B0;--ink-3:#9A968D;--accent:#8DB8DC;--accent-hover:#A6C8E5;--accent-soft:#1F2A33;--on-accent:#10161B;
   --ok:#8CCB95;--ok-soft:#1C2A1E;--ok-fill:#5DAA69;--na:#B5B0A7;--na-soft:#262623;--na-fill:#55534D;--amb:#E3B65C;--amb-soft:#2E2614;--amb-fill:#C99A3E;
   --blk:#E79A6C;--blk-soft:#2F2119;--blk-fill:#C77748;--fail:#EE8F88;--fail-soft:#321D1B;--fail-fill:#D25A52;--napp:#A29E95;--napp-soft:#232320;--napp-fill:#3D3D39;
-  --term:#111110;--term-line:#242421;--shadow-overlay:0 12px 32px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);color-scheme:dark}
+  --term:#111110;--term-line:#242421;--shadow-overlay:0 12px 32px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);color-scheme:dark;
+  --glass:rgba(32,33,31,.62);--glass-strong:rgba(32,33,31,.82);--glass-border:rgba(255,255,255,.09);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px -14px rgba(0,0,0,.65);--amb-1:rgba(141,184,220,.18);--amb-2:rgba(93,170,150,.12);--amb-3:rgba(201,154,62,.12)}
 *{box-sizing:border-box}
 body{margin:0;min-height:100dvh;background:var(--canvas);color:var(--ink);font:400 14px/1.5 var(--sans)}
 a{color:var(--accent);text-underline-offset:3px}
@@ -162,6 +161,23 @@ dialog::backdrop{background:rgba(20,18,14,.4)}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--canvas);padding:8px 14px;border-radius:6px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
 .toast.on{opacity:1}
 pre.out{font:12px/1.55 var(--mono);background:var(--term);border:1px solid var(--line);border-radius:8px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow:auto;margin:0}
+/* glass layer (DESIGN.md §2b) */
+body{isolation:isolate}
+body:before{content:"";position:fixed;inset:-12%;z-index:-1;pointer-events:none;
+  background:radial-gradient(38% 34% at 8% 6%,var(--amb-1),transparent 70%),radial-gradient(34% 30% at 94% 12%,var(--amb-2),transparent 70%),
+    radial-gradient(44% 40% at 70% 96%,var(--amb-3),transparent 72%),radial-gradient(30% 28% at 22% 80%,var(--amb-2),transparent 70%)}
+.panel,.meters{background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:14px}
+header.top{background:var(--glass-strong);border-bottom-color:var(--glass-border)}
+dialog{background:var(--glass-strong);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.term{background:color-mix(in srgb,var(--term) 82%,transparent)}
+.co,.input,select.input,textarea.input,.tabs button,.seg button,.btn.secondary,.iconbtn{background:color-mix(in srgb,var(--surface) 78%,transparent)}
+.meter .v{background:linear-gradient(180deg,var(--ink),color-mix(in srgb,var(--ink) 70%,var(--accent)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn.primary{box-shadow:0 6px 16px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+.spark{display:block;width:100%;height:30px;margin-top:6px;overflow:visible}
+.spark .ln{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linejoin:round}
+.spark .ar{fill:color-mix(in srgb,var(--accent) 14%,transparent)}
+.spark .lim{stroke:var(--fail-fill);stroke-width:1;stroke-dasharray:3 3}
+@media (prefers-reduced-transparency:reduce){.panel,.meters,header.top,dialog{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media (max-width:1100px){main{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.term,.feed{height:380px}}
 @media (max-width:640px){
   main{padding:12px 12px 48px}header.top{padding:6px 12px}
@@ -252,7 +268,7 @@ const ACTIONS={
   verify:{label:"Verify evidence",explain:"Re-fetches 30 random sources from a finished run and checks each published fact still appears there. The result is saved next to the run and shown in its showcase."},
   replay:{label:"Refresh replay",explain:"Injects realistic changes (new CEO, filing, job, address, closed workplace) into a run's profiles and checks typed changes, an idempotent rerun and carry-forward."},
   showcase:{label:"Build site",explain:"Rebuilds the static showcase for a finished run (out-x/site/index.html), e.g. after verifying its evidence."}};
-let S={action:"run",batches:[],runs:[],job:null,companies:{},total:0,startedAt:null,es:null,lines:[],reqs:0,elapsed:0,selectedRun:null,jobAction:null,jobTarget:null,lvl:"all",phase:"",q:"",follow:true,phases:new Set(),prefill:{}};
+let S={action:"run",batches:[],runs:[],job:null,companies:{},total:0,startedAt:null,es:null,lines:[],reqs:0,elapsed:0,selectedRun:null,jobAction:null,jobTarget:null,lvl:"all",phase:"",q:"",follow:true,phases:new Set(),prefill:{},samples:[]};
 const $=id=>document.getElementById(id), dlg=$("dlg");
 function el(t,p,...k){const n=document.createElement(t);if(p)for(const[a,v]of Object.entries(p)){if(v==null||v===false)continue;if(a==="class")n.className=v;else if(a==="text")n.textContent=v;else if(a.startsWith("on")&&typeof v==="function")n.addEventListener(a.slice(2),v);else n.setAttribute(a,v===true?"":v);}for(const c of k.flat(Infinity))if(c!=null&&c!==false)n.append(c instanceof Node?c:document.createTextNode(String(c)));return n;}
 function chip(s,l){return el("span",{class:"chip st-"+s},el("span",{"aria-hidden":"true"},GLYPH[s]||"•"),l||STL[s]||String(s).replace(/_/g," "));}
@@ -266,8 +282,8 @@ async function api(path,body){const r=await fetch(path,body?{method:"POST",heade
 function valueText(v){if(v==null)return "—";if(typeof v==="object"){if(v.title)return v.title;if(v.name)return v.name+(v.organisation_number?" ("+v.organisation_number+")":"");if(v.year)return String(v.year);return JSON.stringify(v);}return typeof v==="number"?fmt(v):String(v);}
 
 // ------------------------------------------------------------ theme
-function applyTheme(){const t=store("sp-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;const l="Theme: "+(t||"system");$("theme").title=l;$("themeLabel").textContent=l;}
-$("theme").onclick=()=>{const o=["system","light","dark"],c=store("sp-theme")||"system",n=o[(o.indexOf(c)+1)%3];store("sp-theme",n);applyTheme();toast("Theme: "+n);};
+function applyTheme(){const t=store("sp-theme")==="dark"?"dark":"light";document.documentElement.dataset.theme=t;const l="Theme: "+t;$("theme").title=l;$("themeLabel").textContent=l;}
+$("theme").onclick=()=>{const n=store("sp-theme")==="dark"?"light":"dark";store("sp-theme",n);applyTheme();toast("Theme: "+n);};
 applyTheme();
 
 // ------------------------------------------------------------ action form
@@ -313,7 +329,7 @@ $("reload").onclick=()=>refreshState(false);
 
 // ------------------------------------------------------------ streaming
 function startStream(action,target){
-  S.companies={};S.total=0;S.lines=[];S.reqs=0;S.elapsed=0;S.startedAt=Date.now();S.jobAction=action;S.jobTarget=target;S.phases=new Set();
+  S.companies={};S.total=0;S.lines=[];S.reqs=0;S.elapsed=0;S.samples=[[0,0]];S.startedAt=Date.now();S.jobAction=action;S.jobTarget=target;S.phases=new Set();
   renderPhaseSelect();renderTerm();
   $("feed").replaceChildren(el("div",{class:"empty"},action==="run"||action==="rerun"?"Waiting for the first company…":"This action streams to the terminal."));
   $("results").replaceChildren(el("div",{class:"empty"},"Running "+ACTIONS[action].label.toLowerCase()+"…"));$("resSrc").textContent="";
@@ -382,18 +398,30 @@ let liveQueued=false;
 function scheduleLive(){if(liveQueued)return;liveQueued=true;requestAnimationFrame(()=>{liveQueued=false;renderFeed();renderMeters();renderLiveCoverage();});}
 
 // ------------------------------------------------------------ meters + coverage
-function meter(label,valueText,frac,sub,progress){
+function sample(){const t=S.elapsed||(S.startedAt?(Date.now()-S.startedAt)/1000:0),last=S.samples[S.samples.length-1];if(!last||S.reqs!==last[1]||t-last[0]>5)S.samples.push([t,S.reqs]);}
+function spark(){ // requests over elapsed time; dashed line = 2,000 request limit (scaled when close)
+  const pts=S.samples;if(pts.length<2)return null;
+  const W=200,H=30,tx=Math.max(10,pts[pts.length-1][0]),ymax=Math.max(LIMITS.requests*(S.reqs>LIMITS.requests*.5?1:.5),S.reqs,1);
+  const X=t=>t/tx*W,Y=v=>H-v/ymax*H,d=pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join(" ");
+  const ns="http://www.w3.org/2000/svg",mk=(tag,a)=>{const n=document.createElementNS(ns,tag);for(const k in a)n.setAttribute(k,a[k]);return n;};
+  const svgEl=mk("svg",{class:"spark",viewBox:"0 0 "+W+" "+H,preserveAspectRatio:"none",role:"img","aria-label":"Requests over time: "+S.reqs+" after "+Math.round(tx)+" s"});
+  svgEl.append(mk("path",{class:"ar",d:d+" L"+X(pts[pts.length-1][0]).toFixed(1)+" "+H+" L0 "+H+" Z"}),mk("path",{class:"ln",d}));
+  if(ymax>=LIMITS.requests)svgEl.append(mk("line",{class:"lim",x1:0,x2:W,y1:Y(LIMITS.requests),y2:Y(LIMITS.requests)}));
+  return svgEl;
+}
+function meter(label,valueText,frac,sub,progress,extra){
   const cls=frac==null||progress?"":frac>=.9?"bad":frac>=.7?"warn":"";
   return el("div",{class:"meter "+cls},el("div",{class:"l"},el("span",null,label),cls?el("span",{class:"tag "+(cls==="bad"?"bad":"warn")},cls==="bad"?"near limit":"warning"):null),
     el("div",{class:"v"},valueText),sub?el("div",{class:"small faint"},sub):null,
-    frac==null?null:el("div",{class:"track",role:"meter","aria-label":label,"aria-valuemin":"0","aria-valuemax":"100","aria-valuenow":String(Math.round(Math.min(1,frac)*100)),"aria-valuetext":valueText+(sub?" "+sub:"")},el("span",{style:"width:"+Math.min(100,frac*100)+"%"})));
+    extra||null,frac==null?null:el("div",{class:"track",role:"meter","aria-label":label,"aria-valuemin":"0","aria-valuemax":"100","aria-valuenow":String(Math.round(Math.min(1,frac)*100)),"aria-valuetext":valueText+(sub?" "+sub:"")},el("span",{style:"width:"+Math.min(100,frac*100)+"%"})));
 }
 function renderMeters(){
+  if(S.startedAt)sample();
   const done=Object.keys(S.companies).length;
   const el_s=S.elapsed||(S.startedAt?(Date.now()-S.startedAt)/1000:0);
   $("meters").replaceChildren(
     meter("Companies",S.total?`${fmt(done)} / ${fmt(S.total)}`:fmt(done),S.total?done/S.total:null,S.total?pct(done/S.total)+" finished":"finished so far",true),
-    meter("Requests",fmt(S.reqs),S.reqs/LIMITS.requests,"of "+fmt(LIMITS.requests)+" daily limit"),
+    meter("Requests",fmt(S.reqs),S.reqs/LIMITS.requests,"of "+fmt(LIMITS.requests)+" daily limit",false,spark()),
     meter("Time",Math.floor(el_s/60)+"m "+String(Math.floor(el_s%60)).padStart(2,"0")+"s",el_s/LIMITS.seconds,"of 45 min limit"),
     meter("Cost","$0.00",0,"of $"+LIMITS.cost.toFixed(2)+" · no paid APIs"));
 }

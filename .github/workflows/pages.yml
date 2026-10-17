@@ -1,0 +1,40 @@
+name: showcase-pages
+# Publishes the static showcase for the committed 1,000-profile run (reports/run-1000-*) to GitHub Pages.
+# One-time setup: repository Settings -> Pages -> Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths: ["reports/run-1000-*", "src/signalpost/showcase/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: build the site from the committed envelopes (no network)
+        run: |
+          mkdir -p run
+          gunzip -c reports/run-1000-envelopes.jsonl.gz > run/envelopes.jsonl
+          uv run signalpost showcase --envelopes run/envelopes.jsonl --report reports/run-1000-run-report.json --output _site
+          test -f _site/index.html && test "$(ls _site/data | wc -l)" -eq 1000
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
