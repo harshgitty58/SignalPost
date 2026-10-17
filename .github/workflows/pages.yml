@@ -44,7 +44,8 @@ jobs:
           path: _site
   deploy:
     needs: build
-    if: needs.build.outputs.pages == 'true'
+    # pushes deploy only once Pages is enabled; a manual "Run workflow" always deploys (also the very first time)
+    if: needs.build.outputs.pages == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
