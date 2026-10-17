@@ -29,7 +29,8 @@ showcase in `out/site/index.html`. Running the same command again into the same 
 previous run and reports typed changes.
 
 **At least 1,000 company profiles:** `reports/run-1000-envelopes.jsonl.gz` in the repository (1,000/1,000 valid
-envelopes, run under the official limits), with its run report `reports/run-1000-run-report.json`.
+envelopes, run under the official limits), with its run report `reports/run-1000-run-report.json`. The same 1,000
+profiles can be browsed (search, compare, verify every fact) at https://harshgitty58.github.io/SignalPost/
 
 **Model / API details**
 - No LLM is used.

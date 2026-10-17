@@ -128,8 +128,8 @@ coverage bars; budget meters with a requests-over-time sparkline and warning sta
 identity-gate decisions and *Re-run this company*; benchmark tables; evidence re-verification saved for the
 showcase; *Diff two runs* (or archived snapshots) using the agent's own change detection.
 
-**Hosting:** `.github/workflows/pages.yml` publishes the showcase of the committed 1,000-profile run to GitHub
-Pages on every push to `main` (one-time: Settings → Pages → Source: *GitHub Actions*).
+**Hosted:** the showcase of the committed 1,000-profile run is live at **https://harshgitty58.github.io/SignalPost/**,
+rebuilt by `.github/workflows/pages.yml` on every push to `main`.
 
 Design system for both UIs: [`DESIGN.md`](DESIGN.md).
 

@@ -18,7 +18,7 @@ estimates.
 ### What to submit
 | Requirement | Status | Where it is shown |
 |---|---|---|
-| At least 1,000 company profiles | ✅ | `reports/run-1000-envelopes.jsonl.gz` (1,000/1,000 valid) + `reports/run-1000-run-report.json`; browsable via the GitHub Pages showcase once Pages is enabled |
+| At least 1,000 company profiles | ✅ | `reports/run-1000-envelopes.jsonl.gz` (1,000/1,000 valid) + `reports/run-1000-run-report.json`; browsable at https://harshgitty58.github.io/SignalPost/ |
 | Repository link | ✅ | https://github.com/harshgitty58/SignalPost |
 | Exact commit hash | ✅ at send time | `git rev-parse HEAD` after `git push origin main` (§2) |
 | One command to run it | ✅ | `uv sync --frozen` then `uv run signalpost run --organisations <batch.jsonl> --out out/` |
