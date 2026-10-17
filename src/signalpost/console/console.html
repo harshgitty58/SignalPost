@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signalpost Console</title>
+<style>
+:root{--bg:#f5f6f8;--surface:#fff;--surface-2:#eef1f4;--text:#16202b;--muted:#5b6876;--border:#dde2e8;--accent:#1f5fa8;--accent-soft:#e6eef8;--on-accent:#fff;
+--ok:#1d7a46;--ok-soft:#e3f3e9;--amb:#9a6200;--amb-soft:#fbf0d9;--bad:#b3261e;--bad-soft:#fbe4e2;--na:#6b7682;--na-soft:#eef0f2;
+--term-bg:#0d1117;--term-text:#d6dde5;--term-dim:#7d8896;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141a;--surface:#161c24;--surface-2:#1d252f;--text:#e6ebf0;--muted:#9aa6b2;--border:#2a333e;--accent:#6aa6ec;--accent-soft:#1c2c40;--on-accent:#0f141a;
+--ok:#5cc98a;--ok-soft:#173326;--amb:#e9b04f;--amb-soft:#3a2d12;--bad:#f2867e;--bad-soft:#3b1d1b;--na:#9aa6b2;--na-soft:#222a33;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.5 var(--sans)}
+header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:17px;margin:0}.grow{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--na-soft);color:var(--na)}
+.pill.run{background:var(--accent-soft);color:var(--accent)}.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}.pill.run .dot{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+main{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px 18px;max-width:1500px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.tabs button{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit;font-size:13px;color:var(--text);min-height:34px}
+.tabs button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+select,input,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)}
+textarea{min-height:70px;font-family:var(--mono);font-size:12.5px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.check{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px;color:var(--text)}.check input{width:auto}
+.btn{border:0;border-radius:9px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--accent);color:var(--on-accent)}.btn.ghost{background:var(--surface-2);color:var(--text)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.explain{background:var(--surface-2);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--muted);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}.kpi .l{font-size:12.5px;color:var(--muted)}
+.meter{height:6px;border-radius:4px;background:var(--surface-2);margin-top:6px;overflow:hidden}.meter>span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.meter.warn>span{background:var(--amb)}.meter.bad>span{background:var(--bad)}
+.panes{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.term{background:var(--term-bg);color:var(--term-text);border-radius:var(--radius);font:12.5px/1.55 var(--mono);height:520px;overflow:auto;padding:12px 14px;white-space:pre-wrap;word-break:break-word}
+.term .tag{color:#79b8ff}.term .ok{color:#7ee2a8}.term .warn{color:#ffd479}.term .bad{color:#ff8f87}.term .dim{color:var(--term-dim)}
+.termhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;color:var(--muted)}
+.feed{height:520px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.co{border:1px solid var(--border);border-radius:10px;padding:9px 11px;background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.co:hover{border-color:var(--accent)}.co .t{font-weight:600}.co .s{font-size:12.5px;color:var(--muted)}
+.dots{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap}.dot{width:10px;height:10px;border-radius:3px}
+.d-available{background:var(--ok)}.d-not_available{background:color-mix(in srgb,var(--na) 40%,transparent)}.d-ambiguous{background:var(--amb)}
+.d-blocked,.d-failed{background:var(--bad)}.d-not_applicable{background:color-mix(in srgb,var(--na) 22%,transparent)}.d-pending{background:transparent;border:1px dashed var(--na)}
+.chip{display:inline-flex;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.c-available{background:var(--ok-soft);color:var(--ok)}.c-ambiguous{background:var(--amb-soft);color:var(--amb)}.c-failed,.c-blocked,.c-rejected{background:var(--bad-soft);color:var(--bad)}
+.c-not_available,.c-not_applicable,.c-pending,.c-unreachable,.c-related_site{background:var(--na-soft);color:var(--na)}.c-accepted{background:var(--ok-soft);color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--muted);font-weight:600}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2);min-width:120px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.legend span{display:inline-flex;gap:5px;align-items:center}
+dialog{border:1px solid var(--border);border-radius:14px;padding:0;max-width:720px;width:calc(100% - 32px);background:var(--surface);color:var(--text)}
+dialog::backdrop{background:rgba(0,0,0,.35)}.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
+.dlg-b{padding:14px 16px;max-height:70vh;overflow:auto}
+.empty{color:var(--muted);text-align:center;padding:40px 10px}
+a{color:var(--accent)}
+.section{margin-top:14px}
+@media (max-width:1000px){main{grid-template-columns:1fr}.panes{grid-template-columns:1fr}.term,.feed{height:380px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Signalpost Console</h1><span class="pill" id="status"><span class="dot"></span><span id="statusText">Idle</span></span>
+  <span class="grow"></span><span class="muted" id="clock" style="font-variant-numeric:tabular-nums;color:var(--muted)"></span>
+</header>
+<main>
+  <aside>
+    <div class="card">
+      <h2>Action</h2>
+      <div class="tabs" id="actions" role="tablist"></div>
+      <div id="form"></div>
+      <div class="row" style="margin-top:14px"><button class="btn primary" id="start">Start</button><button class="btn ghost" id="stop" disabled>Stop</button></div>
+      <div id="err" style="color:var(--bad);font-size:13px;margin-top:8px" role="alert"></div>
+    </div>
+    <div class="card section">
+      <h2>Previous runs</h2>
+      <div id="runs"></div>
+    </div>
+  </aside>
+  <section>
+    <div class="kpis" id="kpis"></div>
+    <div class="panes">
+      <div>
+        <div class="termhead"><span id="cmd">Terminal</span><label class="check" style="margin:0"><input type="checkbox" id="raw"> raw events</label></div>
+        <div class="term" id="term" role="log" aria-live="polite"><span class="dim">Choose an action and press Start. Output from this machine streams here.</span></div>
+      </div>
+      <div>
+        <div class="termhead"><span>Live companies — click one to see why</span><span id="feedCount"></span></div>
+        <div class="feed" id="feed"><div class="empty">Companies appear here as the agent finishes them.</div></div>
+      </div>
+    </div>
+    <div class="card section" id="results"><h2>Coverage of the selected run</h2><div class="empty">Finish or pick a run to see coverage by field family.</div></div>
+  </section>
+</main>
+<dialog id="dlg"><div class="dlg-h"><strong id="dlgTitle"></strong><button class="btn ghost" onclick="dlg.close()" aria-label="Close">✕</button></div><div class="dlg-b" id="dlgBody"></div></dialog>
+<script>
+"use strict";
+const FAM=[["identity","Legal identity"],["status","Registry status"],["industry","Industry"],["financials","Annual accounts"],["leadership","Leadership"],["locations","Workplaces"],["group","Group"],["website","Website"],["social_profiles","Social profiles"],["contact","Contact"],["description","Description"],["jobs","Jobs"],["activity","Activity"]];
+const STATES=["available","not_available","ambiguous","blocked","failed","not_applicable"];
+const ACTIONS={
+  run:{label:"Run agent",explain:"Researches each organisation number live: registry, accounts, roles, workplaces, change log, then the website identity gate and NAV jobs. Every company card on the right shows what was found and why."},
+  tests:{label:"Unit tests",explain:"Runs the pytest suite: org-number checksum, address-named and parked-site guards, refresh idempotency, carry-forward and output contract."},
+  benchmark:{label:"Benchmark",explain:"Coverage per family with 95% Wilson intervals, abstentions (ambiguous) and evidence completeness, computed from a finished run."},
+  verify:{label:"Verify evidence",explain:"Re-fetches 30 random sources from a finished run and checks each published fact still appears there (evidence validity)."},
+  replay:{label:"Refresh replay",explain:"Injects real-looking changes (new CEO, filing, job, address, closed workplace) into a run's profile and checks typed changes, idempotent rerun and carry-forward."}};
+let S={action:"run",batches:[],runs:[],job:null,companies:{},total:0,startedAt:null,es:null,lineNo:0,selectedRun:null};
+const $=id=>document.getElementById(id), dlg=$("dlg");
+function el(t,p,...k){const n=document.createElement(t);if(p)for(const[a,v]of Object.entries(p)){if(v==null||v===false)continue;if(a==="class")n.className=v;else if(a==="text")n.textContent=v;else if(a.startsWith("on"))n.addEventListener(a.slice(2),v);else n.setAttribute(a,v===true?"":v);}for(const c of k.flat())if(c!=null&&c!==false)n.append(c instanceof Node?c:document.createTextNode(String(c)));return n;}
+function chip(s,l){return el("span",{class:"chip c-"+s},l||s.replace(/_/g," "));}
+async function api(path,body){const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j;}
+// ------------------------------------------------------------ form
+function renderActions(){const a=$("actions");a.replaceChildren(...Object.entries(ACTIONS).map(([k,v])=>el("button",{class:k===S.action?"on":"",role:"tab","aria-selected":String(k===S.action),onclick:()=>{S.action=k;renderActions();renderForm();}},v.label)));}
+function runOptions(sel){return [el("option",{value:""},sel),...S.runs.map(r=>el("option",{value:r.dir},`${r.dir} · ${r.n} cos · ${r.mode||""}`))];}
+function renderForm(){
+  const f=$("form");f.replaceChildren(el("div",{class:"explain"},ACTIONS[S.action].explain));
+  if(S.action==="run"){
+    f.append(el("label",{for:"batch"},"Batch"),el("select",{id:"batch"},el("option",{value:""},"— paste numbers below instead —"),...S.batches.map(b=>el("option",{value:b.path,selected:b.path.includes("known")||null},`${b.path} (${b.count})`))),
+      el("label",{for:"orgs"},"…or organisation numbers (space/comma/newline separated)"),el("textarea",{id:"orgs",placeholder:"923609016 947942638"}),
+      el("div",{class:"row"},el("div",null,el("label",{for:"out"},"Output folder"),el("input",{id:"out",value:"out-console"})),
+        el("div",null,el("label",{for:"days"},"NAV job window (days)"),el("input",{id:"days",type:"number",min:1,max:60,value:7}))),
+      el("label",{for:"prev"},"Refresh against previous run (optional)"),el("select",{id:"prev"},...runOptions("— baseline run —")),
+      el("label",{class:"check"},el("input",{type:"checkbox",id:"noweb"}),"Registry only (skip websites)"));
+  } else if(S.action!=="tests"){
+    f.append(el("label",{for:"target"},"Run to check"),el("select",{id:"target"},...runOptions("— choose a finished run —")));
+    if(S.selectedRun) $("target").value=S.selectedRun;
+  }
+}
+$("start").onclick=async()=>{
+  $("err").textContent="";
+  const body={action:S.action};
+  if(S.action==="run"){Object.assign(body,{batch:$("batch").value,orgs:$("orgs").value,out:$("out").value.trim(),job_days:$("days").value,previous:$("prev").value,no_web:$("noweb").checked});}
+  else if(S.action!=="tests"){body.target=$("target").value;}
+  try{await api("/api/run",body);startStream(body);}catch(e){$("err").textContent=e.message;}
+};
+$("stop").onclick=()=>api("/api/stop",{});
+// ------------------------------------------------------------ streaming
+function startStream(body){
+  S.companies={};S.total=0;S.lineNo=0;S.startedAt=Date.now();S.reqs=0;S.maxReq=2000;
+  $("term").replaceChildren();$("feed").replaceChildren(el("div",{class:"empty"},body.action==="run"?"Waiting for the first company…":"This action streams to the terminal."));
+  setStatus("run","Running "+ACTIONS[body.action].label.toLowerCase());$("start").disabled=true;$("stop").disabled=false;
+  if(S.es)S.es.close();
+  S.es=new EventSource("/api/stream?from=0");
+  S.es.onmessage=m=>handle(JSON.parse(m.data));
+  S.es.onerror=()=>{S.es.close();refreshState();};
+  renderKpis();
+}
+function handle(line){
+  if(line.startsWith("@exit")){const code=+line.split(" ")[1];setStatus(code===0?"ok":"bad",code===0?"Finished":"Exited with code "+code);$("start").disabled=false;$("stop").disabled=true;S.es&&S.es.close();refreshState(true);return;}
+  if(line.startsWith("@event ")){try{const e=JSON.parse(line.slice(7));onEvent(e);if(!$("raw").checked)return;}catch(x){}}
+  const m=line.match(/\[signalpost\] run .*?: (\d+) organisations/);if(m)S.total=+m[1];
+  const r=line.match(/requests=(\d+)/);if(r)S.reqs=+r[1];
+  appendTerm(line);renderKpis();
+}
+function appendTerm(line){
+  const t=$("term"),stick=t.scrollTop+t.clientHeight>=t.scrollHeight-30;
+  const cls=/\[(done)\]|passed|PASS|valid=True/.test(line)?"ok":/error|Error|failed|FAIL|Traceback/.test(line)?"bad":/watchdog|warning|refused|budget/.test(line)?"warn":"";
+  const tag=line.match(/^\[[a-z_]+\]/);
+  t.append(el("div",{class:cls},tag?[el("span",{class:"tag"},tag[0]),line.slice(tag[0].length)]:line));
+  if(stick)t.scrollTop=t.scrollHeight;
+}
+function onEvent(e){
+  const prev=S.companies[e.org];S.companies[e.org]={...prev,...e};if(e.budget)S.reqs=Math.max(S.reqs,e.budget.requests);
+  if(!prev&&e.kind==="company"){appendTerm(`✓ ${e.org} ${e.name||""} — ${Object.values(e.states).filter(s=>s[0]==="available").length} families found, ${e.requests} requests, ${(e.ms/1000).toFixed(1)}s${e.website?" · website "+e.website:""}`);}
+  renderFeed();renderKpis();
+}
+function renderFeed(){
+  const list=Object.values(S.companies).sort((a,b)=>(b.ms||0)-(a.ms||0)).slice(0,300);
+  $("feedCount").textContent=list.length?list.length+" companies":"";
+  $("feed").replaceChildren(...list.map(c=>el("button",{class:"co",onclick:()=>explain(c)},
+    el("div",{class:"t"},c.name||c.org," ",el("span",{class:"s"},c.org)),
+    el("div",{class:"s"},`${c.claims} facts · ${c.requests} requests · ${((c.ms||0)/1000).toFixed(1)}s`+(c.website?" · ✓ "+c.website.replace(/^https?:\/\//,"").replace(/\/$/,""):"")),
+    el("div",{class:"dots"},FAM.map(([f,l])=>{const s=(c.states[f]||[f==="jobs"?"pending":"pending"])[0];return el("span",{class:"dot d-"+s,title:l+": "+s});})))));
+}
+function explain(c){
+  $("dlgTitle").textContent=(c.name||"")+" · "+c.org;
+  const b=$("dlgBody");b.replaceChildren(
+    el("p",{class:"s",style:"color:var(--muted);margin-top:0"},"Why each field family ended in its state. Ambiguous = a candidate existed but identity could not be proven, so nothing was published."),
+    el("table",null,el("thead",null,el("tr",null,el("th",null,"Family"),el("th",null,"State"),el("th",null,"Reason"))),
+      el("tbody",null,FAM.map(([f,l])=>{const s=c.states[f]||["pending","decided after the shared NAV feed finishes"];return el("tr",null,el("td",null,l),el("td",null,chip(s[0])),el("td",null,s[1]||""));}))));
+  if((c.candidates||[]).length){b.append(el("h2",{style:"margin-top:16px"},"Identity gate decisions"),el("table",null,el("tbody",null,c.candidates.map(x=>el("tr",null,el("td",null,String(x.candidate||"")),el("td",null,x.source||x.family||""),el("td",null,chip(x.decision||"ambiguous")),el("td",null,x.reason||""))))));}
+  if((c.errors||[]).length){b.append(el("h2",{style:"margin-top:16px"},"Errors"),...c.errors.map(e=>el("div",{class:"s"},e.family+": "+e.message)));}
+  dlg.showModal();
+}
+function setStatus(kind,text){$("status").className="pill "+(kind==="run"?"run":kind==="ok"?"ok":kind==="bad"?"bad":"");$("statusText").textContent=text;}
+function kpi(v,l,frac){const m=frac==null?null:el("div",{class:"meter"+(frac>.9?" bad":frac>.7?" warn":"")},el("span",{style:"width:"+Math.min(100,frac*100)+"%"}));return el("div",{class:"card kpi"},el("div",{class:"v"},v),el("div",{class:"l"},l),m);}
+function renderKpis(){
+  const done=Object.keys(S.companies).length,el_s=S.startedAt?(Date.now()-S.startedAt)/1000:0;
+  const sites=Object.values(S.companies).filter(c=>c.website).length,held=Object.values(S.companies).filter(c=>(c.states.website||[])[0]==="ambiguous").length;
+  $("kpis").replaceChildren(kpi(S.total?`${done}/${S.total}`:done,"companies finished",S.total?done/S.total:null),kpi(S.reqs||0,"outbound requests of 2,000",(S.reqs||0)/2000),
+    kpi(Math.floor(el_s/60)+"m "+Math.floor(el_s%60)+"s","elapsed of 45 min",el_s/2700),kpi(sites,"websites verified"),kpi(held,"websites held back (ambiguous)"));
+}
+setInterval(()=>{if(S.startedAt&&$("start").disabled)renderKpis();$("clock").textContent=new Date().toLocaleTimeString();},1000);
+// ------------------------------------------------------------ runs + coverage
+function renderRuns(){
+  const r=$("runs");if(!S.runs.length){r.replaceChildren(el("div",{class:"empty"},"No runs yet."));return;}
+  r.replaceChildren(el("table",null,el("tbody",null,S.runs.slice(0,12).map(x=>el("tr",{style:"cursor:pointer",onclick:()=>{S.selectedRun=x.dir;renderCoverage(x);renderForm();}},
+    el("td",null,el("strong",null,x.dir),el("div",{style:"font-size:12px;color:var(--muted)"},`${x.n} cos · ${x.requests} req · ${Math.round(x.seconds||0)}s`)),el("td",null,chip(x.valid?"available":"failed",x.valid?"valid":"invalid")))))));
+}
+function renderCoverage(run){
+  const n=run.n||1,box=$("results");
+  box.replaceChildren(el("h2",null,"Coverage — "+run.dir),
+    el("div",{style:"font-size:13px;color:var(--muted);margin-bottom:8px"},`${run.run_id} · ${run.n} companies · ${run.requests} requests · ${Math.round(run.seconds||0)} s · identity gate ${JSON.stringify(run.gate||{})}`),
+    el("table",null,el("tbody",null,FAM.map(([f,l])=>{const st=(run.states||{})[f]||{};return el("tr",null,el("td",{style:"width:150px"},l),el("td",null,el("div",{class:"bar"},STATES.filter(s=>st[s]).map(s=>el("span",{class:"d-"+s,style:"width:"+(st[s]/n*100)+"%",title:s+": "+st[s]})))),el("td",{style:"width:60px;text-align:right"},Math.round((st.available||0)/n*100)+"%"));}))),
+    el("div",{class:"legend"},STATES.map(s=>el("span",null,el("span",{class:"dot d-"+s}),s.replace(/_/g," ")))),
+    el("div",{class:"row",style:"margin-top:12px;flex-wrap:wrap"},run.has_site?el("a",{class:"btn ghost",href:"/files/"+run.dir+"/site/index.html",target:"_blank",rel:"noopener"},"Open showcase ↗"):null,
+      run.has_audit?el("a",{class:"btn ghost",href:"/files/"+run.dir+"/identity-audit.md",target:"_blank",rel:"noopener"},"Identity audit ↗"):null,
+      el("a",{class:"btn ghost",href:"/files/"+run.dir+"/run-report.json",target:"_blank",rel:"noopener"},"Run report ↗")));
+}
+async function refreshState(selectLatest){
+  const s=await api("/api/state");S.batches=s.batches;S.runs=s.runs;renderRuns();
+  if(selectLatest&&S.runs[0]){S.selectedRun=S.runs[0].dir;renderCoverage(S.runs[0]);}
+  if(!S.es||S.es.readyState===2){renderForm();}
+  if(s.job&&!s.job.done&&(!S.es||S.es.readyState===2)){$("cmd").textContent=s.job.cmd;startStream({action:s.job.action});}
+}
+renderActions();renderKpis();refreshState(true);
+</script>
+</body>
+</html>

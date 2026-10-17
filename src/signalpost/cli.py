@@ -31,7 +31,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     _log(f"[signalpost] run {run_id}: {len(orgs)} organisations -> {out}")
     runner = Runner(orgs, out_dir=out, run_id=run_id, bulk=args.bulk, previous=args.previous, max_requests=args.max_requests,
                     max_minutes=args.max_minutes, max_cost=args.max_cost, workers=args.workers, job_days=args.job_days,
-                    web=not args.no_web, bulk_files=args.bulk_files, log=_log)
+                    web=not args.no_web, bulk_files=args.bulk_files, events=args.events, log=_log)
     try:
         report = runner.run()
     finally:
@@ -103,6 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--workers", type=int, default=24)
     run.add_argument("--job-days", type=int, default=60, help="NAV feed look-back window in days")
     run.add_argument("--bulk-files", action="store_true", help="experimental: roles/workplaces from Brreg bulk files for large batches")
+    run.add_argument("--events", action="store_true", help="emit @event JSON progress lines (used by the live console)")
     run.add_argument("--no-web", action="store_true", help="skip website discovery (registry-only run)")
     run.add_argument("--showcase", help="where to write the static showcase site (default: <out>/site)")
     run.add_argument("--no-showcase", action="store_true")
@@ -124,6 +125,10 @@ def main(argv: list[str] | None = None) -> int:
     show.add_argument("--report")
     show.add_argument("--output", required=True)
     show.set_defaults(func=cmd_showcase)
+
+    srv = sub.add_parser("serve", help="local live console: run the agent, tests and benchmarks from the browser")
+    srv.add_argument("--port", type=int, default=8765)
+    srv.set_defaults(func=lambda a: __import__("signalpost.console.server", fromlist=["serve"]).serve(a.port))
 
     args = parser.parse_args(argv)
     return int(args.func(args) or 0)

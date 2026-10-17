@@ -26,6 +26,16 @@ Outputs in `out/`: `envelopes.jsonl` (one per input, input order), `run-report.j
 Local test batch: `uv run signalpost select --universe signalpost-universe.jsonl.gz --count 100 --output batch.jsonl`.
 Tests: `uv run --group dev pytest -q`.
 
+## Live console (local)
+
+```bash
+uv run --group dev signalpost serve      # open http://127.0.0.1:8765
+```
+Run the agent, unit tests, benchmark, evidence re-verification or refresh replay from the browser. Terminal
+output from this machine streams live; each company appears as it finishes, and clicking it explains *why*
+every field family ended in its state (including identity-gate decisions). Bound to 127.0.0.1, whitelisted
+actions only (no arbitrary shell).
+
 ## What it collects
 
 | Family | Source | Identity |

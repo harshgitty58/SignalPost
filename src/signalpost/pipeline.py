@@ -76,7 +76,7 @@ def git_version() -> str:
 
 class Runner:
     def __init__(self, orgs: list[str], *, out_dir: Path, run_id: str, bulk: str | None, previous: str | None,
-                 max_requests: int, max_minutes: float, max_cost: float, workers: int, job_days: int, web: bool = True, bulk_files: bool = False,
+                 max_requests: int, max_minutes: float, max_cost: float, workers: int, job_days: int, web: bool = True, bulk_files: bool = False, events: bool = False,
                  log=print):
         self.orgs = orgs
         self.out_dir = out_dir
@@ -86,6 +86,7 @@ class Runner:
         self.workers = workers
         self.web_enabled = web
         self.bulk_files = bulk_files
+        self.events = events
         self.log = log
         n = max(1, len(orgs))
         self.budget = Budget(max_requests=max_requests, max_seconds=max_minutes * 60, max_cost_usd=max_cost,
@@ -212,6 +213,23 @@ class Runner:
         finally:
             pb.requests += self.fetcher.take_count()
             self.company_ms[org] = int((time.monotonic() - t) * 1000)
+            self.event("company", org)
+
+    def event(self, kind: str, org: str) -> None:
+        """Machine-readable progress line for the live console (only with --events)."""
+        if not self.events:
+            return
+        pb = self.builders[org]
+        name = next((c.value for c in pb.family_claims("identity") if c.field == "legal_name"), None)
+        payload = {"kind": kind, "org": org, "name": name, "ms": self.company_ms.get(org), "requests": pb.requests,
+                   "claims": len(pb.claims), "budget": {"requests": self.budget.requests, "elapsed": round(self.budget.elapsed(), 1)},
+                   "states": {f: [st.state, st.reason] for f, st in pb.families.items()},
+                   "candidates": pb.candidates[:6], "errors": pb.errors[:3],
+                   "website": next((c.value for c in pb.family_claims("website")), None)}
+        try:
+            print("@event " + json.dumps(payload, ensure_ascii=False, default=str), file=sys.stderr, flush=True)
+        except (OSError, ValueError):
+            pass
 
     def jobs_for(self, org: str) -> None:
         pb = self.builders[org]
@@ -363,6 +381,8 @@ class Runner:
         for org in self.orgs:
             try:
                 env = self.envelope(org, completed_at, previous.get(org))
+                if self.events:
+                    self.event("final", org)
             except Exception as exc:  # last resort: still emit a valid terminal envelope
                 env = self.fallback_envelope(org, completed_at, exc)
             envelopes.append(env)
