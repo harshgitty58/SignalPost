@@ -39,3 +39,8 @@ my-*.jsonl
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local agent skills (dev tooling, not part of the submission)
+.agents/
+.claude/skills/
+skills-lock.json
